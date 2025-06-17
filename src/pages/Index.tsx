@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star } from "lucide-react";
@@ -163,7 +164,11 @@ const Index = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">KoreaTours</h1>
+          <img 
+            src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
+            alt="Korea Tours" 
+            className="h-8"
+          />
           <nav className="flex items-center space-x-6">
             <Link to="/reservation-lookup" className="text-gray-600 hover:text-blue-600 transition-colors">
               Check Reservation
