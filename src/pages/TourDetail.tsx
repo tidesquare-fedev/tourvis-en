@@ -1,27 +1,39 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "@/components/ui/calendar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Clock, Users, Star, Calendar, Phone, Mail, CreditCard, Check, X, Heart, Share2, MessageCircle } from "lucide-react";
+import { MapPin, Clock, Users, Star, Calendar as CalendarIcon, Phone, Mail, CreditCard, Check, X, Heart, Share2, MessageCircle, ChevronDown, ChevronUp, ThumbsUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { addMonths, format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 const TourDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [activeSection, setActiveSection] = useState("options");
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
+  // Refs for sections
+  const optionsRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const guideRef = useRef<HTMLDivElement>(null);
+  const reviewsRef = useRef<HTMLDivElement>(null);
+  const cancellationRef = useRef<HTMLDivElement>(null);
 
   // Mock tour data
   const tour = {
     id: "jeju-hallasan-hiking",
     title: "Jeju Hallasan Mountain Sunrise Hiking Tour",
     subtitle: "Experience the breathtaking sunrise from Korea's highest peak",
-    description: "Experience the breathtaking sunrise from Korea's highest peak. This unforgettable journey takes you through pristine forests and volcanic landscapes to witness one of the most spectacular sunrises in Asia.",
+    description: "Experience the breathtaking sunrise from Korea's highest peak. This unforgettable journey takes you through pristine forests and volcanic landscapes to witness one of the most spectacular sunrises in Asia. Our expert guides will lead you through ancient trails while sharing fascinating stories about the island's volcanic history and unique ecosystem.",
+    longDescription: "한라산은 제주도의 상징이자 대한민국에서 가장 높은 산입니다. 해발 1,947m의 이 웅장한 산은 약 25,000년 전 화산 활동으로 형성되었으며, 현재는 국립공원으로 지정되어 보호받고 있습니다. 이 투어는 새벽 일찍 시작되어 일출과 함께 한라산의 진정한 아름다움을 만끽할 수 있는 특별한 경험을 제공합니다.",
     images: [
       "photo-1469474968028-56623f02e42e",
       "photo-1472396961693-142e6e269027",
@@ -34,8 +46,8 @@ const TourDetail = () => {
     originalPrice: 120,
     discountRate: 26,
     duration: "8 hours",
-    rating: 4.8,
-    reviewCount: 324,
+    rating: 4.7,
+    reviewCount: 587,
     location: "Jeju Island, South Korea",
     category: "Adventure",
     minAge: 12,
@@ -76,18 +88,39 @@ const TourDetail = () => {
     ],
     reviews: [
       {
-        name: "Sarah Johnson",
+        name: "김민수",
         rating: 5,
-        date: "2024-01-15",
-        comment: "Amazing experience! The sunrise was absolutely breathtaking and our guide was very knowledgeable."
+        date: "2025.06.09",
+        comment: "3박 4일동안 사용했는데 복잡하지 않게 잘 사용했어요\n다만 사진 보낼 때 잘 안보내지긴 했는데 그 이상 문제는 없었어요!",
+        helpful: 31,
+        tags: ["가격이 합리적이에요"]
       },
       {
-        name: "Mike Chen",
-        rating: 4,
-        date: "2024-01-10",
-        comment: "Great tour, well organized. The hiking was challenging but worth it. Highly recommend!"
+        name: "이서연",
+        rating: 5,
+        date: "2025.06.16",
+        comment: "정말 좋은 경험이었습니다. 가이드분도 친절하시고 일출도 너무 아름다웠어요!",
+        helpful: 15,
+        tags: ["상품설명이 자세해요"]
       }
     ]
+  };
+
+  // Navigation sections
+  const sections = [
+    { id: "options", label: "옵션 선택", ref: optionsRef },
+    { id: "description", label: "상품설명", ref: descriptionRef },
+    { id: "guide", label: "이용안내", ref: guideRef },
+    { id: "reviews", label: "이용후기", ref: reviewsRef },
+    { id: "cancellation", label: "취소 환불", ref: cancellationRef }
+  ];
+
+  const scrollToSection = (sectionId: string) => {
+    const section = sections.find(s => s.id === sectionId);
+    if (section?.ref.current) {
+      section.ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveSection(sectionId);
+    }
   };
 
   const handleBooking = () => {
@@ -99,6 +132,10 @@ const TourDetail = () => {
   for (let i = 0; i < tour.images.length; i += 2) {
     imageGroups.push(tour.images.slice(i, i + 2));
   }
+
+  // Calendar months
+  const currentMonth = new Date();
+  const nextMonth = addMonths(currentMonth, 1);
 
   return (
     <div className="min-h-screen bg-white">
@@ -162,28 +199,14 @@ const TourDetail = () => {
               <p className="text-lg text-gray-600">{tour.subtitle}</p>
             </div>
 
-            {/* Price and Rating */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-500 line-through">${tour.originalPrice}</span>
-                <span className="text-sm font-bold text-red-500 bg-red-50 px-2 py-1 rounded">
-                  {tour.discountRate}% OFF
-                </span>
-                <span className="text-2xl font-bold text-blue-600">${tour.price}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center">
-                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                  <span className="ml-1 font-semibold">{tour.rating}</span>
-                  <span className="text-gray-500 ml-1">({tour.reviewCount})</span>
-                </div>
-                <Button variant="outline" size="sm">
-                  <Heart className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </div>
+            {/* Price */}
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-sm font-bold text-red-500 bg-red-50 px-2 py-1 rounded">
+                {tour.discountRate}% OFF
+              </span>
+              <span className="text-sm text-gray-500 line-through">${tour.originalPrice}</span>
+              <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
+              <span className="text-gray-600">per person</span>
             </div>
 
             {/* Highlights */}
@@ -199,178 +222,329 @@ const TourDetail = () => {
               </ul>
             </div>
 
-            {/* Tabs */}
-            <Tabs defaultValue="options" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="options">옵션 선택</TabsTrigger>
-                <TabsTrigger value="description">상품설명</TabsTrigger>
-                <TabsTrigger value="guide">이용안내</TabsTrigger>
-                <TabsTrigger value="reviews">이용후기</TabsTrigger>
-                <TabsTrigger value="cancellation">취소 환불</TabsTrigger>
-              </TabsList>
+            {/* Sticky Navigation */}
+            <div className="sticky top-0 z-10 bg-white border-b mb-6">
+              <div className="flex space-x-1 overflow-x-auto">
+                {sections.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => scrollToSection(section.id)}
+                    className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                      activeSection === section.id
+                        ? 'text-blue-600 border-b-2 border-blue-600'
+                        : 'text-gray-600 hover:text-blue-600'
+                    }`}
+                  >
+                    {section.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              <TabsContent value="options" className="mt-6">
+            {/* Options Section */}
+            <div ref={optionsRef} className="mb-12">
+              <h3 className="text-xl font-semibold mb-6">옵션 선택</h3>
+              <div className="space-y-6">
+                <div className="p-4 border rounded-lg">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h4 className="font-medium">기본 투어</h4>
+                      <p className="text-sm text-gray-600">한라산 일출 하이킹 + 조식 포함</p>
+                    </div>
+                    <span className="text-lg font-bold text-blue-600">${tour.price}</span>
+                  </div>
+                </div>
+                
+                {/* Calendar Selection */}
+                <div>
+                  <h4 className="font-medium mb-4">날짜 선택</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">
+                        {format(currentMonth, "yyyy년 M월", { locale: ko })}
+                      </h5>
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        month={currentMonth}
+                        className="rounded-md border"
+                      />
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">
+                        {format(nextMonth, "yyyy년 M월", { locale: ko })}
+                      </h5>
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        month={nextMonth}
+                        className="rounded-md border"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Description Section */}
+            <div ref={descriptionRef} className="mb-12">
+              <h3 className="text-xl font-semibold mb-6">상품설명</h3>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <img 
+                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&h=250&q=80"
+                    alt="Hallasan sunrise"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <img 
+                    src="https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=400&h=250&q=80"
+                    alt="Hiking trail"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+                
+                <div>
+                  <p className="text-gray-700 leading-relaxed mb-4">{tour.description}</p>
+                  {showFullDescription && (
+                    <p className="text-gray-700 leading-relaxed mb-4">{tour.longDescription}</p>
+                  )}
+                  <button
+                    onClick={() => setShowFullDescription(!showFullDescription)}
+                    className="flex items-center text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    {showFullDescription ? (
+                      <>
+                        접기 <ChevronUp className="w-4 h-4 ml-1" />
+                      </>
+                    ) : (
+                      <>
+                        더보기 <ChevronDown className="w-4 h-4 ml-1" />
+                      </>
+                    )}
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <div className="text-sm text-gray-600">소요시간</div>
+                      <div className="font-semibold">{tour.duration}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <Users className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <div className="text-sm text-gray-600">최대 인원</div>
+                      <div className="font-semibold">{tour.maxGroup}명</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <CalendarIcon className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <div className="text-sm text-gray-600">최소 연령</div>
+                      <div className="font-semibold">{tour.minAge}세</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <MessageCircle className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <div className="text-sm text-gray-600">언어</div>
+                      <div className="font-semibold">{tour.language}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Guide Section */}
+            <div ref={guideRef} className="mb-12">
+              <h3 className="text-xl font-semibold mb-6">이용안내</h3>
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-lg font-semibold mb-4">일정 안내</h4>
+                  <div className="space-y-3">
+                    {tour.itinerary.map((item, index) => (
+                      <div key={index} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-16 text-sm font-semibold text-blue-600 flex-shrink-0">
+                          {item.time}
+                        </div>
+                        <div className="text-gray-700">{item.activity}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">투어 옵션</h3>
-                  <div className="grid gap-4">
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h4 className="font-medium">기본 투어</h4>
-                          <p className="text-sm text-gray-600">한라산 일출 하이킹 + 조식 포함</p>
-                        </div>
-                        <span className="text-lg font-bold text-blue-600">${tour.price}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="description" className="mt-6">
-                <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">투어 소개</h3>
-                    <p className="text-gray-700 leading-relaxed mb-4">{tour.description}</p>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                        <Clock className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-sm text-gray-600">소요시간</div>
-                          <div className="font-semibold">{tour.duration}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                        <Users className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-sm text-gray-600">최대 인원</div>
-                          <div className="font-semibold">{tour.maxGroup}명</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-sm text-gray-600">최소 연령</div>
-                          <div className="font-semibold">{tour.minAge}세</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                        <MessageCircle className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <div className="text-sm text-gray-600">언어</div>
-                          <div className="font-semibold">{tour.language}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="guide" className="mt-6">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">일정 안내</h3>
-                    <div className="space-y-3">
-                      {tour.itinerary.map((item, index) => (
-                        <div key={index} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
-                          <div className="w-16 text-sm font-semibold text-blue-600 flex-shrink-0">
-                            {item.time}
-                          </div>
-                          <div className="text-gray-700">{item.activity}</div>
+                    <h4 className="text-lg font-semibold text-green-600 mb-3 flex items-center">
+                      <Check className="w-5 h-5 mr-2" />
+                      포함 사항
+                    </h4>
+                    <div className="space-y-2">
+                      {tour.included.map((item, index) => (
+                        <div key={index} className="flex items-start">
+                          <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 text-sm">{item}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="text-md font-semibold text-green-600 mb-3 flex items-center">
-                        <Check className="w-4 h-4 mr-2" />
-                        포함 사항
-                      </h4>
-                      <ul className="space-y-2">
-                        {tour.included.map((item, index) => (
-                          <li key={index} className="flex items-start">
-                            <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700 text-sm">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="text-md font-semibold text-red-600 mb-3 flex items-center">
-                        <X className="w-4 h-4 mr-2" />
-                        불포함 사항
-                      </h4>
-                      <ul className="space-y-2">
-                        {tour.notIncluded.map((item, index) => (
-                          <li key={index} className="flex items-start">
-                            <X className="w-4 h-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-700 text-sm">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold text-red-600 mb-3 flex items-center">
+                      <X className="w-5 h-5 mr-2" />
+                      불포함 사항
+                    </h4>
+                    <div className="space-y-2">
+                      {tour.notIncluded.map((item, index) => (
+                        <div key={index} className="flex items-start">
+                          <X className="w-4 h-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 text-sm">{item}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </TabsContent>
+              </div>
+            </div>
 
-              <TabsContent value="reviews" className="mt-6">
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold">이용후기</h3>
+            {/* Reviews Section */}
+            <div ref={reviewsRef} className="mb-12">
+              <h3 className="text-xl font-semibold mb-6">이용후기</h3>
+              
+              {/* Rating Summary */}
+              <div className="mb-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="text-3xl font-bold">{tour.rating}</div>
+                  <div className="text-gray-500">/ 5</div>
+                </div>
+                <div className="flex items-center mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-6 h-6 ${
+                        i < Math.floor(tour.rating) ? 'text-pink-500 fill-current' : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="text-gray-600 mb-4">
+                  투어비스에서 검증한 <span className="font-semibold">{tour.reviewCount}개</span>의 이용후기가 있어요!
+                </div>
+                
+                {/* Review Categories */}
+                <div className="space-y-2 mb-6">
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                      <span className="font-semibold">{tour.rating}</span>
-                      <span className="text-gray-500">({tour.reviewCount}개 후기)</span>
+                      <span className="text-sm">😊 가격이 합리적이에요</span>
                     </div>
+                    <span className="text-blue-600 font-semibold">31</span>
                   </div>
-                  <div className="space-y-4">
-                    {tour.reviews.map((review, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="font-semibold">{review.name}</div>
-                          <div className="flex items-center">
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">👥 상품설명이 자세해요</span>
+                    </div>
+                    <span className="text-blue-600 font-semibold">15</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">👨‍👩‍👧‍👦 가족과 함께</span>
+                    </div>
+                    <span className="text-blue-600 font-semibold">13</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Individual Reviews */}
+              <div className="space-y-4">
+                {tour.reviews.map((review, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center">
+                          <span className="font-semibold text-lg">{review.rating}.0</span>
+                          <div className="flex ml-2">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
                                 className={`w-4 h-4 ${
-                                  i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                                  i < review.rating ? 'text-pink-500 fill-current' : 'text-gray-300'
                                 }`}
                               />
                             ))}
                           </div>
                         </div>
-                        <div className="text-sm text-gray-500 mb-2">{review.date}</div>
-                        <p className="text-gray-700">{review.comment}</p>
+                        <span className="text-sm text-gray-500">현*</span>
+                        <span className="text-sm text-gray-500">{review.date}</span>
                       </div>
-                    ))}
+                    </div>
+                    
+                    <div className="mb-3">
+                      <span className="text-sm text-gray-600">
+                        이용일: {review.date}
+                      </span>
+                      <br />
+                      <span className="text-xs text-gray-500">
+                        C.2GB/일제공 5G (Softbank 로컬망)
+                      </span>
+                    </div>
+                    
+                    <p className="text-gray-700 mb-3 whitespace-pre-line">{review.comment}</p>
+                    
+                    {review.tags && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {review.tags.map((tag, tagIndex) => (
+                          <span 
+                            key={tagIndex}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full text-xs"
+                          >
+                            😊 {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center gap-4">
+                        <button className="flex items-center gap-1 hover:text-blue-600">
+                          <span>후기가 도움이 되셨나요?</span>
+                        </button>
+                        <button className="flex items-center gap-1 hover:text-blue-600">
+                          <ThumbsUp className="w-4 h-4" />
+                          <span>{review.helpful}</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </TabsContent>
+                ))}
+              </div>
+            </div>
 
-              <TabsContent value="cancellation" className="mt-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">취소 및 환불 정책</h3>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-yellow-800 mb-2">취소 수수료</h4>
-                    <ul className="space-y-1 text-sm text-yellow-700">
-                      <li>• 투어 24시간 전 취소: 무료 취소</li>
-                      <li>• 투어 24시간 이내 취소: 투어 요금의 50% 수수료</li>
-                      <li>• 투어 당일 취소 또는 노쇼: 투어 요금의 100% 수수료</li>
-                    </ul>
-                  </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-800 mb-2">환불 안내</h4>
-                    <ul className="space-y-1 text-sm text-blue-700">
-                      <li>• 환불은 취소 요청 후 3-5 영업일 내 처리됩니다</li>
-                      <li>• 결제 수단과 동일한 방법으로 환불됩니다</li>
-                      <li>• 기상 악화로 인한 투어 취소 시 100% 환불</li>
-                    </ul>
-                  </div>
+            {/* Cancellation Section */}
+            <div ref={cancellationRef} className="mb-12">
+              <h3 className="text-xl font-semibold mb-6">취소 및 환불 정책</h3>
+              <div className="space-y-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-yellow-800 mb-2">취소 수수료</h4>
+                  <ul className="space-y-1 text-sm text-yellow-700">
+                    <li>• 투어 24시간 전 취소: 무료 취소</li>
+                    <li>• 투어 24시간 이내 취소: 투어 요금의 50% 수수료</li>
+                    <li>• 투어 당일 취소 또는 노쇼: 투어 요금의 100% 수수료</li>
+                  </ul>
                 </div>
-              </TabsContent>
-            </Tabs>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-800 mb-2">환불 안내</h4>
+                  <ul className="space-y-1 text-sm text-blue-700">
+                    <li>• 환불은 취소 요청 후 3-5 영업일 내 처리됩니다</li>
+                    <li>• 결제 수단과 동일한 방법으로 환불됩니다</li>
+                    <li>• 기상 악화로 인한 투어 취소 시 100% 환불</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Simplified Booking Sidebar */}
