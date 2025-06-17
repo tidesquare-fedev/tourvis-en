@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -212,7 +211,7 @@ const Payment = () => {
               <Checkbox 
                 id="terms" 
                 checked={agreed} 
-                onCheckedChange={setAgreed}
+                onCheckedChange={(checked) => setAgreed(checked === true)}
               />
               <Label htmlFor="terms" className="text-sm">
                 I agree to the terms and conditions and cancellation policy
