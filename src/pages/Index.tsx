@@ -203,38 +203,40 @@ const Index = () => {
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {allTours.slice(0, visibleTours).map((tour) => (
-            <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={`https://images.unsplash.com/${tour.image}?auto=format&fit=crop&w=400&q=80`}
-                  alt={tour.title}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <CardContent className="p-4">
-                <div className="flex items-center text-sm text-gray-600 mb-2">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {tour.location}
+            <Link key={tour.id} to={`/tour/${tour.id}`}>
+              <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={`https://images.unsplash.com/${tour.image}?auto=format&fit=crop&w=400&q=80`}
+                    alt={tour.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
-                
-                <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-tight">
-                  {tour.title}
-                </h3>
-                
-                <div className="flex items-center text-sm text-yellow-600 mb-3">
-                  <Star className="w-4 h-4 mr-1 fill-current" />
-                  {tour.rating.toFixed(1)} ({tour.reviewCount})
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-sm text-gray-500 line-through">${tour.originalPrice}</div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-xl font-bold text-blue-600">${tour.price}</div>
-                    <span className="text-sm font-bold text-red-500">{tour.discountRate}% OFF</span>
+                <CardContent className="p-4">
+                  <div className="flex items-center text-sm text-gray-600 mb-2">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    {tour.location}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  
+                  <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-tight">
+                    {tour.title}
+                  </h3>
+                  
+                  <div className="flex items-center text-sm text-yellow-600 mb-3">
+                    <Star className="w-4 h-4 mr-1 fill-current" />
+                    {tour.rating.toFixed(1)} ({tour.reviewCount})
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="text-sm text-gray-500 line-through">${tour.originalPrice}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-red-500">{tour.discountRate}% OFF</span>
+                      <div className="text-xl font-bold text-blue-600">${tour.price}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
         
