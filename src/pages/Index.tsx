@@ -1,45 +1,163 @@
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Clock, Users, Star } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useState } from "react";
 
 const Index = () => {
-  const featuredTours = [
+  const [visibleTours, setVisibleTours] = useState(20); // Show 20 tours initially (4x5)
+
+  const banners = [
+    {
+      id: 1,
+      image: "photo-1472396961693-142e6e269027",
+      title: "Autumn Jeju Bus Tour",
+      subtitle: "Book until September!",
+    },
+    {
+      id: 2,
+      image: "photo-1500673922987-e212871fec22",
+      title: "Osaka Airport ↔ City",
+      subtitle: "Must-take JR Haruka",
+    },
+    {
+      id: 3,
+      image: "photo-1482938289607-e9573fc25ebb",
+      title: "Japan Shopping Deals?",
+      subtitle: "Up to 18% coupon pack!",
+    }
+  ];
+
+  const allTours = [
     {
       id: "jeju-hallasan-hiking",
       title: "Jeju Hallasan Mountain Sunrise Hiking Tour",
-      description: "Experience the breathtaking sunrise from Korea's highest peak",
       image: "photo-1469474968028-56623f02e42e",
+      originalPrice: 120,
+      discountRate: 26,
       price: 89,
-      duration: "8 hours",
       rating: 4.8,
       reviewCount: 324,
-      location: "Jeju Island, South Korea"
+      location: "Jeju Island"
     },
     {
       id: "seoul-palace-tour",
       title: "Seoul Royal Palace & Traditional Culture Tour",
-      description: "Discover Korea's royal heritage and traditional culture",
       image: "photo-1472396961693-142e6e269027",
+      originalPrice: 85,
+      discountRate: 24,
       price: 65,
-      duration: "6 hours", 
       rating: 4.7,
       reviewCount: 156,
-      location: "Seoul, South Korea"
+      location: "Seoul"
     },
     {
       id: "busan-coastal-tour",
       title: "Busan Coastal Scenic Tour & Temple Visit",
-      description: "Explore stunning coastal views and ancient temples",
       image: "photo-1500673922987-e212871fec22",
+      originalPrice: 95,
+      discountRate: 21,
       price: 75,
-      duration: "7 hours",
       rating: 4.9,
       reviewCount: 289,
-      location: "Busan, South Korea"
-    }
+      location: "Busan"
+    },
+    {
+      id: "gyeongju-history-tour",
+      title: "Gyeongju Historical Sites Full Day Tour",
+      image: "photo-1465146344425-f00d5f5c8f07",
+      originalPrice: 110,
+      discountRate: 18,
+      price: 90,
+      rating: 4.6,
+      reviewCount: 201,
+      location: "Gyeongju"
+    },
+    {
+      id: "dmz-tour",
+      title: "DMZ & Joint Security Area Tour from Seoul",
+      image: "photo-1509316975850-ff9c5deb0cd9",
+      originalPrice: 80,
+      discountRate: 15,
+      price: 68,
+      rating: 4.5,
+      reviewCount: 445,
+      location: "Seoul"
+    },
+    {
+      id: "nami-island-tour",
+      title: "Nami Island & Petite France Day Tour",
+      image: "photo-1472396961693-142e6e269027",
+      originalPrice: 70,
+      discountRate: 20,
+      price: 56,
+      rating: 4.7,
+      reviewCount: 332,
+      location: "Gapyeong"
+    },
+    {
+      id: "andong-village-tour",
+      title: "Andong Hahoe Folk Village Cultural Tour",
+      image: "photo-1500673922987-e212871fec22",
+      originalPrice: 90,
+      discountRate: 22,
+      price: 70,
+      rating: 4.4,
+      reviewCount: 178,
+      location: "Andong"
+    },
+    {
+      id: "seoraksan-hiking",
+      title: "Seoraksan National Park Hiking Adventure",
+      image: "photo-1482938289607-e9573fc25ebb",
+      originalPrice: 100,
+      discountRate: 25,
+      price: 75,
+      rating: 4.8,
+      reviewCount: 267,
+      location: "Sokcho"
+    },
+    {
+      id: "gangneung-beach-tour",
+      title: "Gangneung Beach & Coffee Street Tour",
+      image: "photo-1469474968028-56623f02e42e",
+      originalPrice: 65,
+      discountRate: 17,
+      price: 54,
+      rating: 4.6,
+      reviewCount: 189,
+      location: "Gangneung"
+    },
+    {
+      id: "jeonju-hanok-tour",
+      title: "Jeonju Hanok Village Food & Culture Tour",
+      image: "photo-1465146344425-f00d5f5c8f07",
+      originalPrice: 75,
+      discountRate: 19,
+      price: 61,
+      rating: 4.7,
+      reviewCount: 298,
+      location: "Jeonju"
+    },
+    // Add more tours to demonstrate pagination
+    ...Array.from({ length: 20 }, (_, i) => ({
+      id: `tour-${i + 11}`,
+      title: `Amazing Korea Tour ${i + 11}`,
+      image: ["photo-1469474968028-56623f02e42e", "photo-1472396961693-142e6e269027", "photo-1500673922987-e212871fec22"][i % 3],
+      originalPrice: 80 + Math.floor(Math.random() * 40),
+      discountRate: 15 + Math.floor(Math.random() * 15),
+      price: 60 + Math.floor(Math.random() * 30),
+      rating: 4.3 + Math.random() * 0.6,
+      reviewCount: 50 + Math.floor(Math.random() * 300),
+      location: ["Seoul", "Busan", "Jeju", "Gyeongju", "Incheon"][i % 5]
+    }))
   ];
+
+  const handleLoadMore = () => {
+    setVisibleTours(prev => Math.min(prev + 20, allTours.length));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -55,70 +173,84 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative h-96 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white">
-        <div className="text-center z-10">
-          <h2 className="text-5xl font-bold mb-4">Discover Korea</h2>
-          <p className="text-xl mb-8">Unforgettable tours and experiences across South Korea</p>
-          <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-            Explore Tours
-          </Button>
-        </div>
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Banner Carousel */}
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <Carousel className="w-full">
+          <CarouselContent>
+            {banners.map((banner) => (
+              <CarouselItem key={banner.id}>
+                <div className="relative w-full h-[298px] rounded-lg overflow-hidden">
+                  <img 
+                    src={`https://images.unsplash.com/${banner.image}?auto=format&fit=crop&w=624&h=298&q=80`}
+                    alt={banner.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <h2 className="text-2xl font-bold mb-2">{banner.title}</h2>
+                      <p className="text-lg">{banner.subtitle}</p>
+                    </div>
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </section>
 
-      {/* Featured Tours */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold text-gray-900 mb-4">Featured Tours</h3>
-          <p className="text-gray-600 text-lg">Hand-picked experiences for your Korean adventure</p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuredTours.map((tour) => (
-            <Card key={tour.id} className="overflow-hidden hover:shadow-xl transition-shadow duration-300">
+      {/* Tour Products */}
+      <section className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {allTours.slice(0, visibleTours).map((tour) => (
+            <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="relative h-48 overflow-hidden">
                 <img 
-                  src={`https://images.unsplash.com/${tour.image}?auto=format&fit=crop&w=800&q=80`}
+                  src={`https://images.unsplash.com/${tour.image}?auto=format&fit=crop&w=400&q=80`}
                   alt={tour.title}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {tour.location}
-                  </div>
-                  <div className="flex items-center text-sm text-yellow-600">
-                    <Star className="w-4 h-4 mr-1 fill-current" />
-                    {tour.rating} ({tour.reviewCount})
-                  </div>
+              <CardContent className="p-4">
+                <div className="flex items-center text-sm text-gray-600 mb-2">
+                  <MapPin className="w-4 h-4 mr-1" />
+                  {tour.location}
                 </div>
-                <CardTitle className="text-lg line-clamp-2">{tour.title}</CardTitle>
-                <CardDescription className="line-clamp-2">{tour.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {tour.duration}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="w-4 h-4 mr-1" />
-                    Small group
-                  </div>
+                
+                <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-tight">
+                  {tour.title}
+                </h3>
+                
+                <div className="flex items-center text-sm text-yellow-600 mb-3">
+                  <Star className="w-4 h-4 mr-1 fill-current" />
+                  {tour.rating.toFixed(1)} ({tour.reviewCount})
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-blue-600">${tour.price}</div>
-                  <Link to={`/tour/${tour.id}`}>
-                    <Button>Book Now</Button>
-                  </Link>
+                
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500 line-through">${tour.originalPrice}</span>
+                    <span className="text-sm font-bold text-red-500">{tour.discountRate}% OFF</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xl font-bold text-blue-600">${tour.price}</div>
+                    <Link to={`/tour/${tour.id}`}>
+                      <Button size="sm">Book</Button>
+                    </Link>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+        
+        {visibleTours < allTours.length && (
+          <div className="text-center mt-8">
+            <Button onClick={handleLoadMore} variant="outline" size="lg">
+              Load More Tours
+            </Button>
+          </div>
+        )}
       </section>
     </div>
   );
