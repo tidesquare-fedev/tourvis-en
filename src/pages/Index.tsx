@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star } from "lucide-react";
@@ -228,15 +227,10 @@ const Index = () => {
                 </div>
                 
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 line-through">${tour.originalPrice}</span>
-                    <span className="text-sm font-bold text-red-500">{tour.discountRate}% OFF</span>
-                  </div>
+                  <div className="text-sm text-gray-500 line-through">${tour.originalPrice}</div>
                   <div className="flex items-center justify-between">
                     <div className="text-xl font-bold text-blue-600">${tour.price}</div>
-                    <Link to={`/tour/${tour.id}`}>
-                      <Button size="sm">Book</Button>
-                    </Link>
+                    <span className="text-sm font-bold text-red-500">{tour.discountRate}% OFF</span>
                   </div>
                 </div>
               </CardContent>
