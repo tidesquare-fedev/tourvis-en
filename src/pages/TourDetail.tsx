@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -197,14 +196,13 @@ const TourDetail = () => {
               <p className="text-lg text-gray-600">{tour.subtitle}</p>
             </div>
 
-            {/* Price */}
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-sm font-bold text-red-500 bg-red-50 px-2 py-1 rounded">
-                {tour.discountRate}% OFF
-              </span>
-              <span className="text-sm text-gray-500 line-through">${tour.originalPrice}</span>
-              <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
-              <span className="text-gray-600">per person</span>
+            {/* Price - Updated Layout */}
+            <div className="mb-6">
+              <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold text-red-500">{tour.discountRate}%</span>
+                <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
+              </div>
             </div>
 
             {/* Highlights */}
@@ -551,14 +549,11 @@ const TourDetail = () => {
               <Card className="shadow-lg">
                 <CardHeader className="pb-4">
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <span className="text-sm text-gray-500 line-through">${tour.originalPrice}</span>
-                      <span className="text-sm font-bold text-red-500 bg-red-50 px-2 py-1 rounded">
-                        {tour.discountRate}% OFF
-                      </span>
+                    <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      <span className="text-xl font-bold text-red-500">{tour.discountRate}%</span>
+                      <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
                     </div>
-                    <div className="text-3xl font-bold text-blue-600 mb-1">${tour.price}</div>
-                    <div className="text-sm text-gray-600">per person</div>
                   </div>
                 </CardHeader>
                 <CardContent>
