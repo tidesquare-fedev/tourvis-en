@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import TourDetail from "./pages/TourDetail";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import ReservationLookup from "./pages/ReservationLookup";
-import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +21,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/tour/:id" element={<TourDetail />} />
-          <Route path="/payment" element={<Payment />} />
           <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           <Route path="/reservation-lookup" element={<ReservationLookup />} />
           <Route path="*" element={<NotFound />} />
