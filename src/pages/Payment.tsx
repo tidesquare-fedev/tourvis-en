@@ -159,7 +159,7 @@ const Payment = () => {
             {/* Terms and Conditions */}
             <Card>
               <CardHeader>
-                <CardTitle>Terms & Conditions</CardTitle>
+                <CardTitle>Cancellation & Refund Policy</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -176,7 +176,7 @@ const Payment = () => {
                     <Checkbox 
                       id="terms" 
                       checked={agreedToTerms}
-                      onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                      onCheckedChange={(checked) => setAgreedToTerms(!!checked)}
                     />
                     <Label htmlFor="terms" className="text-sm">
                       I agree to the terms and conditions and cancellation policy
@@ -188,7 +188,7 @@ const Payment = () => {
 
             <Button 
               onClick={handlePayment} 
-              className="w-full" 
+              className="w-full bg-cyan-400 hover:bg-cyan-500 text-white" 
               size="lg"
               disabled={!agreedToTerms}
             >
@@ -200,35 +200,45 @@ const Payment = () => {
           <div className="space-y-6">
             <Card>
               <CardHeader>
+                <CardTitle>Product Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <img 
+                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80"
+                    alt="Tour"
+                    className="w-20 h-16 object-cover rounded-lg"
+                  />
+                  <div>
+                    <h4 className="font-semibold text-lg">{bookingData.tour.title}</h4>
+                    <p className="text-gray-600">
+                      Date: {bookingData.date ? format(new Date(bookingData.date), "PPP") : "Friday, July 18, 2025"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold text-lg">{bookingData.tour.title}</h4>
-                  <p className="text-gray-600">
-                    Date: {bookingData.date ? format(new Date(bookingData.date), "PPP") : "Not selected"}
-                  </p>
-                </div>
-                
-                <Separator />
-                
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>Adults ({bookingData.adults})</span>
-                    <span>${bookingData.tour.price * bookingData.adults}</span>
+                    <span>Product Price</span>
+                    <span>${bookingData.tour.price}</span>
                   </div>
-                  {bookingData.children > 0 && (
-                    <div className="flex justify-between">
-                      <span>Children ({bookingData.children})</span>
-                      <span>${bookingData.tour.price * bookingData.children}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between">
+                    <span>Quantity</span>
+                    <span>{bookingData.adults + bookingData.children}</span>
+                  </div>
                 </div>
                 
                 <Separator />
                 
                 <div className="flex justify-between text-lg font-semibold">
-                  <span>Total</span>
+                  <span>Total Amount</span>
                   <span>${bookingData.totalAmount}</span>
                 </div>
               </CardContent>

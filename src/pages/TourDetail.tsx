@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { addMonths, format } from "date-fns";
 import { ko } from "date-fns/locale";
-import BookingForm from "@/components/BookingForm";
 
 const TourDetail = () => {
   const { id } = useParams();
@@ -124,7 +123,7 @@ const TourDetail = () => {
   };
 
   const handleBooking = () => {
-    navigate(`/booking-confirmation?tour=${tour.id}`);
+    navigate(`/booking-info?tour=${id}`);
   };
 
   // Group images into pairs for the carousel
@@ -558,11 +557,9 @@ const TourDetail = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <BookingForm tour={{ id: tour.id, title: tour.title, price: tour.price }}>
-                    <Button className="w-full" size="lg">
-                      Book Now
-                    </Button>
-                  </BookingForm>
+                  <Button onClick={handleBooking} className="w-full" size="lg">
+                    Book Now
+                  </Button>
                 </CardContent>
               </Card>
             </div>
