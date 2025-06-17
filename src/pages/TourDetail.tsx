@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { addMonths, format } from "date-fns";
 import { ko } from "date-fns/locale";
+import BookingForm from "@/components/BookingForm";
 
 const TourDetail = () => {
   const { id } = useParams();
@@ -557,9 +558,11 @@ const TourDetail = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button onClick={handleBooking} className="w-full" size="lg">
-                    Book Now
-                  </Button>
+                  <BookingForm tour={{ id: tour.id, title: tour.title, price: tour.price }}>
+                    <Button className="w-full" size="lg">
+                      Book Now
+                    </Button>
+                  </BookingForm>
                 </CardContent>
               </Card>
             </div>
