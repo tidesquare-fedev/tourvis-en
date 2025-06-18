@@ -94,6 +94,11 @@ const mockInquiryDetails: { [key: string]: InquiryDetail } = {
   }
 };
 
+// 전역 세션 변수 - InquiryList와 동일한 참조 사용
+declare global {
+  var currentSession: { author: string; password: string } | null;
+}
+
 const InquiryDetail = () => {
   const { id } = useParams<{ id: string }>();
   const inquiry = id ? mockInquiryDetails[id] : null;

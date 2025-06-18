@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,7 +85,6 @@ const InquiryList = () => {
 
   // 컴포넌트 마운트 시 세션 확인
   useEffect(() => {
-    // inquiry 관련 페이지에서 왔는지 확인 (정확한 페이지만 체크)
     const previousPath = sessionStorage.getItem('previousPath');
     const currentPath = location.pathname;
     
@@ -95,33 +92,41 @@ const InquiryList = () => {
     console.log('Current path:', currentPath);
     console.log('Current session:', currentSession);
     
-    // inquiry 관련 페이지 간의 직접적인 이동만 허용 (inquiry-list, inquiry-detail, inquiry)
-    const isFromInquiryPage = previousPath && (
-      previousPath === '/inquiry-list' || 
-      previousPath.startsWith('/inquiry-detail/') || 
-      previousPath === '/inquiry'
-    );
+    // inquiry 관련 페이지들 정의
+    const inquiryPages = ['/inquiry-list', '/inquiry'];
+    const isFromInquiryDetail = previousPath && previousPath.startsWith('/inquiry-detail/');
+    const isFromInquiryPage = previousPath && (inquiryPages.includes(previousPath) || isFromInquiryDetail);
     
-    const isToInquiryPage = currentPath === '/inquiry-list' || 
-                           currentPath.startsWith('/inquiry-detail/') || 
-                           currentPath === '/inquiry';
+    const isToInquiryDetail = currentPath.startsWith('/inquiry-detail/');
+    const isToInquiryPage = inquiryPages.includes(currentPath) || isToInquiryDetail;
     
-    // inquiry 관련 페이지에서 inquiry 관련 페이지로 이동했고 세션이 있으면 자동 로그인
+    // 1. inquiry 관련 페이지 간 이동 시 세션 유지
     if (isFromInquiryPage && isToInquiryPage && currentSession) {
+      console.log('Maintaining session between inquiry pages');
       const success = authenticateAndLoadInquiries(currentSession.author, currentSession.password);
       if (success) {
         setIsAuthenticated(true);
       } else {
+        console.log('Session validation failed, clearing session');
         currentSession = null;
       }
-    } else if (!isFromInquiryPage) {
-      // inquiry 관련 페이지가 아닌 곳에서 왔으면 세션 초기화
+    } 
+    // 2. inquiry 관련 페이지가 아닌 곳에서 온 경우 세션 초기화
+    else if (previousPath && !isFromInquiryPage && isToInquiryPage) {
+      console.log('Coming from non-inquiry page, clearing session');
       currentSession = null;
+      setIsAuthenticated(false);
+    }
+    // 3. 직접 접근하거나 새로고침한 경우 (previousPath가 없음)
+    else if (!previousPath) {
+      console.log('Direct access or refresh, clearing session');
+      currentSession = null;
+      setIsAuthenticated(false);
     }
     
     // 현재 경로를 저장
     sessionStorage.setItem('previousPath', currentPath);
-  }, []);
+  }, [location.pathname]);
 
   const authenticateAndLoadInquiries = (author: string, password: string) => {
     // Get inquiries from localStorage first, then fall back to sample data
@@ -385,4 +390,3 @@ const InquiryList = () => {
 };
 
 export default InquiryList;
-
