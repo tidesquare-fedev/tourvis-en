@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,58 @@ interface InquiryItem {
   lastReply?: string;
 }
 
+// Sample data for testing
+const sampleInquiries: InquiryItem[] = [
+  {
+    id: "INQ-001",
+    author: "john",
+    password: "password123",
+    subject: "Question about Seoul tour package",
+    category: "Tour Package",
+    status: "pending",
+    createdAt: "2024-01-15",
+  },
+  {
+    id: "INQ-002",
+    author: "john",
+    password: "password123",
+    subject: "Cancellation policy inquiry",
+    category: "Cancellation",
+    status: "answered",
+    createdAt: "2024-01-10",
+    lastReply: "2024-01-12"
+  },
+  {
+    id: "INQ-003",
+    author: "sarah",
+    password: "mypass456",
+    subject: "Group discount availability",
+    category: "Pricing",
+    status: "closed",
+    createdAt: "2024-01-05",
+    lastReply: "2024-01-08"
+  },
+  {
+    id: "INQ-004",
+    author: "mike",
+    password: "secure789",
+    subject: "Dietary restrictions for food tour",
+    category: "Special Requirements",
+    status: "pending",
+    createdAt: "2024-01-20",
+  },
+  {
+    id: "INQ-005",
+    author: "sarah",
+    password: "mypass456",
+    subject: "Transportation from airport",
+    category: "Transportation",
+    status: "answered",
+    createdAt: "2024-01-18",
+    lastReply: "2024-01-19"
+  }
+];
+
 const InquiryList = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userInquiries, setUserInquiries] = useState<InquiryItem[]>([]);
@@ -37,12 +88,15 @@ const InquiryList = () => {
   }, []);
 
   const authenticateAndLoadInquiries = (author: string, password: string) => {
-    const inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
-    const userInquiries = inquiries.filter((inquiry: InquiryItem) => 
+    // Get inquiries from localStorage first, then fall back to sample data
+    const storedInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+    const allInquiries = [...storedInquiries, ...sampleInquiries];
+    
+    const userInquiries = allInquiries.filter((inquiry: InquiryItem) => 
       inquiry.author === author && inquiry.password === password
     );
     
-    if (userInquiries.length > 0 || inquiries.some((inquiry: InquiryItem) => 
+    if (userInquiries.length > 0 || allInquiries.some((inquiry: InquiryItem) => 
       inquiry.author === author && inquiry.password === password)) {
       setIsAuthenticated(true);
       setUserInquiries(userInquiries);
@@ -177,6 +231,13 @@ const InquiryList = () => {
                     Make Your First Inquiry
                   </Button>
                 </Link>
+              </div>
+
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-xs text-blue-700 font-medium mb-1">Test Accounts:</p>
+                <p className="text-xs text-blue-600">john / password123</p>
+                <p className="text-xs text-blue-600">sarah / mypass456</p>
+                <p className="text-xs text-blue-600">mike / secure789</p>
               </div>
             </CardContent>
           </Card>
