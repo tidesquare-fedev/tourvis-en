@@ -137,7 +137,7 @@ const InquiryList = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-lg">
                 <Lock className="w-5 h-5 mr-2" />
-                Login to View Inquiries
+                My Inquiries
               </CardTitle>
             </CardHeader>
             <CardContent>
