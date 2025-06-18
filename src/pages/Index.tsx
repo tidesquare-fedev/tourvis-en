@@ -170,6 +170,9 @@ const Index = () => {
             className="h-8"
           />
           <nav className="flex items-center space-x-6">
+            <Link to="/inquiry-list" className="text-gray-600 hover:text-blue-600 transition-colors">
+              1:1 Inquiry
+            </Link>
             <Link to="/reservation-lookup" className="text-gray-600 hover:text-blue-600 transition-colors">
               Check Reservation
             </Link>
