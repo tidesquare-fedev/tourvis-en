@@ -204,15 +204,15 @@ const BookingInfo = () => {
                             className="w-20 h-15 object-cover rounded-lg"
                           />
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-1">[Shizuoka Climb] Mt. Fuji Sunrise Viewing (Fuji-Q Highland, Oshino Shirane, Slide Photo) 1 Day Small Bus Tour</h3>
-                            <p className="text-sm text-gray-600">Usage Date: 2025.08.28 (Thu)</p>
+                            <h3 className="font-semibold text-lg mb-1">{tour.title}</h3>
+                            <p className="text-sm text-gray-600">Usage Date: Friday, July 18, 2025</p>
                           </div>
                         </div>
                         
                         <div className="space-y-4 border-t pt-4">
                           <div className="flex justify-between items-center">
                             <span className="text-gray-700">Option</span>
-                            <span className="font-medium">Shizuoka Bus Tour</span>
+                            <span className="font-medium">Jeju Mountain Tour</span>
                           </div>
                           
                           <div className="flex justify-between items-center">
@@ -223,8 +223,8 @@ const BookingInfo = () => {
                           <div className="flex justify-between items-center pt-2 border-t">
                             <span className="text-lg font-semibold">Total Product Amount</span>
                             <span className="text-lg font-bold text-right">
-                              98,000<span className="text-sm">KRW</span><br/>
-                              <span className="text-sm font-normal text-gray-600">98,000KRW</span>
+                              ${tour.price}<span className="text-sm">USD</span><br/>
+                              <span className="text-sm font-normal text-gray-600">${tour.price} USD</span>
                             </span>
                           </div>
                         </div>
