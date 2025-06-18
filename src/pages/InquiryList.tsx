@@ -93,7 +93,7 @@ const InquiryList = () => {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">My Inquiry History</h1>
             <p className="text-base sm:text-lg text-gray-600">
-              Check and manage your 1:1 inquiry history
+              Check and manage your Direct Inquiry
             </p>
           </div>
           <Link to="/inquiry">

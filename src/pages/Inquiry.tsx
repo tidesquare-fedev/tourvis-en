@@ -78,7 +78,7 @@ const Inquiry = () => {
             </Button>
           </Link>
           <div className="order-2 sm:order-2 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">1:1 Online Inquiry</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Direct Inquiry</h1>
             <p className="text-base sm:text-lg text-gray-600">
               If you have any questions, feel free to contact us anytime
             </p>

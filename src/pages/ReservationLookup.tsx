@@ -58,7 +58,7 @@ const ReservationLookup = () => {
               className="h-6 sm:h-8"
             />
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link to="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">1:1 Inquiry</Link>
+              <Link to="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Direct Inquiry</Link>
               <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
             </nav>
           </div>
