@@ -6,12 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Info } from "lucide-react";
 
 const BookingInfo = () => {
   const navigate = useNavigate();
@@ -30,6 +27,15 @@ const BookingInfo = () => {
     specialRequests: ""
   });
 
+  const [ticketUserData, setTicketUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: ""
+  });
+
+  const [sameAsTraveler, setSameAsTraveler] = useState(false);
+
   // Mock tour data - in real app, fetch based on tourId
   const tour = {
     id: tourId || "jeju-hallasan-hiking",
@@ -43,6 +49,7 @@ const BookingInfo = () => {
     // Store booking data in localStorage to pass to payment page
     localStorage.setItem("bookingData", JSON.stringify({
       ...formData,
+      ticketUser: ticketUserData,
       tour: tour,
       totalAmount: tour.price * (formData.adults + formData.children)
     }));
@@ -55,6 +62,81 @@ const BookingInfo = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleTicketUserChange = (field: string, value: any) => {
+    setTicketUserData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSameAsTravelerChange = (checked: boolean) => {
+    setSameAsTraveler(checked);
+    if (checked) {
+      setTicketUserData({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone
+      });
+    } else {
+      setTicketUserData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: ""
+      });
+    }
+  };
+
+  // Validation functions
+  const handleEnglishOnlyInput = (e: React.ChangeEvent<HTMLInputElement>, field: string, target: 'traveler' | 'ticket') => {
+    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+    if (target === 'traveler') {
+      handleInputChange(field, value);
+      if (sameAsTraveler) {
+        handleTicketUserChange(field, value);
+      }
+    } else {
+      handleTicketUserChange(field, value);
+    }
+  };
+
+  const handleTravelerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+    const names = value.split(' ');
+    handleInputChange("firstName", names[0] || "");
+    handleInputChange("lastName", names.slice(1).join(' '));
+    
+    if (sameAsTraveler) {
+      handleTicketUserChange("firstName", names[0] || "");
+      handleTicketUserChange("lastName", names.slice(1).join(' '));
+    }
+  };
+
+  const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>, target: 'traveler' | 'ticket') => {
+    const value = e.target.value.replace(/[^0-9-]/g, '');
+    if (target === 'traveler') {
+      handleInputChange("phone", value);
+      if (sameAsTraveler) {
+        handleTicketUserChange("phone", value);
+      }
+    } else {
+      handleTicketUserChange("phone", value);
+    }
+  };
+
+  const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>, target: 'traveler' | 'ticket') => {
+    const value = e.target.value;
+    if (target === 'traveler') {
+      handleInputChange("email", value);
+      if (sameAsTraveler) {
+        handleTicketUserChange("email", value);
+      }
+    } else {
+      handleTicketUserChange("email", value);
+    }
   };
 
   return (
@@ -93,10 +175,58 @@ const BookingInfo = () => {
                 alt="Tour"
                 className="w-20 h-16 object-cover rounded-lg"
               />
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold">{tour.title}</h3>
-                <p className="text-sm text-gray-600">Scheduled Date: Friday, July 18, 2025</p>
+                <p className="text-sm text-gray-600">Usage Date: Friday, July 18, 2025</p>
               </div>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Info className="h-4 w-4" />
+                    Option Information
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[80vh]">
+                  <SheetHeader>
+                    <SheetTitle>Option Information</SheetTitle>
+                    <SheetDescription>
+                      Detailed information about your tour options
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">Tour Inclusions</h4>
+                      <ul className="space-y-1 text-sm text-gray-600">
+                        <li>• Professional English-speaking guide</li>
+                        <li>• Transportation to/from hiking trail</li>
+                        <li>• Safety equipment and hiking gear</li>
+                        <li>• Light breakfast and refreshments</li>
+                        <li>• First aid kit and emergency support</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">What to Bring</h4>
+                      <ul className="space-y-1 text-sm text-gray-600">
+                        <li>• Comfortable hiking shoes</li>
+                        <li>• Weather-appropriate clothing</li>
+                        <li>• Water bottle</li>
+                        <li>• Camera for stunning sunrise photos</li>
+                        <li>• Personal medications if needed</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Important Notes</h4>
+                      <ul className="space-y-1 text-sm text-gray-600">
+                        <li>• Moderate fitness level required</li>
+                        <li>• Tour duration: 6-7 hours</li>
+                        <li>• Early morning departure (3:30 AM)</li>
+                        <li>• Weather dependent - may be cancelled for safety</li>
+                        <li>• Maximum group size: 12 people</li>
+                      </ul>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </CardContent>
         </Card>
@@ -110,51 +240,47 @@ const BookingInfo = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="travelerName">Traveler Name</Label>
+                <Label htmlFor="travelerName">Traveler Name (English only)</Label>
                 <Input
                   id="travelerName"
-                  placeholder="LEEBAEKDAHEOSTO"
+                  placeholder="HONG GILDONG"
                   value={`${formData.firstName} ${formData.lastName}`.trim()}
-                  onChange={(e) => {
-                    const names = e.target.value.split(' ');
-                    handleInputChange("firstName", names[0] || "");
-                    handleInputChange("lastName", names.slice(1).join(' '));
-                  }}
+                  onChange={handleTravelerNameChange}
                   required
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">First Name (English only)</Label>
                   <Input
                     id="firstName"
                     placeholder="HONG"
                     value={formData.firstName}
-                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                    onChange={(e) => handleEnglishOnlyInput(e, "firstName", "traveler")}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">Last Name (English only)</Label>
                   <Input
                     id="lastName"
                     placeholder="GILDONG"
                     value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    onChange={(e) => handleEnglishOnlyInput(e, "lastName", "traveler")}
                     required
                   />
                 </div>
               </div>
               
               <div>
-                <Label htmlFor="phone">Mobile Number</Label>
+                <Label htmlFor="phone">Mobile Number (Numbers only)</Label>
                 <Input
                   id="phone"
                   type="tel"
                   placeholder="010-5042-5138"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  onChange={(e) => handlePhoneInput(e, "traveler")}
                   required
                 />
               </div>
@@ -164,9 +290,80 @@ const BookingInfo = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="lkil@tidesquare.com"
+                  placeholder="example@email.com"
                   value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  onChange={(e) => handleEmailInput(e, "traveler")}
+                  required
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Ticket User Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ticket User Information *</CardTitle>
+              <p className="text-sm text-gray-600">Enter the ticket user's information (person who will use the ticket).</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="sameAsTraveler" 
+                  checked={sameAsTraveler}
+                  onCheckedChange={handleSameAsTravelerChange}
+                />
+                <Label htmlFor="sameAsTraveler" className="text-sm">
+                  Same as Traveler Information
+                </Label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="ticketFirstName">First Name (English only)</Label>
+                  <Input
+                    id="ticketFirstName"
+                    placeholder="HONG"
+                    value={ticketUserData.firstName}
+                    onChange={(e) => handleEnglishOnlyInput(e, "firstName", "ticket")}
+                    disabled={sameAsTraveler}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ticketLastName">Last Name (English only)</Label>
+                  <Input
+                    id="ticketLastName"
+                    placeholder="GILDONG"
+                    value={ticketUserData.lastName}
+                    onChange={(e) => handleEnglishOnlyInput(e, "lastName", "ticket")}
+                    disabled={sameAsTraveler}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="ticketPhone">Mobile Number (Numbers only)</Label>
+                <Input
+                  id="ticketPhone"
+                  type="tel"
+                  placeholder="010-5042-5138"
+                  value={ticketUserData.phone}
+                  onChange={(e) => handlePhoneInput(e, "ticket")}
+                  disabled={sameAsTraveler}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="ticketEmail">Email</Label>
+                <Input
+                  id="ticketEmail"
+                  type="email"
+                  placeholder="example@email.com"
+                  value={ticketUserData.email}
+                  onChange={(e) => handleEmailInput(e, "ticket")}
+                  disabled={sameAsTraveler}
                   required
                 />
               </div>
@@ -191,7 +388,7 @@ const BookingInfo = () => {
                   id="specialRequests"
                   value={formData.specialRequests}
                   onChange={(e) => handleInputChange("specialRequests", e.target.value)}
-                  placeholder="업체에 요청하실 내용을 입력해 주세요."
+                  placeholder="Please enter any special requests or requirements."
                   rows={4}
                 />
               </div>
