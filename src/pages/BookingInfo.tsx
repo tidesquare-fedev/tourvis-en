@@ -174,8 +174,8 @@ const BookingInfo = () => {
         alert("Please fill in all required fields");
         return;
       }
-      if (!validatePhoneNumber(formData.phone, formData.countryCode)) {
-        alert("Please enter a valid phone number for the selected country");
+      if (!formData.phone || formData.phone.length < 8) {
+        alert("Please enter a valid phone number");
         return;
       }
       setCurrentStep(2);
@@ -185,7 +185,7 @@ const BookingInfo = () => {
         alert("Please fill in all ticket user information");
         return;
       }
-      if (!validatePhoneNumber(ticketUserData.phone, ticketUserData.countryCode)) {
+      if (!ticketUserData.phone || ticketUserData.phone.length < 8) {
         alert("Please enter a valid phone number for ticket user");
         return;
       }
