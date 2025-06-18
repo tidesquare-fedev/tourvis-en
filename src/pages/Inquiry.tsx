@@ -29,8 +29,8 @@ const Inquiry = () => {
     // Simulate API call
     setTimeout(() => {
       toast({
-        title: "문의가 접수되었습니다",
-        description: "24시간 내에 답변 드리겠습니다.",
+        title: "Inquiry has been submitted",
+        description: "We will respond within 24 hours.",
       });
       setLoading(false);
       // Reset form
@@ -54,7 +54,11 @@ const Inquiry = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">KoreaTours</h1>
+          <img 
+            src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
+            alt="KoreaTours" 
+            className="h-8"
+          />
           <nav className="flex items-center space-x-6">
             <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
             <Link to="/reservation-lookup" className="text-gray-600 hover:text-blue-600 transition-colors">Reservation</Link>
@@ -67,13 +71,13 @@ const Inquiry = () => {
           <Link to="/reservation-lookup" className="mr-4">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              뒤로
+              Back
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">1:1 온라인 문의</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">1:1 Online Inquiry</h1>
             <p className="text-lg text-gray-600">
-              궁금한 사항이 있으시면 언제든 문의해주세요
+              Please feel free to contact us with any questions
             </p>
           </div>
         </div>
@@ -82,25 +86,25 @@ const Inquiry = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <MessageCircle className="w-5 h-5 mr-2" />
-              문의하기
+              Make Inquiry
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name">이름 *</Label>
+                  <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
                     value={inquiryData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="홍길동"
+                    placeholder="John Doe"
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="email">이메일 *</Label>
+                  <Label htmlFor="email">Email *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -113,56 +117,56 @@ const Inquiry = () => {
               </div>
 
               <div>
-                <Label htmlFor="phone">연락처</Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
                   value={inquiryData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="010-1234-5678"
+                  placeholder="+1-555-123-4567"
                 />
               </div>
 
               <div>
-                <Label htmlFor="category">문의 유형 *</Label>
+                <Label htmlFor="category">Inquiry Type *</Label>
                 <Select value={inquiryData.category} onValueChange={(value) => handleInputChange("category", value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="문의 유형을 선택해주세요" />
+                    <SelectValue placeholder="Please select inquiry type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="reservation">예약 문의</SelectItem>
-                    <SelectItem value="cancel">취소/환불 문의</SelectItem>
-                    <SelectItem value="change">예약 변경 문의</SelectItem>
-                    <SelectItem value="product">상품 문의</SelectItem>
-                    <SelectItem value="other">기타 문의</SelectItem>
+                    <SelectItem value="reservation">Reservation Inquiry</SelectItem>
+                    <SelectItem value="cancel">Cancellation/Refund Inquiry</SelectItem>
+                    <SelectItem value="change">Reservation Change Inquiry</SelectItem>
+                    <SelectItem value="product">Product Inquiry</SelectItem>
+                    <SelectItem value="other">Other Inquiry</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label htmlFor="subject">제목 *</Label>
+                <Label htmlFor="subject">Subject *</Label>
                 <Input
                   id="subject"
                   value={inquiryData.subject}
                   onChange={(e) => handleInputChange("subject", e.target.value)}
-                  placeholder="문의 제목을 입력해주세요"
+                  placeholder="Please enter inquiry subject"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="message">문의 내용 *</Label>
+                <Label htmlFor="message">Message *</Label>
                 <Textarea
                   id="message"
                   value={inquiryData.message}
                   onChange={(e) => handleInputChange("message", e.target.value)}
-                  placeholder="문의 내용을 자세히 작성해주세요"
+                  placeholder="Please write your inquiry in detail"
                   rows={6}
                   required
                 />
               </div>
               
               <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#01c5fd' }}>
-                {loading ? "문의 접수 중..." : "문의하기"}
+                {loading ? "Submitting Inquiry..." : "Submit Inquiry"}
               </Button>
             </form>
           </CardContent>
@@ -170,13 +174,13 @@ const Inquiry = () => {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>문의 안내</CardTitle>
+            <CardTitle>Inquiry Information</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm text-gray-600">
-              <p>• 평일 AM 10:00 - PM 06:00 (주말 · 공휴일 휴무)</p>
-              <p>• 문의 답변은 접수 후 24시간 이내에 등록하신 이메일로 회신됩니다</p>
-              <p>• 긴급한 사항은 고객센터 전화(+82-2-1234-5678)로 문의해주세요</p>
+              <p>• Weekdays AM 10:00 - PM 06:00 (Closed on weekends and holidays)</p>
+              <p>• Inquiry responses will be sent to your registered email within 24 hours</p>
+              <p>• For urgent matters, please contact customer service (+82-2-1234-5678)</p>
             </div>
           </CardContent>
         </Card>
