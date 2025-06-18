@@ -1,37 +1,26 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Phone, Mail } from "lucide-react";
+import { MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const CustomerService = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>1:1 Online Inquiry</CardTitle>
+        <CardTitle>1:1 온라인 문의</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Need help with your reservation? Our customer service team is here to assist you.
+            평일 AM 10:00 - PM 06:00 주말 · 공휴일 휴무
           </p>
-          <div className="grid gap-3">
-            <Button variant="outline" className="flex items-center justify-start space-x-2">
+          <Link to="/inquiry">
+            <Button variant="outline" className="flex items-center justify-center space-x-2 w-full">
               <MessageCircle className="w-4 h-4" />
-              <span>Start Live Chat</span>
+              <span>1:1 문의하기</span>
             </Button>
-            <Button variant="outline" className="flex items-center justify-start space-x-2">
-              <Phone className="w-4 h-4" />
-              <span>Call Us: +82-2-1234-5678</span>
-            </Button>
-            <Button variant="outline" className="flex items-center justify-start space-x-2">
-              <Mail className="w-4 h-4" />
-              <span>Email: support@koreatours.com</span>
-            </Button>
-          </div>
-          <div className="text-xs text-gray-500 mt-4">
-            <p>Business Hours: 9:00 AM - 6:00 PM (KST)</p>
-            <p>Response Time: Within 24 hours</p>
-          </div>
+          </Link>
         </div>
       </CardContent>
     </Card>

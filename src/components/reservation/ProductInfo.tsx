@@ -20,9 +20,10 @@ interface Reservation {
 
 interface ProductInfoProps {
   reservation: Reservation;
+  hidePrice?: boolean;
 }
 
-export const ProductInfo = ({ reservation }: ProductInfoProps) => {
+export const ProductInfo = ({ reservation, hidePrice = false }: ProductInfoProps) => {
   return (
     <Card>
       <CardHeader>
@@ -41,17 +42,25 @@ export const ProductInfo = ({ reservation }: ProductInfoProps) => {
             <h3 className="font-semibold text-lg mb-2">{reservation.tourTitle}</h3>
             <div className="space-y-1 text-sm text-gray-600">
               <div className="flex justify-between">
-                <span>Price per person:</span>
-                <span>${reservation.tourPrice}</span>
+                <span>Usage Date:</span>
+                <span>{reservation.date}</span>
               </div>
               <div className="flex justify-between">
                 <span>Participants:</span>
-                <span>{reservation.participants} people</span>
+                <span>{reservation.participants} Travelers</span>
               </div>
-              <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t">
-                <span>Total Amount:</span>
-                <span>${reservation.totalAmount}</span>
-              </div>
+              {!hidePrice && (
+                <>
+                  <div className="flex justify-between">
+                    <span>Price per person:</span>
+                    <span>${reservation.tourPrice}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t">
+                    <span>Total Amount:</span>
+                    <span>${reservation.totalAmount}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

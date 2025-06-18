@@ -10,6 +10,7 @@ import BookingInfo from "./pages/BookingInfo";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import ReservationLookup from "./pages/ReservationLookup";
 import Payment from "./pages/Payment";
+import Inquiry from "./pages/Inquiry";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/payment" element={<Payment />} />
           <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           <Route path="/reservation-lookup" element={<ReservationLookup />} />
+          <Route path="/inquiry" element={<Inquiry />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

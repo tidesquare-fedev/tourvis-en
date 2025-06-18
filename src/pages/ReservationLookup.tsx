@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import { ReservationHeader } from "@/components/reservation/ReservationHeader";
 import { ProductInfo } from "@/components/reservation/ProductInfo";
 import { PaymentInfo } from "@/components/reservation/PaymentInfo";
 import { CustomerService } from "@/components/reservation/CustomerService";
-import { ContactInfo } from "@/components/reservation/ContactInfo";
 
 interface Reservation {
   reservationNumber: string;
@@ -149,11 +147,18 @@ const ReservationLookup = () => {
         {/* Reservation Details */}
         {reservation && (
           <div className="space-y-6">
-            <ReservationHeader reservation={reservation} />
-            <ProductInfo reservation={reservation} />
+            {/* 예약 내역 헤더 */}
+            <div className="text-left">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">예약 내역</h2>
+              <div className="text-gray-600">
+                <p>예약번호: {reservation.reservationNumber}</p>
+                <p>예약일: {reservation.bookingDate}</p>
+              </div>
+            </div>
+
+            <ProductInfo reservation={reservation} hidePrice={true} />
             <PaymentInfo reservation={reservation} />
             <CustomerService />
-            <ContactInfo reservation={reservation} />
 
             {/* Cancel Button */}
             <div className="text-center">
