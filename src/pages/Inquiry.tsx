@@ -29,8 +29,8 @@ const Inquiry = () => {
     // Simulate API call
     setTimeout(() => {
       toast({
-        title: "문의가 접수되었습니다",
-        description: "24시간 내에 답변드리겠습니다.",
+        title: "Inquiry Submitted",
+        description: "We will respond within 24 hours.",
       });
       setLoading(false);
       // Reset form
@@ -61,8 +61,8 @@ const Inquiry = () => {
               className="h-6 sm:h-8"
             />
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
-              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">예약 확인</Link>
+              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
             </nav>
           </div>
         </div>
@@ -74,13 +74,13 @@ const Inquiry = () => {
           <Link to="/inquiry-list" className="order-1 sm:order-1">
             <Button variant="ghost" size="sm" className="flex items-center">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              돌아가기
+              Back
             </Button>
           </Link>
           <div className="order-2 sm:order-2 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">1:1 온라인 문의</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">1:1 Online Inquiry</h1>
             <p className="text-base sm:text-lg text-gray-600">
-              궁금한 것이 있으시면 언제든지 문의해 주세요
+              If you have any questions, feel free to contact us anytime
             </p>
           </div>
         </div>
@@ -89,26 +89,26 @@ const Inquiry = () => {
           <CardHeader>
             <CardTitle className="flex items-center text-base sm:text-lg">
               <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              문의하기
+              Make Inquiry
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name" className="text-sm sm:text-base">이름 *</Label>
+                  <Label htmlFor="name" className="text-sm sm:text-base">Name *</Label>
                   <Input
                     id="name"
                     value={inquiryData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="홍길동"
+                    placeholder="John Doe"
                     required
                     className="text-sm sm:text-base"
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="email" className="text-sm sm:text-base">이메일 *</Label>
+                  <Label htmlFor="email" className="text-sm sm:text-base">Email *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -122,7 +122,7 @@ const Inquiry = () => {
               </div>
 
               <div>
-                <Label htmlFor="phone" className="text-sm sm:text-base">전화번호</Label>
+                <Label htmlFor="phone" className="text-sm sm:text-base">Phone Number</Label>
                 <Input
                   id="phone"
                   value={inquiryData.phone}
@@ -133,40 +133,40 @@ const Inquiry = () => {
               </div>
 
               <div>
-                <Label htmlFor="category" className="text-sm sm:text-base">문의 유형 *</Label>
+                <Label htmlFor="category" className="text-sm sm:text-base">Inquiry Type *</Label>
                 <Select value={inquiryData.category} onValueChange={(value) => handleInputChange("category", value)}>
                   <SelectTrigger className="text-sm sm:text-base">
-                    <SelectValue placeholder="문의 유형을 선택해주세요" />
+                    <SelectValue placeholder="Please select inquiry type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="reservation">예약 문의</SelectItem>
-                    <SelectItem value="cancel">취소/환불 문의</SelectItem>
-                    <SelectItem value="change">예약 변경 문의</SelectItem>
-                    <SelectItem value="product">상품 문의</SelectItem>
-                    <SelectItem value="other">기타 문의</SelectItem>
+                    <SelectItem value="reservation">Reservation Inquiry</SelectItem>
+                    <SelectItem value="cancel">Cancellation/Refund Inquiry</SelectItem>
+                    <SelectItem value="change">Reservation Change Inquiry</SelectItem>
+                    <SelectItem value="product">Product Inquiry</SelectItem>
+                    <SelectItem value="other">Other Inquiry</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label htmlFor="subject" className="text-sm sm:text-base">제목 *</Label>
+                <Label htmlFor="subject" className="text-sm sm:text-base">Subject *</Label>
                 <Input
                   id="subject"
                   value={inquiryData.subject}
                   onChange={(e) => handleInputChange("subject", e.target.value)}
-                  placeholder="문의 제목을 입력해주세요"
+                  placeholder="Please enter inquiry subject"
                   required
                   className="text-sm sm:text-base"
                 />
               </div>
 
               <div>
-                <Label htmlFor="message" className="text-sm sm:text-base">내용 *</Label>
+                <Label htmlFor="message" className="text-sm sm:text-base">Message *</Label>
                 <Textarea
                   id="message"
                   value={inquiryData.message}
                   onChange={(e) => handleInputChange("message", e.target.value)}
-                  placeholder="문의 내용을 자세히 작성해주세요"
+                  placeholder="Please describe your inquiry in detail"
                   rows={6}
                   required
                   className="text-sm sm:text-base"
@@ -174,7 +174,7 @@ const Inquiry = () => {
               </div>
               
               <Button type="submit" className="w-full text-sm sm:text-base" disabled={loading} style={{ backgroundColor: '#01c5fd' }}>
-                {loading ? "문의 접수 중..." : "문의 접수"}
+                {loading ? "Submitting Inquiry..." : "Submit Inquiry"}
               </Button>
             </form>
           </CardContent>
@@ -183,13 +183,13 @@ const Inquiry = () => {
         {/* Help Section - Responsive */}
         <Card className="mt-4 sm:mt-6">
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">문의 안내</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Inquiry Information</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-xs sm:text-sm text-gray-600">
-              <p>• 운영시간: 평일 오전 10:00 - 오후 06:00 (주말 및 공휴일 휴무)</p>
-              <p>• 문의 답변은 등록된 이메일로 24시간 내에 발송됩니다</p>
-              <p>• 긴급한 사항은 고객센터로 연락해 주세요 (+82-2-1234-5678)</p>
+              <p>• Business Hours: Weekdays 10:00 AM - 06:00 PM (Closed on weekends and holidays)</p>
+              <p>• Inquiry responses are sent to your registered email within 24 hours</p>
+              <p>• For urgent matters, please contact our customer service (+82-2-1234-5678)</p>
             </div>
           </CardContent>
         </Card>

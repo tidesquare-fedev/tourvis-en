@@ -84,8 +84,8 @@ const InquiryDetail = () => {
                 className="h-6 sm:h-8"
               />
               <nav className="flex items-center space-x-3 sm:space-x-6">
-                <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
-                <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">예약 확인</Link>
+                <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+                <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
               </nav>
             </div>
           </div>
@@ -93,10 +93,10 @@ const InquiryDetail = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <Card>
             <CardContent className="p-6 sm:p-8 text-center">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">문의를 찾을 수 없습니다</h2>
-              <p className="text-sm sm:text-base text-gray-600 mb-4">요청하신 문의가 존재하지 않습니다.</p>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Inquiry Not Found</h2>
+              <p className="text-sm sm:text-base text-gray-600 mb-4">The requested inquiry does not exist.</p>
               <Link to="/inquiry-list">
-                <Button className="w-full sm:w-auto">문의 목록으로 돌아가기</Button>
+                <Button className="w-full sm:w-auto">Back to Inquiry List</Button>
               </Link>
             </CardContent>
           </Card>
@@ -121,13 +121,13 @@ const InquiryDetail = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case "pending":
-        return "대기중";
+        return "Pending";
       case "answered":
-        return "답변완료";
+        return "Answered";
       case "closed":
-        return "종료";
+        return "Closed";
       default:
-        return "알 수 없음";
+        return "Unknown";
     }
   };
 
@@ -143,8 +143,8 @@ const InquiryDetail = () => {
               className="h-6 sm:h-8"
             />
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
-              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">예약 확인</Link>
+              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
             </nav>
           </div>
         </div>
@@ -156,13 +156,13 @@ const InquiryDetail = () => {
           <Link to="/inquiry-list" className="order-1 sm:order-1">
             <Button variant="ghost" size="sm" className="flex items-center">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              목록으로
+              Back to List
             </Button>
           </Link>
           <div className="order-2 sm:order-2 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">문의 상세</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Inquiry Details</h1>
             <p className="text-base sm:text-lg text-gray-600">
-              문의 내용과 답변을 확인하세요
+              View inquiry content and responses
             </p>
           </div>
         </div>
@@ -185,25 +185,25 @@ const InquiryDetail = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="space-y-2">
                 <p className="text-xs sm:text-sm text-gray-600">
-                  <strong>문의 번호:</strong> {inquiry.id}
+                  <strong>Inquiry Number:</strong> {inquiry.id}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-600">
-                  <strong>카테고리:</strong> {inquiry.category}
+                  <strong>Category:</strong> {inquiry.category}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-600">
-                  <strong>작성일:</strong> {inquiry.createdAt}
+                  <strong>Created:</strong> {inquiry.createdAt}
                 </p>
               </div>
               <div className="space-y-2">
                 <p className="text-xs sm:text-sm text-gray-600">
-                  <strong>이름:</strong> {inquiry.name}
+                  <strong>Name:</strong> {inquiry.name}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-600 break-all">
-                  <strong>이메일:</strong> {inquiry.email}
+                  <strong>Email:</strong> {inquiry.email}
                 </p>
                 {inquiry.phone && (
                   <p className="text-xs sm:text-sm text-gray-600">
-                    <strong>전화번호:</strong> {inquiry.phone}
+                    <strong>Phone:</strong> {inquiry.phone}
                   </p>
                 )}
               </div>
@@ -216,7 +216,7 @@ const InquiryDetail = () => {
           <CardHeader>
             <CardTitle className="flex items-center text-base sm:text-lg">
               <User className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              내 문의 내용
+              My Inquiry
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -230,15 +230,15 @@ const InquiryDetail = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-base sm:text-lg">
                 <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                답변
+                Response
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-blue-50 p-3 sm:p-4 rounded-lg mb-4">
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 break-words">{inquiry.reply.message}</p>
                 <div className="text-xs sm:text-sm text-gray-600">
-                  <p><strong>답변자:</strong> {inquiry.reply.repliedBy}</p>
-                  <p><strong>답변일:</strong> {inquiry.reply.repliedAt}</p>
+                  <p><strong>Responded by:</strong> {inquiry.reply.repliedBy}</p>
+                  <p><strong>Response Date:</strong> {inquiry.reply.repliedAt}</p>
                 </div>
               </div>
             </CardContent>
@@ -247,9 +247,9 @@ const InquiryDetail = () => {
           <Card className="mb-4 sm:mb-6">
             <CardContent className="p-6 sm:p-8 text-center">
               <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">답변 대기중</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Waiting for Response</h3>
               <p className="text-sm sm:text-base text-gray-600">
-                문의를 접수했습니다. 24시간 내에 답변드리겠습니다.
+                Your inquiry has been received. We will respond within 24 hours.
               </p>
             </CardContent>
           </Card>
@@ -258,10 +258,10 @@ const InquiryDetail = () => {
         {/* Action Buttons - Responsive */}
         <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
           <Link to="/inquiry-list" className="w-full sm:w-auto">
-            <Button variant="outline" className="w-full sm:w-auto">문의 목록으로</Button>
+            <Button variant="outline" className="w-full sm:w-auto">Back to Inquiry List</Button>
           </Link>
           <Link to="/inquiry" className="w-full sm:w-auto">
-            <Button style={{ backgroundColor: '#01c5fd' }} className="w-full sm:w-auto">새 문의하기</Button>
+            <Button style={{ backgroundColor: '#01c5fd' }} className="w-full sm:w-auto">New Inquiry</Button>
           </Link>
         </div>
       </div>

@@ -23,8 +23,8 @@ const ReservationLookup = () => {
     
     if (!searchData.reservationNumber || !searchData.email) {
       toast({
-        title: "정보 누락",
-        description: "예약번호와 이메일 주소를 모두 입력해주세요",
+        title: "Missing Information",
+        description: "Please enter both reservation number and email address",
         variant: "destructive"
       });
       setLoading(false);
@@ -34,8 +34,8 @@ const ReservationLookup = () => {
     // Simulate API call and navigate to details page
     setTimeout(() => {
       toast({
-        title: "예약 정보 확인",
-        description: "예약 정보를 성공적으로 조회했습니다",
+        title: "Reservation Found",
+        description: "Successfully retrieved reservation information",
       });
       setLoading(false);
       navigate('/reservation-details');
@@ -58,8 +58,8 @@ const ReservationLookup = () => {
               className="h-6 sm:h-8"
             />
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link to="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">1:1 문의</Link>
-              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
+              <Link to="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">1:1 Inquiry</Link>
+              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
             </nav>
           </div>
         </div>
@@ -68,9 +68,9 @@ const ReservationLookup = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Page Header - Responsive */}
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">예약 확인</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Check Reservation</h1>
           <p className="text-base sm:text-lg text-gray-600">
-            예약번호와 이메일 주소를 입력하여 예약 정보를 확인하세요
+            Enter your reservation number and email address to check your booking information
           </p>
         </div>
 
@@ -79,25 +79,25 @@ const ReservationLookup = () => {
           <CardHeader>
             <CardTitle className="flex items-center text-base sm:text-lg">
               <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              예약 조회
+              Reservation Search
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSearch} className="space-y-4">
               <div>
-                <Label htmlFor="reservationNumber" className="text-sm sm:text-base">예약번호</Label>
+                <Label htmlFor="reservationNumber" className="text-sm sm:text-base">Reservation Number</Label>
                 <Input
                   id="reservationNumber"
                   value={searchData.reservationNumber}
                   onChange={(e) => handleInputChange("reservationNumber", e.target.value)}
-                  placeholder="예: KT12345678"
+                  placeholder="e.g., KT12345678"
                   required
                   className="text-sm sm:text-base"
                 />
               </div>
               
               <div>
-                <Label htmlFor="email" className="text-sm sm:text-base">이메일 주소</Label>
+                <Label htmlFor="email" className="text-sm sm:text-base">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -110,7 +110,7 @@ const ReservationLookup = () => {
               </div>
               
               <Button type="submit" className="w-full text-sm sm:text-base" disabled={loading} style={{ backgroundColor: '#01c5fd' }}>
-                {loading ? "조회 중..." : "예약 조회"}
+                {loading ? "Searching..." : "Search Reservation"}
               </Button>
             </form>
           </CardContent>
@@ -119,23 +119,23 @@ const ReservationLookup = () => {
         {/* Help Section - Responsive */}
         <Card className="mt-6 sm:mt-8">
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">도움이 필요하신가요?</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Need Help?</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <h4 className="font-semibold mb-2 text-sm sm:text-base">예약을 찾을 수 없나요?</h4>
+                <h4 className="font-semibold mb-2 text-sm sm:text-base">Can't find your reservation?</h4>
                 <p className="text-xs sm:text-sm text-gray-600 mb-2">
-                  예약 시 제공된 정확한 예약번호와 이메일 주소를 
-                  사용하고 있는지 확인해주세요.
+                  Please make sure you're using the exact reservation number and 
+                  email address provided at the time of booking.
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-2 text-sm sm:text-base">고객 지원</h4>
+                <h4 className="font-semibold mb-2 text-sm sm:text-base">Customer Support</h4>
                 <p className="text-xs sm:text-sm text-gray-600">
-                  이메일: support@koreatours.com<br />
-                  전화: +82-2-1234-5678<br />
-                  운영시간: 오전 9:00 - 오후 6:00 (KST)
+                  Email: support@koreatours.com<br />
+                  Phone: +82-2-1234-5678<br />
+                  Hours: 9:00 AM - 6:00 PM (KST)
                 </p>
               </div>
             </div>
@@ -145,7 +145,7 @@ const ReservationLookup = () => {
         <div className="text-center mt-6 sm:mt-8">
           <Link to="/">
             <Button variant="outline" style={{ backgroundColor: '#01c5fd', color: 'white' }} className="w-full sm:w-auto text-sm sm:text-base">
-              홈으로 돌아가기
+              Back to Home
             </Button>
           </Link>
         </div>

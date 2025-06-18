@@ -26,19 +26,19 @@ interface Reservation {
 // Mock data for testing
 const mockReservation: Reservation = {
   reservationNumber: "KT12345678",
-  firstName: "홍",
-  lastName: "길동",
-  email: "hong.gildong@example.com",
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
   phone: "+82-10-1234-5678",
-  country: "대한민국",
+  country: "South Korea",
   date: "2024-07-15",
   participants: "2",
-  specialRequests: "채식 위주 식사 선호",
-  tourTitle: "서울 시티 하이라이트 투어",
+  specialRequests: "Vegetarian meals preferred",
+  tourTitle: "Seoul City Highlights Tour",
   tourPrice: 150,
   totalAmount: 300,
   bookingDate: "2024-06-15",
-  status: "확정"
+  status: "Confirmed"
 };
 
 const ReservationDetails = () => {
@@ -56,8 +56,8 @@ const ReservationDetails = () => {
               className="h-6 sm:h-8"
             />
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
-              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">예약 확인</Link>
+              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
             </nav>
           </div>
         </div>
@@ -67,10 +67,10 @@ const ReservationDetails = () => {
         <div className="space-y-4 sm:space-y-6">
           {/* Reservation History Header - Responsive */}
           <div className="text-left">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">예약 내역</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Reservation Details</h2>
             <div className="text-sm sm:text-base text-gray-600">
-              <p>예약번호: {reservation.reservationNumber}</p>
-              <p>예약일: {reservation.bookingDate}</p>
+              <p>Reservation Number: {reservation.reservationNumber}</p>
+              <p>Booking Date: {reservation.bookingDate}</p>
             </div>
           </div>
 
@@ -81,7 +81,7 @@ const ReservationDetails = () => {
           {/* Cancel Button - Responsive */}
           <div className="text-center">
             <Button variant="outline" size="sm" style={{ backgroundColor: '#f8f9fa', color: '#6c757d' }} className="w-full sm:w-auto text-xs sm:text-sm">
-              취소 요청
+              Request Cancellation
             </Button>
           </div>
         </div>
@@ -89,7 +89,7 @@ const ReservationDetails = () => {
         <div className="text-center mt-6 sm:mt-8">
           <Link to="/reservation-lookup">
             <Button variant="outline" style={{ backgroundColor: '#01c5fd', color: 'white' }} className="w-full sm:w-auto text-sm sm:text-base">
-              조회로 돌아가기
+              Back to Search
             </Button>
           </Link>
         </div>

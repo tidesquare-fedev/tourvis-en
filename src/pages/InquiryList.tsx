@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,13 +58,13 @@ const InquiryList = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case "pending":
-        return "대기중";
+        return "Pending";
       case "answered":
-        return "답변완료";
+        return "Answered";
       case "closed":
-        return "종료";
+        return "Closed";
       default:
-        return "알 수 없음";
+        return "Unknown";
     }
   };
 
@@ -79,8 +80,8 @@ const InquiryList = () => {
               className="h-6 sm:h-8"
             />
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
-              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">예약 확인</Link>
+              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
             </nav>
           </div>
         </div>
@@ -90,15 +91,15 @@ const InquiryList = () => {
         {/* Page Header - Responsive */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">내 문의 내역</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">My Inquiry History</h1>
             <p className="text-base sm:text-lg text-gray-600">
-              1:1 문의 내역을 확인하고 관리하세요
+              Check and manage your 1:1 inquiry history
             </p>
           </div>
           <Link to="/inquiry">
             <Button className="flex items-center space-x-2 w-full sm:w-auto" style={{ backgroundColor: '#01c5fd' }}>
               <Plus className="w-4 h-4" />
-              <span>새 문의하기</span>
+              <span>New Inquiry</span>
             </Button>
           </Link>
         </div>
@@ -118,17 +119,17 @@ const InquiryList = () => {
                         </Badge>
                       </div>
                       <div className="text-sm text-gray-600 space-y-1">
-                        <p>문의 번호: {inquiry.id}</p>
-                        <p>카테고리: {inquiry.category}</p>
-                        <p>작성일: {inquiry.createdAt}</p>
+                        <p>Inquiry Number: {inquiry.id}</p>
+                        <p>Category: {inquiry.category}</p>
+                        <p>Created: {inquiry.createdAt}</p>
                         {inquiry.lastReply && (
-                          <p>최근 답변: {inquiry.lastReply}</p>
+                          <p>Last Reply: {inquiry.lastReply}</p>
                         )}
                       </div>
                     </div>
                     <Link to={`/inquiry-detail/${inquiry.id}`} className="w-full sm:w-auto">
                       <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                        상세보기
+                        View Details
                       </Button>
                     </Link>
                   </div>
@@ -139,13 +140,13 @@ const InquiryList = () => {
             <Card>
               <CardContent className="p-6 sm:p-8 text-center">
                 <MessageCircle className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">아직 문의가 없습니다</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No inquiries yet</h3>
                 <p className="text-gray-600 mb-4">
-                  궁금한 것이 있으시면 언제든지 문의해 주세요.
+                  If you have any questions, feel free to contact us anytime.
                 </p>
                 <Link to="/inquiry">
                   <Button style={{ backgroundColor: '#01c5fd' }}>
-                    첫 문의하기
+                    Make Your First Inquiry
                   </Button>
                 </Link>
               </CardContent>
@@ -156,13 +157,13 @@ const InquiryList = () => {
         {/* Help Section - Responsive */}
         <Card className="mt-6 sm:mt-8">
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">문의 안내</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Inquiry Information</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm text-gray-600">
-              <p>• 운영시간: 평일 오전 10:00 - 오후 06:00 (주말 및 공휴일 휴무)</p>
-              <p>• 문의 답변은 등록된 이메일로 24시간 내에 발송됩니다</p>
-              <p>• 긴급한 사항은 고객센터로 연락해 주세요 (+82-2-1234-5678)</p>
+              <p>• Business Hours: Weekdays 10:00 AM - 06:00 PM (Closed on weekends and holidays)</p>
+              <p>• Inquiry responses are sent to your registered email within 24 hours</p>
+              <p>• For urgent matters, please contact our customer service (+82-2-1234-5678)</p>
             </div>
           </CardContent>
         </Card>
@@ -170,7 +171,7 @@ const InquiryList = () => {
         <div className="text-center mt-6 sm:mt-8">
           <Link to="/">
             <Button variant="outline" style={{ backgroundColor: '#01c5fd', color: 'white' }} className="w-full sm:w-auto">
-              홈으로 돌아가기
+              Back to Home
             </Button>
           </Link>
         </div>
