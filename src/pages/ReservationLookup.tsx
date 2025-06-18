@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Search, Calendar, Users, Mail, Phone, MapPin } from "lucide-react";
+import { Search, Calendar, Users, Mail, Phone, MapPin, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
@@ -141,7 +141,7 @@ const ReservationLookup = () => {
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#01c5fd' }}>
                 {loading ? "Searching..." : "Find Reservation"}
               </Button>
             </form>
@@ -150,48 +150,83 @@ const ReservationLookup = () => {
 
         {/* Reservation Details */}
         {reservation && (
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Reservation Info */}
+          <div className="space-y-6">
+            {/* Reservation Header */}
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">예약접수</h2>
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <span>예약번호 {reservation.reservationNumber}</span>
+                <span>예약일 {new Date(reservation.bookingDate).toLocaleDateString()}</span>
+              </div>
+            </div>
+
+            {/* Product Information */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Reservation Details
-                </CardTitle>
+                <CardTitle>상품 정보</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Reservation Number:</span>
-                  <Badge variant="outline" className="text-lg px-3 py-1">
-                    {reservation.reservationNumber}
-                  </Badge>
+              <CardContent>
+                <div className="flex items-center gap-4 mb-4">
+                  <img 
+                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80"
+                    alt="Tour"
+                    className="w-20 h-16 object-cover rounded-lg"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{reservation.tourTitle}</h3>
+                    <p className="text-sm text-gray-600">상품코드: {reservation.reservationNumber}</p>
+                  </div>
                 </div>
                 
-                <div className="flex justify-between">
-                  <span className="font-semibold">Status:</span>
-                  <Badge className="bg-green-500">Confirmed</Badge>
+                <div className="space-y-3 border-t pt-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Users className="h-4 w-4" />
+                    <span>{reservation.participants} Travelers</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(reservation.date).toLocaleDateString()}</span>
+                  </div>
                 </div>
-                
-                <div className="flex justify-between">
-                  <span className="font-semibold">Booking Date:</span>
-                  <span>{new Date(reservation.bookingDate).toLocaleDateString()}</span>
+              </CardContent>
+            </Card>
+
+            {/* Payment Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>결제정보</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span>주문 금액</span>
+                    <span>${reservation.totalAmount} USD</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-2">
+                      <span>상품금액</span>
+                    </span>
+                    <span>${reservation.totalAmount} USD</span>
+                  </div>
+                  <div className="border-t pt-3 flex justify-between items-center">
+                    <span className="text-lg font-bold">총 결제금액</span>
+                    <span className="text-lg font-bold">${reservation.totalAmount} USD</span>
+                  </div>
                 </div>
-                
-                <div className="flex justify-between">
-                  <span className="font-semibold">Tour Date:</span>
-                  <span className="font-medium text-blue-600">
-                    {new Date(reservation.date).toLocaleDateString()}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="font-semibold">Participants:</span>
-                  <span>{reservation.participants} person(s)</span>
-                </div>
-                
-                <div className="flex justify-between items-start">
-                  <span className="font-semibold">Tour:</span>
-                  <span className="text-right max-w-xs">{reservation.tourTitle}</span>
+              </CardContent>
+            </Card>
+
+            {/* Customer Service */}
+            <Card>
+              <CardHeader>
+                <CardTitle>1:1 온라인 문의</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">평일 AM 10:00 - PM 06:00 주말 · 공휴일 휴무</p>
+                  <Button variant="outline" size="sm" style={{ backgroundColor: '#01c5fd', color: 'white' }}>
+                    1:1 문의하기
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -245,74 +280,46 @@ const ReservationLookup = () => {
               </CardContent>
             </Card>
 
-            {/* Payment Summary */}
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Payment Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>${reservation.tourPrice} × {reservation.participants} person(s)</span>
-                    <span>${reservation.totalAmount}</span>
-                  </div>
-                  <hr className="my-2" />
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>Total Amount</span>
-                    <span className="text-blue-600">${reservation.totalAmount}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Important Notes */}
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Important Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• Please arrive at the meeting point 15 minutes before departure</li>
-                    <li>• Bring comfortable hiking shoes and weather-appropriate clothing</li>
-                    <li>• Contact us at info@koreatours.com for any changes or questions</li>
-                    <li>• Free cancellation up to 24 hours before the tour</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Cancel Button */}
+            <div className="text-center">
+              <Button variant="outline" size="sm" style={{ backgroundColor: '#f8f9fa', color: '#6c757d' }}>
+                취소 요청
+              </Button>
+            </div>
           </div>
         )}
 
-        {/* Help Section */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Need Help?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2">Can't find your reservation?</h4>
-                <p className="text-sm text-gray-600 mb-2">
-                  Make sure you're using the exact reservation number and email address 
-                  that was provided during booking.
-                </p>
+        {/* Help Section - Only show when no reservation found */}
+        {!reservation && (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle>Need Help?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-2">Can't find your reservation?</h4>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Make sure you're using the exact reservation number and email address 
+                    that was provided during booking.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Contact Support</h4>
+                  <p className="text-sm text-gray-600">
+                    Email: support@koreatours.com<br />
+                    Phone: +82-2-1234-5678<br />
+                    Hours: 9:00 AM - 6:00 PM (KST)
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold mb-2">Contact Support</h4>
-                <p className="text-sm text-gray-600">
-                  Email: support@koreatours.com<br />
-                  Phone: +82-2-1234-5678<br />
-                  Hours: 9:00 AM - 6:00 PM (KST)
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="text-center mt-8">
           <Link to="/">
-            <Button variant="outline">Back to Home</Button>
+            <Button variant="outline" style={{ backgroundColor: '#01c5fd', color: 'white' }}>Back to Home</Button>
           </Link>
         </div>
       </div>
