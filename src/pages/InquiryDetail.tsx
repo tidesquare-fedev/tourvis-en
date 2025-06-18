@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useEffect } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -96,6 +96,33 @@ const mockInquiryDetails: { [key: string]: InquiryDetail } = {
 const InquiryDetail = () => {
   const { id } = useParams<{ id: string }>();
   const inquiry = id ? mockInquiryDetails[id] : null;
+
+  // Clear session when navigating away from inquiry pages
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes('/inquiry')) {
+        sessionStorage.removeItem('inquiryAuth');
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes('/inquiry')) {
+          sessionStorage.removeItem('inquiryAuth');
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   if (!inquiry) {
     return (

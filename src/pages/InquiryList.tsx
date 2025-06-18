@@ -1,11 +1,10 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { MessageCircle, Plus, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -80,6 +79,48 @@ const InquiryList = () => {
   const [currentUser, setCurrentUser] = useState({ author: "", password: "" });
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check for existing session on component mount
+  useEffect(() => {
+    const sessionAuth = sessionStorage.getItem('inquiryAuth');
+    if (sessionAuth) {
+      const { author, password } = JSON.parse(sessionAuth);
+      const success = authenticateAndLoadInquiries(author, password);
+      if (success) {
+        setIsAuthenticated(true);
+      } else {
+        sessionStorage.removeItem('inquiryAuth');
+      }
+    }
+  }, []);
+
+  // Clear session when navigating away from inquiry pages
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const currentPath = location.pathname;
+      if (!currentPath.includes('/inquiry')) {
+        sessionStorage.removeItem('inquiryAuth');
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        const currentPath = location.pathname;
+        if (!currentPath.includes('/inquiry')) {
+          sessionStorage.removeItem('inquiryAuth');
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [location]);
 
   const authenticateAndLoadInquiries = (author: string, password: string) => {
     // Get inquiries from localStorage first, then fall back to sample data
@@ -95,6 +136,8 @@ const InquiryList = () => {
       setIsAuthenticated(true);
       setUserInquiries(userInquiries);
       setCurrentUser({ author, password });
+      // Store session for inquiry pages navigation
+      sessionStorage.setItem('inquiryAuth', JSON.stringify({ author, password }));
       return true;
     }
     return false;
