@@ -40,7 +40,7 @@ const Index = () => {
       price: 89,
       rating: 4.8,
       reviewCount: 324,
-      location: "Jeju Island"
+      location: "Jeju, South Korea"
     },
     {
       id: "seoul-palace-tour",
@@ -51,7 +51,7 @@ const Index = () => {
       price: 65,
       rating: 4.7,
       reviewCount: 156,
-      location: "Seoul"
+      location: "Seoul, South Korea"
     },
     {
       id: "busan-coastal-tour",
@@ -62,7 +62,7 @@ const Index = () => {
       price: 75,
       rating: 4.9,
       reviewCount: 289,
-      location: "Busan"
+      location: "Busan, South Korea"
     },
     {
       id: "gyeongju-history-tour",
@@ -73,7 +73,7 @@ const Index = () => {
       price: 90,
       rating: 4.6,
       reviewCount: 201,
-      location: "Gyeongju"
+      location: "Gyeongju, South Korea"
     },
     {
       id: "dmz-tour",
@@ -84,7 +84,7 @@ const Index = () => {
       price: 68,
       rating: 4.5,
       reviewCount: 445,
-      location: "Seoul"
+      location: "Seoul, South Korea"
     },
     {
       id: "nami-island-tour",
@@ -95,7 +95,7 @@ const Index = () => {
       price: 56,
       rating: 4.7,
       reviewCount: 332,
-      location: "Gapyeong"
+      location: "Gapyeong, South Korea"
     },
     {
       id: "andong-village-tour",
@@ -106,7 +106,7 @@ const Index = () => {
       price: 70,
       rating: 4.4,
       reviewCount: 178,
-      location: "Andong"
+      location: "Andong, South Korea"
     },
     {
       id: "seoraksan-hiking",
@@ -117,7 +117,7 @@ const Index = () => {
       price: 75,
       rating: 4.8,
       reviewCount: 267,
-      location: "Sokcho"
+      location: "Sokcho, South Korea"
     },
     {
       id: "gangneung-beach-tour",
@@ -128,7 +128,7 @@ const Index = () => {
       price: 54,
       rating: 4.6,
       reviewCount: 189,
-      location: "Gangneung"
+      location: "Gangneung, South Korea"
     },
     {
       id: "jeonju-hanok-tour",
@@ -139,7 +139,7 @@ const Index = () => {
       price: 61,
       rating: 4.7,
       reviewCount: 298,
-      location: "Jeonju"
+      location: "Jeonju, South Korea"
     },
     // Add more tours to demonstrate pagination
     ...Array.from({ length: 20 }, (_, i) => ({
@@ -151,7 +151,7 @@ const Index = () => {
       price: 60 + Math.floor(Math.random() * 30),
       rating: 4.3 + Math.random() * 0.6,
       reviewCount: 50 + Math.floor(Math.random() * 300),
-      location: ["Seoul", "Busan", "Jeju", "Gyeongju", "Incheon"][i % 5]
+      location: ["Seoul, South Korea", "Busan, South Korea", "Jeju, South Korea", "Gyeongju, South Korea", "Incheon, South Korea"][i % 5]
     }))
   ];
 
@@ -179,29 +179,41 @@ const Index = () => {
 
       {/* Banner Carousel */}
       <section className="max-w-7xl mx-auto px-4 py-8">
-        <Carousel className="w-full">
-          <CarouselContent>
-            {banners.map((banner) => (
-              <CarouselItem key={banner.id}>
-                <div className="relative w-full h-[298px] rounded-lg overflow-hidden">
-                  <img 
-                    src={`https://images.unsplash.com/${banner.image}?auto=format&fit=crop&w=624&h=298&q=80`}
-                    alt={banner.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <h2 className="text-2xl font-bold mb-2">{banner.title}</h2>
-                      <p className="text-lg">{banner.subtitle}</p>
+        <div className="relative">
+          <Carousel 
+            className="w-full"
+            opts={{
+              align: "start",
+              slidesToScroll: 3,
+            }}
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {banners.map((banner) => (
+                <CarouselItem key={banner.id} className="pl-2 md:pl-4 basis-full md:basis-1/3">
+                  <div className="relative w-full h-[200px] rounded-lg overflow-hidden">
+                    <img 
+                      src={`https://images.unsplash.com/${banner.image}?auto=format&fit=crop&w=400&h=200&q=80`}
+                      alt={banner.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <h2 className="text-lg font-bold mb-1">{banner.title}</h2>
+                        <p className="text-sm">{banner.subtitle}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+          
+          {/* Navigation buttons positioned below the carousel */}
+          <div className="flex justify-center mt-4 space-x-4">
+            <CarouselPrevious className="relative translate-x-0 translate-y-0" />
+            <CarouselNext className="relative translate-x-0 translate-y-0" />
+          </div>
+        </div>
       </section>
 
       {/* Tour Products */}
