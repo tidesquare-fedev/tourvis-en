@@ -61,9 +61,28 @@ const BookingInfo = () => {
   const countryCodes = [
     { code: "+82", country: "South Korea", flag: "🇰🇷" },
     { code: "+1", country: "United States", flag: "🇺🇸" },
+    { code: "+1", country: "Canada", flag: "🇨🇦" },
     { code: "+81", country: "Japan", flag: "🇯🇵" },
     { code: "+86", country: "China", flag: "🇨🇳" },
-    { code: "+44", country: "United Kingdom", flag: "🇬🇧" }
+    { code: "+44", country: "United Kingdom", flag: "🇬🇧" },
+    { code: "+33", country: "France", flag: "🇫🇷" },
+    { code: "+49", country: "Germany", flag: "🇩🇪" },
+    { code: "+39", country: "Italy", flag: "🇮🇹" },
+    { code: "+34", country: "Spain", flag: "🇪🇸" },
+    { code: "+61", country: "Australia", flag: "🇦🇺" },
+    { code: "+91", country: "India", flag: "🇮🇳" },
+    { code: "+65", country: "Singapore", flag: "🇸🇬" },
+    { code: "+852", country: "Hong Kong", flag: "🇭🇰" },
+    { code: "+853", country: "Macau", flag: "🇲🇴" },
+    { code: "+886", country: "Taiwan", flag: "🇹🇼" },
+    { code: "+66", country: "Thailand", flag: "🇹🇭" },
+    { code: "+84", country: "Vietnam", flag: "🇻🇳" },
+    { code: "+63", country: "Philippines", flag: "🇵🇭" },
+    { code: "+60", country: "Malaysia", flag: "🇲🇾" },
+    { code: "+62", country: "Indonesia", flag: "🇮🇩" },
+    { code: "+55", country: "Brazil", flag: "🇧🇷" },
+    { code: "+52", country: "Mexico", flag: "🇲🇽" },
+    { code: "+7", country: "Russia", flag: "🇷🇺" }
   ];
 
   const validatePhoneNumber = (phone: string, countryCode: string) => {
@@ -74,7 +93,7 @@ const BookingInfo = () => {
       "+86": /^[0-9]{3}-[0-9]{4}-[0-9]{4}$/,
       "+44": /^[0-9]{4}-[0-9]{3}-[0-9]{3}$/
     };
-    return phoneRegex[countryCode as keyof typeof phoneRegex]?.test(phone) || false;
+    return phoneRegex[countryCode as keyof typeof phoneRegex]?.test(phone) || phone.length > 0;
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -298,7 +317,7 @@ const BookingInfo = () => {
                           <div className="flex justify-between items-center pt-2 border-t">
                             <span className="text-lg font-semibold">Total Product Amount</span>
                             <span className="text-lg font-bold text-right">
-                              ${tour.price}<span className="text-sm">USD</span><br/>
+                              ${tour.price} USD<br/>
                               <span className="text-sm font-normal text-gray-600">${tour.price} USD</span>
                             </span>
                           </div>
@@ -347,7 +366,7 @@ const BookingInfo = () => {
               </div>
               
               <div>
-                <Label htmlFor="email">Email ⓘ</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -362,7 +381,7 @@ const BookingInfo = () => {
               </div>
 
               <div>
-                <Label htmlFor="phone">Phone number ⓘ</Label>
+                <Label htmlFor="phone">Phone number</Label>
                 <div className="flex gap-2">
                   <Select value={formData.countryCode} onValueChange={(value) => handleInputChange("countryCode", value)}>
                     <SelectTrigger className="w-48">
@@ -370,7 +389,7 @@ const BookingInfo = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {countryCodes.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
+                        <SelectItem key={`${country.code}-${country.country}`} value={country.code}>
                           {country.flag} {country.code} {country.country}
                         </SelectItem>
                       ))}
@@ -388,16 +407,9 @@ const BookingInfo = () => {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox id="updates" />
-                <Label htmlFor="updates" className="text-sm">
-                  Get emails with special offers, inspiration, tips, and other updates from Viator. You can unsubscribe at any time.
-                </Label>
-              </div>
-
               <Button 
                 onClick={handleNextStep}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 size="lg"
               >
                 Next
@@ -487,7 +499,7 @@ const BookingInfo = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {countryCodes.map((country) => (
-                          <SelectItem key={country.code} value={country.code}>
+                          <SelectItem key={`ticket-${country.code}-${country.country}`} value={country.code}>
                             {country.flag} {country.code} {country.country}
                           </SelectItem>
                         ))}
@@ -533,7 +545,7 @@ const BookingInfo = () => {
 
                 <Button 
                   onClick={handleNextStep}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   size="lg"
                 >
                   Next
@@ -647,7 +659,7 @@ const BookingInfo = () => {
 
               <Button 
                 onClick={handlePayment}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 size="lg"
                 disabled={!paymentMethod}
               >
