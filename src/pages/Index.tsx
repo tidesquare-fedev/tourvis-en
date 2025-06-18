@@ -179,41 +179,39 @@ const Index = () => {
 
       {/* Banner Carousel */}
       <section className="max-w-7xl mx-auto px-4 py-8">
-        <div className="relative">
-          <Carousel 
-            className="w-full"
-            opts={{
-              align: "start",
-              slidesToScroll: 3,
-            }}
-          >
-            <CarouselContent className="-ml-2 md:-ml-4">
-              {banners.map((banner) => (
-                <CarouselItem key={banner.id} className="pl-2 md:pl-4 basis-full md:basis-1/3">
-                  <div className="relative w-full h-[200px] rounded-lg overflow-hidden">
-                    <img 
-                      src={`https://images.unsplash.com/${banner.image}?auto=format&fit=crop&w=400&h=200&q=80`}
-                      alt={banner.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <h2 className="text-lg font-bold mb-1">{banner.title}</h2>
-                        <p className="text-sm">{banner.subtitle}</p>
-                      </div>
+        <Carousel 
+          className="w-full"
+          opts={{
+            align: "start",
+            slidesToScroll: 1,
+          }}
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {banners.map((banner) => (
+              <CarouselItem key={banner.id} className="pl-2 md:pl-4 basis-full md:basis-1/3">
+                <div className="relative w-full h-[200px] rounded-lg overflow-hidden">
+                  <img 
+                    src={`https://images.unsplash.com/${banner.image}?auto=format&fit=crop&w=400&h=200&q=80`}
+                    alt={banner.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <h2 className="text-lg font-bold mb-1">{banner.title}</h2>
+                      <p className="text-sm">{banner.subtitle}</p>
                     </div>
                   </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
           
-          {/* Navigation buttons positioned below the carousel */}
+          {/* Navigation buttons positioned below the carousel but inside the Carousel component */}
           <div className="flex justify-center mt-4 space-x-4">
             <CarouselPrevious className="relative translate-x-0 translate-y-0" />
             <CarouselNext className="relative translate-x-0 translate-y-0" />
           </div>
-        </div>
+        </Carousel>
       </section>
 
       {/* Tour Products */}
