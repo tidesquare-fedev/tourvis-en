@@ -1,12 +1,18 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { MessageCircle, Plus } from "lucide-react";
+import { MessageCircle, Plus, Lock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface InquiryItem {
   id: string;
+  author: string;
+  password: string;
   subject: string;
   category: string;
   status: "pending" | "answered" | "closed";
@@ -14,34 +20,72 @@ interface InquiryItem {
   lastReply?: string;
 }
 
-// Mock data for inquiry list
-const mockInquiries: InquiryItem[] = [
-  {
-    id: "INQ001",
-    subject: "Question about tour cancellation policy",
-    category: "Cancellation/Refund",
-    status: "answered",
-    createdAt: "2024-06-15",
-    lastReply: "2024-06-16"
-  },
-  {
-    id: "INQ002",
-    subject: "Dietary restrictions for Seoul food tour",
-    category: "Product Inquiry",
-    status: "pending",
-    createdAt: "2024-06-18"
-  },
-  {
-    id: "INQ003",
-    subject: "Change reservation date request",
-    category: "Reservation Change",
-    status: "closed",
-    createdAt: "2024-06-10",
-    lastReply: "2024-06-12"
-  }
-];
-
 const InquiryList = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userInquiries, setUserInquiries] = useState<InquiryItem[]>([]);
+  const [loginData, setLoginData] = useState({ author: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    const authData = sessionStorage.getItem('inquiryAuth');
+    if (authData) {
+      const { author, password } = JSON.parse(authData);
+      authenticateAndLoadInquiries(author, password);
+    }
+  }, []);
+
+  const authenticateAndLoadInquiries = (author: string, password: string) => {
+    const inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+    const userInquiries = inquiries.filter((inquiry: InquiryItem) => 
+      inquiry.author === author && inquiry.password === password
+    );
+    
+    if (userInquiries.length > 0 || inquiries.some((inquiry: InquiryItem) => 
+      inquiry.author === author && inquiry.password === password)) {
+      setIsAuthenticated(true);
+      setUserInquiries(userInquiries);
+      sessionStorage.setItem('inquiryAuth', JSON.stringify({ author, password }));
+      return true;
+    }
+    return false;
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    setTimeout(() => {
+      const success = authenticateAndLoadInquiries(loginData.author, loginData.password);
+      
+      if (success) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome to your inquiry dashboard",
+        });
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid author or password",
+          variant: "destructive"
+        });
+      }
+      setLoading(false);
+    }, 500);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserInquiries([]);
+    setLoginData({ author: "", password: "" });
+    sessionStorage.removeItem('inquiryAuth');
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully",
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -68,6 +112,79 @@ const InquiryList = () => {
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header - Responsive */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+            <div className="flex justify-between items-center">
+              <img 
+                src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
+                alt="KoreaTours" 
+                className="h-6 sm:h-8"
+              />
+              <nav className="flex items-center space-x-3 sm:space-x-6">
+                <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
+                <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
+              </nav>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-lg">
+                <Lock className="w-5 h-5 mr-2" />
+                Login to View Inquiries
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <Label htmlFor="author">Author</Label>
+                  <Input
+                    id="author"
+                    value={loginData.author}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, author: e.target.value }))}
+                    placeholder="Enter your username"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+                
+                <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#01c5fd' }}>
+                  {loading ? "Logging in..." : "Login"}
+                </Button>
+              </form>
+              
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-600 mb-2">Don't have any inquiries yet?</p>
+                <Link to="/inquiry">
+                  <Button variant="outline" className="w-full">
+                    Make Your First Inquiry
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header - Responsive */}
@@ -82,6 +199,9 @@ const InquiryList = () => {
             <nav className="flex items-center space-x-3 sm:space-x-6">
               <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
               <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-xs sm:text-sm">
+                Logout
+              </Button>
             </nav>
           </div>
         </div>
@@ -106,8 +226,8 @@ const InquiryList = () => {
 
         {/* Inquiry List - Responsive */}
         <div className="space-y-4">
-          {mockInquiries.length > 0 ? (
-            mockInquiries.map((inquiry) => (
+          {userInquiries.length > 0 ? (
+            userInquiries.map((inquiry) => (
               <Card key={inquiry.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4">

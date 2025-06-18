@@ -12,6 +12,8 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 
 const Inquiry = () => {
   const [inquiryData, setInquiryData] = useState({
+    author: "",
+    password: "",
     name: "",
     email: "",
     phone: "",
@@ -26,6 +28,17 @@ const Inquiry = () => {
     e.preventDefault();
     setLoading(true);
     
+    // Save inquiry data to localStorage (in a real app, this would be sent to a backend)
+    const existingInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+    const newInquiry = {
+      id: `INQ${String(existingInquiries.length + 1).padStart(3, '0')}`,
+      ...inquiryData,
+      status: "pending",
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    existingInquiries.push(newInquiry);
+    localStorage.setItem('inquiries', JSON.stringify(existingInquiries));
+    
     // Simulate API call
     setTimeout(() => {
       toast({
@@ -35,6 +48,8 @@ const Inquiry = () => {
       setLoading(false);
       // Reset form
       setInquiryData({
+        author: "",
+        password: "",
         name: "",
         email: "",
         phone: "",
@@ -94,6 +109,33 @@ const Inquiry = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="author" className="text-sm sm:text-base">Author *</Label>
+                  <Input
+                    id="author"
+                    value={inquiryData.author}
+                    onChange={(e) => handleInputChange("author", e.target.value)}
+                    placeholder="Enter your username"
+                    required
+                    className="text-sm sm:text-base"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="password" className="text-sm sm:text-base">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={inquiryData.password}
+                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    placeholder="Enter password"
+                    required
+                    className="text-sm sm:text-base"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name" className="text-sm sm:text-base">Name *</Label>
