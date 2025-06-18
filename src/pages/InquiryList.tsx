@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MessageCircle, Plus, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -77,7 +77,9 @@ const InquiryList = () => {
   const [userInquiries, setUserInquiries] = useState<InquiryItem[]>([]);
   const [loginData, setLoginData] = useState({ author: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState({ author: "", password: "" });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const authenticateAndLoadInquiries = (author: string, password: string) => {
     // Get inquiries from localStorage first, then fall back to sample data
@@ -92,6 +94,7 @@ const InquiryList = () => {
       inquiry.author === author && inquiry.password === password)) {
       setIsAuthenticated(true);
       setUserInquiries(userInquiries);
+      setCurrentUser({ author, password });
       return true;
     }
     return false;
