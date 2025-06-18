@@ -192,7 +192,7 @@ const Index = () => {
           <CarouselContent className="-ml-2 md:-ml-4">
             {banners.map((banner) => (
               <CarouselItem key={banner.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3">
-                <div className="relative w-full h-[150px] sm:h-[200px] rounded-lg overflow-hidden">
+                <div className="relative w-full h-[150px] sm:h-[298px] rounded-lg overflow-hidden">
                   <img 
                     src={`https://images.unsplash.com/${banner.image}?auto=format&fit=crop&w=400&h=200&q=80`}
                     alt={banner.title}
