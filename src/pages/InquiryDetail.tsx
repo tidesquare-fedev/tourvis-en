@@ -76,25 +76,27 @@ const InquiryDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <img 
-              src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
-              alt="KoreaTours" 
-              className="h-8"
-            />
-            <nav className="flex items-center space-x-6">
-              <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-              <Link to="/reservation-lookup" className="text-gray-600 hover:text-blue-600 transition-colors">Reservation</Link>
-            </nav>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+            <div className="flex justify-between items-center">
+              <img 
+                src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
+                alt="KoreaTours" 
+                className="h-6 sm:h-8"
+              />
+              <nav className="flex items-center space-x-3 sm:space-x-6">
+                <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
+                <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">예약 확인</Link>
+              </nav>
+            </div>
           </div>
         </header>
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <Card>
-            <CardContent className="p-8 text-center">
-              <h2 className="text-xl font-semibold mb-4">Inquiry Not Found</h2>
-              <p className="text-gray-600 mb-4">The inquiry you're looking for doesn't exist.</p>
+            <CardContent className="p-6 sm:p-8 text-center">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">문의를 찾을 수 없습니다</h2>
+              <p className="text-sm sm:text-base text-gray-600 mb-4">요청하신 문의가 존재하지 않습니다.</p>
               <Link to="/inquiry-list">
-                <Button>Back to Inquiry List</Button>
+                <Button className="w-full sm:w-auto">문의 목록으로 돌아가기</Button>
               </Link>
             </CardContent>
           </Card>
@@ -119,57 +121,60 @@ const InquiryDetail = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case "pending":
-        return "Pending";
+        return "대기중";
       case "answered":
-        return "Answered";
+        return "답변완료";
       case "closed":
-        return "Closed";
+        return "종료";
       default:
-        return "Unknown";
+        return "알 수 없음";
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header - Responsive */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <img 
-            src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
-            alt="KoreaTours" 
-            className="h-8"
-          />
-          <nav className="flex items-center space-x-6">
-            <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-            <Link to="/reservation-lookup" className="text-gray-600 hover:text-blue-600 transition-colors">Reservation</Link>
-          </nav>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex justify-between items-center">
+            <img 
+              src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
+              alt="KoreaTours" 
+              className="h-6 sm:h-8"
+            />
+            <nav className="flex items-center space-x-3 sm:space-x-6">
+              <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">홈</Link>
+              <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">예약 확인</Link>
+            </nav>
+          </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center mb-6">
-          <Link to="/inquiry-list" className="mr-4">
-            <Button variant="ghost" size="sm">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Page Header - Responsive */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4">
+          <Link to="/inquiry-list" className="order-1 sm:order-1">
+            <Button variant="ghost" size="sm" className="flex items-center">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to List
+              목록으로
             </Button>
           </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Inquiry Details</h1>
-            <p className="text-lg text-gray-600">
-              View your inquiry and responses
+          <div className="order-2 sm:order-2 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">문의 상세</h1>
+            <p className="text-base sm:text-lg text-gray-600">
+              문의 내용과 답변을 확인하세요
             </p>
           </div>
         </div>
 
-        {/* Inquiry Information */}
-        <Card className="mb-6">
+        {/* Inquiry Information - Responsive */}
+        <Card className="mb-4 sm:mb-6">
           <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="flex items-center space-x-3">
-                  <span>{inquiry.subject}</span>
-                  <Badge className={getStatusColor(inquiry.status)}>
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
+              <div className="flex-1 w-full">
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                  <span className="text-base sm:text-lg break-words">{inquiry.subject}</span>
+                  <Badge className={`${getStatusColor(inquiry.status)} w-fit`}>
                     {getStatusText(inquiry.status)}
                   </Badge>
                 </CardTitle>
@@ -177,28 +182,28 @@ const InquiryDetail = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">
-                  <strong>Inquiry ID:</strong> {inquiry.id}
+                <p className="text-xs sm:text-sm text-gray-600">
+                  <strong>문의 번호:</strong> {inquiry.id}
                 </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Category:</strong> {inquiry.category}
+                <p className="text-xs sm:text-sm text-gray-600">
+                  <strong>카테고리:</strong> {inquiry.category}
                 </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Created:</strong> {inquiry.createdAt}
+                <p className="text-xs sm:text-sm text-gray-600">
+                  <strong>작성일:</strong> {inquiry.createdAt}
                 </p>
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">
-                  <strong>Name:</strong> {inquiry.name}
+                <p className="text-xs sm:text-sm text-gray-600">
+                  <strong>이름:</strong> {inquiry.name}
                 </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Email:</strong> {inquiry.email}
+                <p className="text-xs sm:text-sm text-gray-600 break-all">
+                  <strong>이메일:</strong> {inquiry.email}
                 </p>
                 {inquiry.phone && (
-                  <p className="text-sm text-gray-600">
-                    <strong>Phone:</strong> {inquiry.phone}
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    <strong>전화번호:</strong> {inquiry.phone}
                   </p>
                 )}
               </div>
@@ -206,57 +211,57 @@ const InquiryDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Original Inquiry */}
-        <Card className="mb-6">
+        {/* Original Inquiry - Responsive */}
+        <Card className="mb-4 sm:mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <User className="w-5 h-5 mr-2" />
-              Your Inquiry
+            <CardTitle className="flex items-center text-base sm:text-lg">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              내 문의 내용
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700 leading-relaxed">{inquiry.message}</p>
+            <p className="text-sm sm:text-base text-gray-700 leading-relaxed break-words">{inquiry.message}</p>
           </CardContent>
         </Card>
 
-        {/* Reply Section */}
+        {/* Reply Section - Responsive */}
         {inquiry.reply ? (
-          <Card className="mb-6">
+          <Card className="mb-4 sm:mb-6">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Our Response
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                답변
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-blue-50 p-4 rounded-lg mb-4">
-                <p className="text-gray-700 leading-relaxed mb-3">{inquiry.reply.message}</p>
-                <div className="text-sm text-gray-600">
-                  <p><strong>Replied by:</strong> {inquiry.reply.repliedBy}</p>
-                  <p><strong>Replied on:</strong> {inquiry.reply.repliedAt}</p>
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg mb-4">
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 break-words">{inquiry.reply.message}</p>
+                <div className="text-xs sm:text-sm text-gray-600">
+                  <p><strong>답변자:</strong> {inquiry.reply.repliedBy}</p>
+                  <p><strong>답변일:</strong> {inquiry.reply.repliedAt}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <Card className="mb-6">
-            <CardContent className="p-8 text-center">
-              <MessageCircle className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Waiting for Response</h3>
-              <p className="text-gray-600">
-                We have received your inquiry and will respond within 24 hours.
+          <Card className="mb-4 sm:mb-6">
+            <CardContent className="p-6 sm:p-8 text-center">
+              <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">답변 대기중</h3>
+              <p className="text-sm sm:text-base text-gray-600">
+                문의를 접수했습니다. 24시간 내에 답변드리겠습니다.
               </p>
             </CardContent>
           </Card>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex justify-center space-x-4">
-          <Link to="/inquiry-list">
-            <Button variant="outline">Back to Inquiry List</Button>
+        {/* Action Buttons - Responsive */}
+        <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+          <Link to="/inquiry-list" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto">문의 목록으로</Button>
           </Link>
-          <Link to="/inquiry">
-            <Button style={{ backgroundColor: '#01c5fd' }}>Make New Inquiry</Button>
+          <Link to="/inquiry" className="w-full sm:w-auto">
+            <Button style={{ backgroundColor: '#01c5fd' }} className="w-full sm:w-auto">새 문의하기</Button>
           </Link>
         </div>
       </div>
