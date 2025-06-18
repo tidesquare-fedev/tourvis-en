@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Info } from "lucide-react";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
+import { Info, X } from "lucide-react";
 
 const BookingInfo = () => {
   const navigate = useNavigate();
@@ -179,54 +179,60 @@ const BookingInfo = () => {
                 <h3 className="font-semibold">{tour.title}</h3>
                 <p className="text-sm text-gray-600">Usage Date: Friday, July 18, 2025</p>
               </div>
-              <Sheet>
-                <SheetTrigger asChild>
+              <Drawer>
+                <DrawerTrigger asChild>
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
                     <Info className="h-4 w-4" />
                     Option Information
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="h-[80vh]">
-                  <SheetHeader>
-                    <SheetTitle>Option Information</SheetTitle>
-                    <SheetDescription>
-                      Detailed information about your tour options
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="mt-6 space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2">Tour Inclusions</h4>
-                      <ul className="space-y-1 text-sm text-gray-600">
-                        <li>• Professional English-speaking guide</li>
-                        <li>• Transportation to/from hiking trail</li>
-                        <li>• Safety equipment and hiking gear</li>
-                        <li>• Light breakfast and refreshments</li>
-                        <li>• First aid kit and emergency support</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">What to Bring</h4>
-                      <ul className="space-y-1 text-sm text-gray-600">
-                        <li>• Comfortable hiking shoes</li>
-                        <li>• Weather-appropriate clothing</li>
-                        <li>• Water bottle</li>
-                        <li>• Camera for stunning sunrise photos</li>
-                        <li>• Personal medications if needed</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Important Notes</h4>
-                      <ul className="space-y-1 text-sm text-gray-600">
-                        <li>• Moderate fitness level required</li>
-                        <li>• Tour duration: 6-7 hours</li>
-                        <li>• Early morning departure (3:30 AM)</li>
-                        <li>• Weather dependent - may be cancelled for safety</li>
-                        <li>• Maximum group size: 12 people</li>
-                      </ul>
+                </DrawerTrigger>
+                <DrawerContent className="max-w-2xl mx-auto">
+                  <div className="mx-auto w-full max-w-2xl">
+                    <DrawerHeader className="relative">
+                      <DrawerTitle className="text-left">Option Information</DrawerTitle>
+                      <DrawerClose className="absolute right-4 top-4">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close</span>
+                      </DrawerClose>
+                    </DrawerHeader>
+                    <div className="px-4 pb-6">
+                      <div className="bg-white rounded-lg border p-4">
+                        <div className="flex items-start gap-4 mb-4">
+                          <img 
+                            src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=80&h=60&q=80"
+                            alt="Tour"
+                            className="w-20 h-15 object-cover rounded-lg"
+                          />
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg mb-1">[Shizuoka Climb] Mt. Fuji Sunrise Viewing (Fuji-Q Highland, Oshino Shirane, Slide Photo) 1 Day Small Bus Tour</h3>
+                            <p className="text-sm text-gray-600">Usage Date: 2025.08.28 (Thu)</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4 border-t pt-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-700">Option</span>
+                            <span className="font-medium">Shizuoka Bus Tour</span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-700">Quantity</span>
+                            <span className="font-medium">Adult/Child (Same rate) x 1</span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center pt-2 border-t">
+                            <span className="text-lg font-semibold">Total Product Amount</span>
+                            <span className="text-lg font-bold text-right">
+                              98,000<span className="text-sm">KRW</span><br/>
+                              <span className="text-sm font-normal text-gray-600">98,000KRW</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </SheetContent>
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
             </div>
           </CardContent>
         </Card>
