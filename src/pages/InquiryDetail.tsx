@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

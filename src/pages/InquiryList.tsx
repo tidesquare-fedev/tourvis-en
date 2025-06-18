@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,7 @@ const InquiryList = () => {
 
   // 컴포넌트 마운트 시 세션 확인
   useEffect(() => {
-    // inquiry 관련 페이지에서 왔는지 확인
+    // inquiry 관련 페이지에서 왔는지 확인 (정확한 페이지만 체크)
     const previousPath = sessionStorage.getItem('previousPath');
     const currentPath = location.pathname;
     
@@ -94,14 +95,28 @@ const InquiryList = () => {
     console.log('Current path:', currentPath);
     console.log('Current session:', currentSession);
     
-    // inquiry 관련 페이지에서 왔고 세션이 있으면 자동 로그인
-    if (previousPath && previousPath.includes('/inquiry') && currentSession) {
+    // inquiry 관련 페이지 간의 직접적인 이동만 허용 (inquiry-list, inquiry-detail, inquiry)
+    const isFromInquiryPage = previousPath && (
+      previousPath === '/inquiry-list' || 
+      previousPath.startsWith('/inquiry-detail/') || 
+      previousPath === '/inquiry'
+    );
+    
+    const isToInquiryPage = currentPath === '/inquiry-list' || 
+                           currentPath.startsWith('/inquiry-detail/') || 
+                           currentPath === '/inquiry';
+    
+    // inquiry 관련 페이지에서 inquiry 관련 페이지로 이동했고 세션이 있으면 자동 로그인
+    if (isFromInquiryPage && isToInquiryPage && currentSession) {
       const success = authenticateAndLoadInquiries(currentSession.author, currentSession.password);
       if (success) {
         setIsAuthenticated(true);
       } else {
         currentSession = null;
       }
+    } else if (!isFromInquiryPage) {
+      // inquiry 관련 페이지가 아닌 곳에서 왔으면 세션 초기화
+      currentSession = null;
     }
     
     // 현재 경로를 저장
@@ -370,3 +385,4 @@ const InquiryList = () => {
 };
 
 export default InquiryList;
+
