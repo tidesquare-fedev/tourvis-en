@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
-import { Info, X, CreditCard, Edit, Apple } from "lucide-react";
+import { Info, X, CreditCard, Edit, Apple, Calendar, Users } from "lucide-react";
 
 const BookingInfo = () => {
   const navigate = useNavigate();
@@ -327,7 +327,7 @@ const BookingInfo = () => {
             <CardTitle>Product Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-4">
               <img 
                 src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80"
                 alt="Tour"
@@ -391,6 +391,22 @@ const BookingInfo = () => {
                   </div>
                 </DrawerContent>
               </Drawer>
+            </div>
+            
+            {/* Booking Summary */}
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Users className="h-4 w-4" />
+                <span>{formData.adults + formData.children} Travelers</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Calendar className="h-4 w-4" />
+                <span>Wed, Jul 23, 2025 • 9:00 AM</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-lg font-semibold">Total</span>
+                <span className="text-lg font-bold">₩{(tour.price * (formData.adults + formData.children) * 1200).toLocaleString()}.00</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -496,16 +512,10 @@ const BookingInfo = () => {
                 {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox id="emailUpdates" />
-                <Label htmlFor="emailUpdates" className="text-sm">
-                  Get emails with special offers, inspiration, tips, and other updates from Viator. You can unsubscribe at any time.
-                </Label>
-              </div>
-
               <Button 
                 onClick={() => handleNextStep(1)}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full text-white"
+                style={{ backgroundColor: '#01c5fd' }}
                 size="lg"
               >
                 Next
@@ -552,7 +562,7 @@ const BookingInfo = () => {
           
           {isStepActive(2) && (
             <CardContent className="space-y-6">
-              {/* Ticket User Information */}
+              {/* Same as traveler checkbox */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
@@ -666,7 +676,8 @@ const BookingInfo = () => {
 
               <Button 
                 onClick={() => handleNextStep(2)}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full text-white"
+                style={{ backgroundColor: '#01c5fd' }}
                 size="lg"
               >
                 Next
@@ -825,7 +836,8 @@ const BookingInfo = () => {
 
               <Button 
                 onClick={handlePayment}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full text-white"
+                style={{ backgroundColor: '#01c5fd' }}
                 size="lg"
                 disabled={!paymentMethod}
               >
