@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,48 +21,74 @@ interface InquiryDetail {
   };
 }
 
-// Mock data for inquiry details
+// Mock data for inquiry details - updated to match InquiryList IDs
 const mockInquiryDetails: { [key: string]: InquiryDetail } = {
-  "INQ001": {
-    id: "INQ001",
-    subject: "Question about tour cancellation policy",
-    category: "Cancellation/Refund",
+  "INQ-001": {
+    id: "INQ-001",
+    subject: "Question about Seoul tour package",
+    category: "Tour Package",
+    status: "pending",
+    createdAt: "2024-01-15",
+    message: "Hello, I would like to know more details about the Seoul tour package. What are the main attractions included and what is the duration of the tour? Also, are meals included in the package?",
+    name: "John Doe",
+    email: "john@email.com",
+    phone: "+1-555-123-4567"
+  },
+  "INQ-002": {
+    id: "INQ-002",
+    subject: "Cancellation policy inquiry",
+    category: "Cancellation",
     status: "answered",
-    createdAt: "2024-06-15",
-    message: "Hello, I would like to know about the cancellation policy for the Seoul City Tour I booked for next week. What are the refund terms if I need to cancel due to unexpected circumstances? Thank you.",
-    name: "John Smith",
-    email: "john.smith@email.com",
+    createdAt: "2024-01-10",
+    message: "Hi, I would like to know about the cancellation policy for tours. What are the refund terms if I need to cancel due to unexpected circumstances?",
+    name: "John Doe",
+    email: "john@email.com",
     phone: "+1-555-123-4567",
     reply: {
-      message: "Hello John, Thank you for your inquiry. For the Seoul City Tour, you can cancel up to 24 hours before the tour start time for a full refund. Cancellations made within 24 hours will receive a 50% refund. In case of extreme weather or other circumstances beyond our control, we offer full refunds or rescheduling options. Please let us know if you have any other questions.",
-      repliedAt: "2024-06-16",
+      message: "Hello John, Thank you for your inquiry. You can cancel up to 24 hours before the tour start time for a full refund. Cancellations made within 24 hours will receive a 50% refund. In case of extreme weather or other circumstances beyond our control, we offer full refunds or rescheduling options.",
+      repliedAt: "2024-01-12",
       repliedBy: "Customer Service Team"
     }
   },
-  "INQ002": {
-    id: "INQ002",
-    subject: "Dietary restrictions for Seoul food tour",
-    category: "Product Inquiry",
+  "INQ-003": {
+    id: "INQ-003",
+    subject: "Group discount availability",
+    category: "Pricing",
+    status: "closed",
+    createdAt: "2024-01-05",
+    message: "Do you offer group discounts for parties of 10 or more people? We are planning a company outing and would like to know about special rates.",
+    name: "Sarah Kim",
+    email: "sarah@email.com",
+    reply: {
+      message: "Hello Sarah, Yes, we offer group discounts for parties of 10 or more. You can receive a 15% discount for groups of 10-19 people, and 20% discount for groups of 20 or more. Please contact us directly to arrange your booking.",
+      repliedAt: "2024-01-08",
+      repliedBy: "Sales Team"
+    }
+  },
+  "INQ-004": {
+    id: "INQ-004",
+    subject: "Dietary restrictions for food tour",
+    category: "Special Requirements",
     status: "pending",
-    createdAt: "2024-06-18",
-    message: "Hi, I have booked the Seoul Food Tour for next month. I have severe allergies to shellfish and nuts. Can you please confirm if the tour can accommodate these dietary restrictions? I want to make sure I can safely participate in all the food tastings. Looking forward to your response.",
-    name: "Sarah Johnson",
-    email: "sarah.j@email.com",
+    createdAt: "2024-01-20",
+    message: "I have severe allergies to shellfish and nuts. Can the Seoul Food Tour accommodate these dietary restrictions? I want to make sure I can safely participate in all the food tastings.",
+    name: "Mike Johnson",
+    email: "mike@email.com",
     phone: "+1-555-987-6543"
   },
-  "INQ003": {
-    id: "INQ003",
-    subject: "Change reservation date request",
-    category: "Reservation Change",
-    status: "closed",
-    createdAt: "2024-06-10",
-    message: "I need to change my reservation date for the Busan Beach Tour from June 20th to June 27th due to a schedule conflict. Is this possible? My reservation number is RES123456. Please let me know the process and any additional fees.",
-    name: "Mike Wilson",
-    email: "mike.wilson@email.com",
+  "INQ-005": {
+    id: "INQ-005",
+    subject: "Transportation from airport",
+    category: "Transportation",
+    status: "answered",
+    createdAt: "2024-01-18",
+    message: "What transportation options are available from Incheon Airport to the tour meeting point? Do you provide pickup services?",
+    name: "Sarah Kim",
+    email: "sarah@email.com",
     reply: {
-      message: "Hello Mike, We have successfully changed your reservation from June 20th to June 27th. There are no additional fees for this change as it was requested more than 48 hours in advance. Your new confirmation number is RES123789. Please save this for your records. Have a great trip!",
-      repliedAt: "2024-06-12",
-      repliedBy: "Reservation Team"
+      message: "Hello Sarah, We offer airport pickup services for an additional fee of $30 per person. Alternatively, you can take the Airport Express train to Seoul Station and then a short taxi ride to our meeting point. We'll send detailed directions upon booking confirmation.",
+      repliedAt: "2024-01-19",
+      repliedBy: "Customer Service Team"
     }
   }
 };
