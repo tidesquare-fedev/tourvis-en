@@ -18,7 +18,8 @@ const BookingInfo = () => {
   const searchParams = new URLSearchParams(location.search);
   const tourId = searchParams.get('tour');
   
-  const [currentStep, setCurrentStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -229,8 +230,8 @@ const BookingInfo = () => {
     }
   };
 
-  const handleNextStep = () => {
-    if (currentStep === 1) {
+  const handleNextStep = (step: number) => {
+    if (step === 1) {
       // Validate all fields for step 1
       const isFirstNameValid = validateField("firstName", formData.firstName);
       const isLastNameValid = validateField("lastName", formData.lastName);
@@ -238,9 +239,10 @@ const BookingInfo = () => {
       const isPhoneValid = validateField("phone", formData.phone);
 
       if (isFirstNameValid && isLastNameValid && isEmailValid && isPhoneValid) {
-        setCurrentStep(2);
+        setCompletedSteps(prev => [...prev, 1]);
+        setActiveStep(2);
       }
-    } else if (currentStep === 2) {
+    } else if (step === 2) {
       // Validate ticket user information
       const isTicketFirstNameValid = validateField("firstName", ticketUserData.firstName, "ticket");
       const isTicketLastNameValid = validateField("lastName", ticketUserData.lastName, "ticket");
@@ -248,13 +250,15 @@ const BookingInfo = () => {
       const isTicketPhoneValid = validateField("phone", ticketUserData.phone, "ticket");
 
       if (isTicketFirstNameValid && isTicketLastNameValid && isTicketEmailValid && isTicketPhoneValid) {
-        setCurrentStep(3);
+        setCompletedSteps(prev => [...prev, 2]);
+        setActiveStep(3);
       }
     }
   };
 
   const handleEditStep = (step: number) => {
-    setCurrentStep(step);
+    setActiveStep(step);
+    setCompletedSteps(prev => prev.filter(s => s !== step));
   };
 
   const handlePayment = () => {
@@ -279,6 +283,20 @@ const BookingInfo = () => {
     navigate("/booking-confirmation");
   };
 
+  const getStepIcon = (step: number) => {
+    if (completedSteps.includes(step)) {
+      return <div className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm">✓</div>;
+    } else if (activeStep === step) {
+      return <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm">{step}</div>;
+    } else {
+      return <div className="w-6 h-6 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm">{step}</div>;
+    }
+  };
+
+  const isStepActive = (step: number) => activeStep === step;
+  const isStepCompleted = (step: number) => completedSteps.includes(step);
+  const isStepAccessible = (step: number) => step <= activeStep || completedSteps.includes(step);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -301,24 +319,6 @@ const BookingInfo = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Booking Information</h1>
           <p className="text-gray-600">Please enter your information and preferences for the booking.</p>
-        </div>
-
-        {/* Progress Indicators */}
-        <div className="flex items-center mb-8">
-          <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= 1 ? 'bg-black text-white' : 'bg-gray-200'}`}>
-            1
-          </div>
-          <span className="ml-2 text-sm font-medium">Contact details</span>
-          
-          <div className={`ml-8 flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= 2 ? 'bg-black text-white' : 'bg-gray-200'}`}>
-            2
-          </div>
-          <span className="ml-2 text-sm font-medium">Activity details</span>
-          
-          <div className={`ml-8 flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= 3 ? 'bg-black text-white' : 'bg-gray-200'}`}>
-            3
-          </div>
-          <span className="ml-2 text-sm font-medium">Payment details</span>
         </div>
 
         {/* Product Info */}
@@ -396,16 +396,33 @@ const BookingInfo = () => {
         </Card>
 
         {/* Step 1: Contact Details */}
-        {currentStep === 1 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm">1</div>
+        <Card className="mb-6">
+          <CardHeader className="cursor-pointer" onClick={() => isStepAccessible(1) && setActiveStep(1)}>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {getStepIcon(1)}
                 Contact details
-              </CardTitle>
+              </div>
+              {isStepCompleted(1) && (
+                <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleEditStep(1); }} className="flex items-center gap-2">
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
+              )}
+            </CardTitle>
+            {!isStepActive(1) && (
               <p className="text-sm text-gray-600">We'll use this information to send you confirmation and updates about your booking</p>
-            </CardHeader>
+            )}
+          </CardHeader>
+          
+          {isStepActive(1) && (
             <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">We'll use this information to send you confirmation and updates about your booking</p>
+              
+              <div className="bg-gray-50 p-3 rounded-lg flex items-center gap-2">
+                <span className="text-sm">👤 Log in or Sign-up for a faster checkout and to redeem available Viator Rewards</span>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName">First name</Label>
@@ -434,7 +451,7 @@ const BookingInfo = () => {
               </div>
               
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email ℹ️</Label>
                 <Input
                   id="email"
                   type="email"
@@ -451,7 +468,7 @@ const BookingInfo = () => {
               </div>
 
               <div>
-                <Label htmlFor="phone">Phone number</Label>
+                <Label htmlFor="phone">Phone number ℹ️</Label>
                 <div className="flex gap-2">
                   <Select value={formData.countryCode} onValueChange={(value) => handleInputChange("countryCode", value)}>
                     <SelectTrigger className="w-48">
@@ -479,32 +496,24 @@ const BookingInfo = () => {
                 {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
               </div>
 
+              <div className="flex items-center space-x-2">
+                <Checkbox id="emailUpdates" />
+                <Label htmlFor="emailUpdates" className="text-sm">
+                  Get emails with special offers, inspiration, tips, and other updates from Viator. You can unsubscribe at any time.
+                </Label>
+              </div>
+
               <Button 
-                onClick={handleNextStep}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => handleNextStep(1)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
                 size="lg"
               >
                 Next
               </Button>
             </CardContent>
-          </Card>
-        )}
+          )}
 
-        {/* Step 1 Summary */}
-        {currentStep > 1 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm">✓</div>
-                  Contact details
-                </div>
-                <Button variant="outline" size="sm" onClick={() => handleEditStep(1)} className="flex items-center gap-2">
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-              </CardTitle>
-            </CardHeader>
+          {isStepCompleted(1) && !isStepActive(1) && (
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -521,28 +530,30 @@ const BookingInfo = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        )}
+          )}
+        </Card>
 
         {/* Step 2: Activity Details */}
-        {currentStep === 2 && (
-          <>
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm">2</div>
-                  Activity details
-                </CardTitle>
-              </CardHeader>
-            </Card>
-
-            {/* Ticket User Information */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Ticket User Information *</CardTitle>
-                <p className="text-sm text-gray-600">Enter the ticket user's information (person who will use the ticket).</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
+        <Card className="mb-6">
+          <CardHeader className={`cursor-pointer ${isStepAccessible(2) ? '' : 'opacity-50'}`} onClick={() => isStepAccessible(2) && setActiveStep(2)}>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {getStepIcon(2)}
+                Activity details
+              </div>
+              {isStepCompleted(2) && (
+                <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleEditStep(2); }} className="flex items-center gap-2">
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
+              )}
+            </CardTitle>
+          </CardHeader>
+          
+          {isStepActive(2) && (
+            <CardContent className="space-y-6">
+              {/* Ticket User Information */}
+              <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="sameAsTraveler" 
@@ -631,15 +642,10 @@ const BookingInfo = () => {
                   </div>
                   {errors.ticketPhone && <p className="text-sm text-red-500 mt-1">{errors.ticketPhone}</p>}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Requirements */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Requirements</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              {/* Requirements */}
+              <div className="space-y-4 border-t pt-4">
                 <div className="space-y-2">
                   <p className="text-sm text-gray-600">• Be careful to write accurately when entering your reservation.</p>
                   <p className="text-sm text-gray-600">• Please provide accurate contact information for smooth reservation.</p>
@@ -656,34 +662,19 @@ const BookingInfo = () => {
                     rows={4}
                   />
                 </div>
+              </div>
 
-                <Button 
-                  onClick={handleNextStep}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  size="lg"
-                >
-                  Next
-                </Button>
-              </CardContent>
-            </Card>
-          </>
-        )}
+              <Button 
+                onClick={() => handleNextStep(2)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                size="lg"
+              >
+                Next
+              </Button>
+            </CardContent>
+          )}
 
-        {/* Step 2 Summary */}
-        {currentStep > 2 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm">✓</div>
-                  Activity details
-                </div>
-                <Button variant="outline" size="sm" onClick={() => handleEditStep(2)} className="flex items-center gap-2">
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
-              </CardTitle>
-            </CardHeader>
+          {isStepCompleted(2) && !isStepActive(2) && (
             <CardContent>
               <div className="space-y-4 text-sm">
                 <div>
@@ -700,150 +691,149 @@ const BookingInfo = () => {
                 )}
               </div>
             </CardContent>
-          </Card>
-        )}
+          )}
+        </Card>
 
         {/* Step 3: Payment Details */}
-        {currentStep >= 3 && (
-          <>
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-black text-white rounded-full flex items-center justify-center text-sm">3</div>
-                  Payment details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                    <RadioGroupItem value="card" id="card" />
-                    <Label htmlFor="card" className="flex items-center gap-4 cursor-pointer flex-1">
-                      <div className="flex gap-2">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNTFBNSIvPgo8dGV4dCB4PSIyMCIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZJU0E8L3RleHQ+Cjwvc3ZnPgo=" alt="Visa" className="w-10 h-6" />
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwN0RDQyIvPgo8dGV4dCB4PSIyMCIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI2IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkFNRVg8L3RleHQ+Cjwvc3ZnPgo=" alt="Amex" className="w-10 h-6" />
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iI0VCMDAxQiIvPgo8Y2lyY2xlIGN4PSIxNSIgY3k9IjEyIiByPSI2IiBmaWxsPSIjRkY1RjAwIiBmaWxsLW9wYWNpdHk9IjAuOCIvPgo8Y2lyY2xlIGN4PSIyNSIgY3k9IjEyIiByPSI2IiBmaWxsPSIjRkY1RjAwIiBmaWxsLW9wYWNpdHk9IjAuOCIvPgo8L3N2Zz4K" alt="Mastercard" className="w-10 h-6" />
-                      </div>
-                      <span>Debit/Credit Card</span>
-                    </Label>
+        <Card className="mb-6">
+          <CardHeader className={`cursor-pointer ${isStepAccessible(3) ? '' : 'opacity-50'}`} onClick={() => isStepAccessible(3) && setActiveStep(3)}>
+            <CardTitle className="flex items-center gap-2">
+              {getStepIcon(3)}
+              Payment details
+            </CardTitle>
+          </CardHeader>
+          
+          {isStepActive(3) && (
+            <CardContent className="space-y-6">
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <RadioGroupItem value="card" id="card" />
+                  <Label htmlFor="card" className="flex items-center gap-4 cursor-pointer flex-1">
+                    <div className="flex gap-2">
+                      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNTFBNSIvPgo8dGV4dCB4PSIyMCIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI4IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZJU0E8L3RleHQ+Cjwvc3ZnPgo=" alt="Visa" className="w-10 h-6" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwN0RDQyIvPgo8dGV4dCB4PSIyMCIgeT0iMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI2IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkFNRVg8L3RleHQ+Cjwvc3ZnPgo=" alt="Amex" className="w-10 h-6" />
+                      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iI0VCMDAxQiIvPgo8Y2lyY2xlIGN4PSIxNSIgY3k9IjEyIiByPSI2IiBmaWxsPSIjRkY1RjAwIiBmaWxsLW9wYWNpdHk9IjAuOCIvPgo8Y2lyY2xlIGN4PSIyNSIgY3k9IjEyIiByPSI2IiBmaWxsPSIjRkY1RjAwIiBmaWxsLW9wYWNpdHk9IjAuOCIvPgo8L3N2Zz4K" alt="Mastercard" className="w-10 h-6" />
+                    </div>
+                    <span>Debit/Credit Card</span>
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <RadioGroupItem value="apple-pay" id="apple-pay" />
+                  <Label htmlFor="apple-pay" className="flex items-center gap-4 cursor-pointer flex-1">
+                    <Apple className="h-6 w-6" />
+                    <span>Apple Pay</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+
+              {paymentMethod === "card" && (
+                <div className="space-y-4 border-t pt-4">
+                  <div>
+                    <Label htmlFor="holderName">Cardholder name</Label>
+                    <Input
+                      id="holderName"
+                      placeholder="kil lim"
+                      value={cardInfo.holderName}
+                      onChange={(e) => setCardInfo({...cardInfo, holderName: e.target.value})}
+                    />
                   </div>
                   
-                  <div className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                    <RadioGroupItem value="apple-pay" id="apple-pay" />
-                    <Label htmlFor="apple-pay" className="flex items-center gap-4 cursor-pointer flex-1">
-                      <Apple className="h-6 w-6" />
-                      <span>Apple Pay</span>
-                    </Label>
+                  <div>
+                    <Label htmlFor="cardNumber">Credit Card Number</Label>
+                    <Input
+                      id="cardNumber"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardInfo.cardNumber}
+                      onChange={(e) => setCardInfo({...cardInfo, cardNumber: e.target.value})}
+                    />
                   </div>
-                </RadioGroup>
-
-                {paymentMethod === "card" && (
-                  <div className="space-y-4 border-t pt-4">
+                  
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="holderName">Cardholder name</Label>
-                      <Input
-                        id="holderName"
-                        placeholder="kil lim"
-                        value={cardInfo.holderName}
-                        onChange={(e) => setCardInfo({...cardInfo, holderName: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="cardNumber">Credit Card Number</Label>
-                      <Input
-                        id="cardNumber"
-                        placeholder="1234 5678 9012 3456"
-                        value={cardInfo.cardNumber}
-                        onChange={(e) => setCardInfo({...cardInfo, cardNumber: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label>Expiration Date</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="MM"
-                            value={cardInfo.expiryMonth}
-                            onChange={(e) => setCardInfo({...cardInfo, expiryMonth: e.target.value})}
-                          />
-                          <span className="flex items-center">/</span>
-                          <Input
-                            placeholder="YY"
-                            value={cardInfo.expiryYear}
-                            onChange={(e) => setCardInfo({...cardInfo, expiryYear: e.target.value})}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="cvv">Security Code</Label>
+                      <Label>Expiration Date</Label>
+                      <div className="flex gap-2">
                         <Input
-                          id="cvv"
-                          placeholder="123"
-                          value={cardInfo.cvv}
-                          onChange={(e) => setCardInfo({...cardInfo, cvv: e.target.value})}
+                          placeholder="MM"
+                          value={cardInfo.expiryMonth}
+                          onChange={(e) => setCardInfo({...cardInfo, expiryMonth: e.target.value})}
+                        />
+                        <span className="flex items-center">/</span>
+                        <Input
+                          placeholder="YY"
+                          value={cardInfo.expiryYear}
+                          onChange={(e) => setCardInfo({...cardInfo, expiryYear: e.target.value})}
                         />
                       </div>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="country">Country</Label>
-                        <Select value={cardInfo.country} onValueChange={(value) => setCardInfo({...cardInfo, country: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="South Korea">South Korea</SelectItem>
-                            <SelectItem value="United States">United States</SelectItem>
-                            <SelectItem value="Japan">Japan</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="zipCode">ZIP code</Label>
-                        <Input
-                          id="zipCode"
-                          placeholder="12345"
-                          value={cardInfo.zipCode}
-                          onChange={(e) => setCardInfo({...cardInfo, zipCode: e.target.value})}
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="cvv">Security Code</Label>
+                      <Input
+                        id="cvv"
+                        placeholder="123"
+                        value={cardInfo.cvv}
+                        onChange={(e) => setCardInfo({...cardInfo, cvv: e.target.value})}
+                      />
                     </div>
                   </div>
-                )}
-
-                {/* Payment Summary */}
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3">Payment Summary</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Tour Price</span>
-                      <span>${tour.price}.00 USD</span>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="country">Country</Label>
+                      <Select value={cardInfo.country} onValueChange={(value) => setCardInfo({...cardInfo, country: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="South Korea">South Korea</SelectItem>
+                          <SelectItem value="United States">United States</SelectItem>
+                          <SelectItem value="Japan">Japan</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Quantity</span>
-                      <span>{formData.adults + formData.children}</span>
-                    </div>
-                    <div className="border-t pt-2 flex justify-between font-semibold">
-                      <span>Total Amount</span>
-                      <span>${(tour.price * (formData.adults + formData.children)).toFixed(2)} USD</span>
+                    <div>
+                      <Label htmlFor="zipCode">ZIP code</Label>
+                      <Input
+                        id="zipCode"
+                        placeholder="12345"
+                        value={cardInfo.zipCode}
+                        onChange={(e) => setCardInfo({...cardInfo, zipCode: e.target.value})}
+                      />
                     </div>
                   </div>
                 </div>
+              )}
 
-                <Button 
-                  onClick={handlePayment}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  size="lg"
-                  disabled={!paymentMethod}
-                >
-                  Book Now
-                </Button>
-              </CardContent>
-            </Card>
-          </>
-        )}
+              {/* Payment Summary */}
+              <div className="border-t pt-4">
+                <h4 className="font-semibold mb-3">Payment Summary</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Tour Price</span>
+                    <span>${tour.price}.00 USD</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Quantity</span>
+                    <span>{formData.adults + formData.children}</span>
+                  </div>
+                  <div className="border-t pt-2 flex justify-between font-semibold">
+                    <span>Total Amount</span>
+                    <span>${(tour.price * (formData.adults + formData.children)).toFixed(2)} USD</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handlePayment}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                size="lg"
+                disabled={!paymentMethod}
+              >
+                Book Now
+              </Button>
+            </CardContent>
+          )}
+        </Card>
       </div>
     </div>
   );
