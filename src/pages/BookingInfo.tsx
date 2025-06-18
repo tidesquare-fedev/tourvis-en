@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -405,7 +404,7 @@ const BookingInfo = () => {
               </div>
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-lg font-semibold">Total</span>
-                <span className="text-lg font-bold">₩{(tour.price * (formData.adults + formData.children) * 1200).toLocaleString()}.00</span>
+                <span className="text-lg font-bold">${(tour.price * (formData.adults + formData.children)).toFixed(2)} USD</span>
               </div>
             </div>
           </CardContent>
@@ -435,10 +434,6 @@ const BookingInfo = () => {
             <CardContent className="space-y-4">
               <p className="text-sm text-gray-600">We'll use this information to send you confirmation and updates about your booking</p>
               
-              <div className="bg-gray-50 p-3 rounded-lg flex items-center gap-2">
-                <span className="text-sm">👤 Log in or Sign-up for a faster checkout and to redeem available Viator Rewards</span>
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName">First name</Label>
