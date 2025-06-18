@@ -170,10 +170,10 @@ const Index = () => {
             />
             <nav className="flex items-center space-x-3 sm:space-x-6">
               <Link to="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                1:1 문의
+                Direct Inquiry
               </Link>
               <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                예약 확인
+                Reservations
               </Link>
             </nav>
           </div>
@@ -260,7 +260,7 @@ const Index = () => {
         {visibleTours < allTours.length && (
           <div className="text-center mt-6 sm:mt-8">
             <Button onClick={handleLoadMore} variant="outline" size="lg" className="text-sm sm:text-base">
-              더 많은 투어 보기
+              More
             </Button>
           </div>
         )}
