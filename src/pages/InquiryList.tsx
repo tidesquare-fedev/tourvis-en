@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -78,15 +79,6 @@ const InquiryList = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Check if user is already authenticated
-    const authData = sessionStorage.getItem('inquiryAuth');
-    if (authData) {
-      const { author, password } = JSON.parse(authData);
-      authenticateAndLoadInquiries(author, password);
-    }
-  }, []);
-
   const authenticateAndLoadInquiries = (author: string, password: string) => {
     // Get inquiries from localStorage first, then fall back to sample data
     const storedInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
@@ -100,7 +92,6 @@ const InquiryList = () => {
       inquiry.author === author && inquiry.password === password)) {
       setIsAuthenticated(true);
       setUserInquiries(userInquiries);
-      sessionStorage.setItem('inquiryAuth', JSON.stringify({ author, password }));
       return true;
     }
     return false;
@@ -127,17 +118,6 @@ const InquiryList = () => {
       }
       setLoading(false);
     }, 500);
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUserInquiries([]);
-    setLoginData({ author: "", password: "" });
-    sessionStorage.removeItem('inquiryAuth');
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully",
-    });
   };
 
   const getStatusColor = (status: string) => {
@@ -260,9 +240,6 @@ const InquiryList = () => {
             <nav className="flex items-center space-x-3 sm:space-x-6">
               <Link to="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
               <Link to="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-xs sm:text-sm">
-                Logout
-              </Button>
             </nav>
           </div>
         </div>
