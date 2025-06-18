@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -71,56 +72,41 @@ const sampleInquiries: InquiryItem[] = [
   }
 ];
 
+// 전역 변수로 현재 세션 정보를 저장 (메모리에만 저장)
+let currentSession: { author: string; password: string } | null = null;
+
 const InquiryList = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userInquiries, setUserInquiries] = useState<InquiryItem[]>([]);
   const [loginData, setLoginData] = useState({ author: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ author: "", password: "" });
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for existing session on component mount
+  // 컴포넌트 마운트 시 세션 확인
   useEffect(() => {
-    const sessionAuth = sessionStorage.getItem('inquiryAuth');
-    if (sessionAuth) {
-      const { author, password } = JSON.parse(sessionAuth);
-      const success = authenticateAndLoadInquiries(author, password);
+    // inquiry 관련 페이지에서 왔는지 확인
+    const previousPath = sessionStorage.getItem('previousPath');
+    const currentPath = location.pathname;
+    
+    console.log('Previous path:', previousPath);
+    console.log('Current path:', currentPath);
+    console.log('Current session:', currentSession);
+    
+    // inquiry 관련 페이지에서 왔고 세션이 있으면 자동 로그인
+    if (previousPath && previousPath.includes('/inquiry') && currentSession) {
+      const success = authenticateAndLoadInquiries(currentSession.author, currentSession.password);
       if (success) {
         setIsAuthenticated(true);
       } else {
-        sessionStorage.removeItem('inquiryAuth');
+        currentSession = null;
       }
     }
+    
+    // 현재 경로를 저장
+    sessionStorage.setItem('previousPath', currentPath);
   }, []);
-
-  // Clear session when navigating away from inquiry pages
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      const currentPath = location.pathname;
-      if (!currentPath.includes('/inquiry')) {
-        sessionStorage.removeItem('inquiryAuth');
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        const currentPath = location.pathname;
-        if (!currentPath.includes('/inquiry')) {
-          sessionStorage.removeItem('inquiryAuth');
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [location]);
 
   const authenticateAndLoadInquiries = (author: string, password: string) => {
     // Get inquiries from localStorage first, then fall back to sample data
@@ -135,9 +121,8 @@ const InquiryList = () => {
       inquiry.author === author && inquiry.password === password)) {
       setIsAuthenticated(true);
       setUserInquiries(userInquiries);
-      setCurrentUser({ author, password });
-      // Store session for inquiry pages navigation
-      sessionStorage.setItem('inquiryAuth', JSON.stringify({ author, password }));
+      // 메모리에 세션 정보 저장
+      currentSession = { author, password };
       return true;
     }
     return false;

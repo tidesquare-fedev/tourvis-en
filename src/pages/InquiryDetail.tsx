@@ -99,31 +99,9 @@ const InquiryDetail = () => {
   const { id } = useParams<{ id: string }>();
   const inquiry = id ? mockInquiryDetails[id] : null;
 
-  // Clear session when navigating away from inquiry pages
+  // 현재 경로를 저장하여 세션 관리에 활용
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      const currentPath = window.location.pathname;
-      if (!currentPath.includes('/inquiry')) {
-        sessionStorage.removeItem('inquiryAuth');
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        const currentPath = window.location.pathname;
-        if (!currentPath.includes('/inquiry')) {
-          sessionStorage.removeItem('inquiryAuth');
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    sessionStorage.setItem('previousPath', window.location.pathname);
   }, []);
 
   if (!inquiry) {
