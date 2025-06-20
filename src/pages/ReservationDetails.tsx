@@ -1,10 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ProductInfo } from "@/components/reservation/ProductInfo";
 import { PaymentInfo } from "@/components/reservation/PaymentInfo";
 import { CustomerService } from "@/components/reservation/CustomerService";
+import { useEffect, useState } from "react";
 
 interface Reservation {
   reservationNumber: string;
@@ -31,50 +32,110 @@ interface Reservation {
   };
 }
 
-// Mock data for testing with activity details
-const mockReservation: Reservation = {
-  reservationNumber: "KT12345678",
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phone: "+82-10-1234-5678",
-  country: "South Korea",
-  date: "2024-07-15",
-  participants: "2",
-  specialRequests: "Vegetarian meals preferred",
-  tourTitle: "Seoul City Highlights Tour",
-  tourPrice: 150,
-  totalAmount: 300,
-  bookingDate: "2024-06-15",
-  status: "Confirmed",
-  activityDetails: {
-    duration: "8 hours (9:00 AM - 5:00 PM)",
-    meetingPoint: "Myeongdong Station Exit 6",
-    meetingTime: "8:45 AM (Please arrive 15 minutes early)",
-    inclusions: [
-      "Professional English-speaking guide",
-      "Transportation by air-conditioned vehicle",
-      "Entrance fees to all attractions",
-      "Traditional Korean lunch",
-      "Hotel pickup and drop-off (selected hotels)"
-    ],
-    exclusions: [
-      "Personal expenses",
-      "Travel insurance",
-      "Tips and gratuities",
-      "Alcoholic beverages"
-    ],
-    requirements: [
-      "Comfortable walking shoes required",
-      "Weather-appropriate clothing",
-      "Valid passport or ID required",
-      "Moderate physical fitness required"
-    ]
-  }
-};
-
 const ReservationDetails = () => {
-  const reservation = mockReservation;
+  const [searchParams] = useSearchParams();
+  const [reservation, setReservation] = useState<Reservation | null>(null);
+
+  useEffect(() => {
+    const reservationNumber = searchParams.get('reservation');
+    if (reservationNumber) {
+      // Try to get from localStorage first
+      const savedReservation = localStorage.getItem(`reservation_${reservationNumber}`);
+      if (savedReservation) {
+        setReservation(JSON.parse(savedReservation));
+      } else {
+        // Fallback to mock data if not found
+        const mockReservation: Reservation = {
+          reservationNumber,
+          firstName: "John",
+          lastName: "Doe",
+          email: "john.doe@example.com",
+          phone: "+82-10-1234-5678",
+          country: "South Korea",
+          date: "2024-07-15",
+          participants: "2",
+          specialRequests: "Vegetarian meals preferred",
+          tourTitle: "Seoul City Highlights Tour",
+          tourPrice: 150,
+          totalAmount: 300,
+          bookingDate: new Date().toISOString().split('T')[0],
+          status: "Confirmed",
+          activityDetails: {
+            duration: "8 hours (9:00 AM - 5:00 PM)",
+            meetingPoint: "Myeongdong Station Exit 6",
+            meetingTime: "8:45 AM (Please arrive 15 minutes early)",
+            inclusions: [
+              "Professional English-speaking guide",
+              "Transportation by air-conditioned vehicle",
+              "Entrance fees to all attractions",
+              "Traditional Korean lunch",
+              "Hotel pickup and drop-off (selected hotels)"
+            ],
+            exclusions: [
+              "Personal expenses",
+              "Travel insurance",
+              "Tips and gratuities",
+              "Alcoholic beverages"
+            ],
+            requirements: [
+              "Comfortable walking shoes required",
+              "Weather-appropriate clothing",
+              "Valid passport or ID required",
+              "Moderate physical fitness required"
+            ]
+          }
+        };
+        setReservation(mockReservation);
+      }
+    } else {
+      // If no reservation number, use mock data with default number
+      const mockReservation: Reservation = {
+        reservationNumber: "KT12345678",
+        firstName: "John",
+        lastName: "Doe",
+        email: "john.doe@example.com",
+        phone: "+82-10-1234-5678",
+        country: "South Korea",
+        date: "2024-07-15",
+        participants: "2",
+        specialRequests: "Vegetarian meals preferred",
+        tourTitle: "Seoul City Highlights Tour",
+        tourPrice: 150,
+        totalAmount: 300,
+        bookingDate: new Date().toISOString().split('T')[0],
+        status: "Confirmed",
+        activityDetails: {
+          duration: "8 hours (9:00 AM - 5:00 PM)",
+          meetingPoint: "Myeongdong Station Exit 6",
+          meetingTime: "8:45 AM (Please arrive 15 minutes early)",
+          inclusions: [
+            "Professional English-speaking guide",
+            "Transportation by air-conditioned vehicle",
+            "Entrance fees to all attractions",
+            "Traditional Korean lunch",
+            "Hotel pickup and drop-off (selected hotels)"
+          ],
+          exclusions: [
+            "Personal expenses",
+            "Travel insurance",
+            "Tips and gratuities",
+            "Alcoholic beverages"
+          ],
+          requirements: [
+            "Comfortable walking shoes required",
+            "Weather-appropriate clothing",
+            "Valid passport or ID required",
+            "Moderate physical fitness required"
+          ]
+        }
+      };
+      setReservation(mockReservation);
+    }
+  }, [searchParams]);
+
+  if (!reservation) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

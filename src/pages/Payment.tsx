@@ -53,14 +53,38 @@ const Payment = () => {
       tourPrice: bookingData.tour.price,
       totalAmount: bookingData.totalAmount,
       bookingDate: new Date().toISOString().split('T')[0],
-      status: "Confirmed"
+      status: "Confirmed",
+      activityDetails: {
+        duration: "8 hours (9:00 AM - 5:00 PM)",
+        meetingPoint: "Myeongdong Station Exit 6",
+        meetingTime: "8:45 AM (Please arrive 15 minutes early)",
+        inclusions: [
+          "Professional English-speaking guide",
+          "Transportation by air-conditioned vehicle",
+          "Entrance fees to all attractions",
+          "Traditional Korean lunch",
+          "Hotel pickup and drop-off (selected hotels)"
+        ],
+        exclusions: [
+          "Personal expenses",
+          "Travel insurance",
+          "Tips and gratuities",
+          "Alcoholic beverages"
+        ],
+        requirements: [
+          "Comfortable walking shoes required",
+          "Weather-appropriate clothing",
+          "Valid passport or ID required",
+          "Moderate physical fitness required"
+        ]
+      }
     };
     
     // Save to localStorage
     localStorage.setItem(`reservation_${reservationNumber}`, JSON.stringify(reservationData));
     
-    // Navigate to booking confirmation
-    navigate(`/booking-confirmation?reservation=${reservationNumber}`);
+    // Navigate directly to reservation details instead of booking confirmation
+    navigate(`/reservation-details?reservation=${reservationNumber}`);
   };
 
   if (!bookingData) {
