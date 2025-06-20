@@ -32,6 +32,8 @@ const Payment = () => {
   }, [navigate]);
 
   const handlePayment = () => {
+    console.log("Payment button clicked");
+    
     if (!agreedToTerms) {
       alert("Please agree to the terms and conditions");
       return;
@@ -39,6 +41,8 @@ const Payment = () => {
     
     // Generate reservation number and save reservation data
     const reservationNumber = `KT${Date.now().toString().slice(-8)}`;
+    console.log("Generated reservation number:", reservationNumber);
+    
     const reservationData = {
       reservationNumber,
       firstName: bookingData.firstName,
@@ -83,12 +87,15 @@ const Payment = () => {
     
     // Save to localStorage
     localStorage.setItem(`reservation_${reservationNumber}`, JSON.stringify(reservationData));
+    console.log("Reservation data saved to localStorage");
     
     // Clear booking data
     localStorage.removeItem("bookingData");
+    console.log("Booking data cleared");
     
-    // Navigate directly to reservation details using window.location to ensure proper navigation
-    window.location.href = `/reservation-details?reservation=${reservationNumber}`;
+    // Navigate directly to reservation details
+    console.log("Navigating to reservation details...");
+    navigate(`/reservation-details?reservation=${reservationNumber}`, { replace: true });
   };
 
   if (!bookingData) {
