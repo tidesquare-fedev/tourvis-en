@@ -8,15 +8,40 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
-import { Info, X, CreditCard, Edit, Apple, Calendar, Users } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
+import { Info, X, Edit, Apple, Calendar, Users } from "lucide-react";
+
+// Mock tour data - in real app this would come from an API
+const tours = {
+  "jeju-hallasan-hiking": {
+    id: "jeju-hallasan-hiking",
+    title: "Jeju Hallasan Mountain Sunrise Hiking Tour",
+    price: 89,
+    image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80"
+  },
+  "gyeongju-history-tour": {
+    id: "gyeongju-history-tour", 
+    title: "Gyeongju Historical Sites Full Day Tour",
+    price: 120,
+    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=100&h=80&q=80"
+  },
+  "seoul-city-highlights": {
+    id: "seoul-city-highlights",
+    title: "Seoul City Highlights Tour",
+    price: 150,
+    image: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?auto=format&fit=crop&w=100&h=80&q=80"
+  }
+};
 
 const BookingInfo = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const tourId = searchParams.get('tour');
+  const tourId = searchParams.get('tour') || "jeju-hallasan-hiking";
   
+  // Get tour data
+  const tour = tours[tourId as keyof typeof tours] || tours["jeju-hallasan-hiking"];
+
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [formData, setFormData] = useState({
@@ -25,7 +50,7 @@ const BookingInfo = () => {
     email: "",
     phone: "",
     countryCode: "+82",
-    date: undefined as Date | undefined,
+    date: new Date().toISOString().split('T')[0],
     adults: 1,
     children: 0,
     specialRequests: ""
@@ -61,13 +86,6 @@ const BookingInfo = () => {
     ticketEmail: "",
     ticketPhone: ""
   });
-
-  // Mock tour data
-  const tour = {
-    id: tourId || "jeju-hallasan-hiking",
-    title: "Jeju Hallasan Mountain Sunrise Hiking Tour",
-    price: 89
-  };
 
   const countryCodes = [
     { code: "+82", country: "South Korea", flag: "🇰🇷" },
@@ -270,7 +288,7 @@ const BookingInfo = () => {
       return;
     }
     
-    // Store booking data and proceed to confirmation
+    // Store booking data and proceed to payment
     localStorage.setItem("bookingData", JSON.stringify({
       ...formData,
       ticketUser: ticketUserData,
@@ -279,7 +297,7 @@ const BookingInfo = () => {
       paymentInfo: cardInfo
     }));
     
-    navigate("/booking-confirmation");
+    navigate("/payment");
   };
 
   const getStepIcon = (step: number) => {
@@ -328,13 +346,13 @@ const BookingInfo = () => {
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
               <img 
-                src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80"
+                src={tour.image}
                 alt="Tour"
                 className="w-20 h-16 object-cover rounded-lg"
               />
               <div className="flex-1">
                 <h3 className="font-semibold">{tour.title}</h3>
-                <p className="text-sm text-gray-600">Usage Date: Friday, July 18, 2025</p>
+                <p className="text-sm text-gray-600">Usage Date: {formData.date ? new Date(formData.date).toLocaleDateString() : "Friday, July 18, 2025"}</p>
               </div>
               <Drawer>
                 <DrawerTrigger asChild>
@@ -356,32 +374,32 @@ const BookingInfo = () => {
                       <div className="bg-white rounded-lg border p-4">
                         <div className="flex items-start gap-4 mb-4">
                           <img 
-                            src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=80&h=60&q=80"
+                            src={tour.image}
                             alt="Tour"
                             className="w-20 h-15 object-cover rounded-lg"
                           />
                           <div className="flex-1">
                             <h3 className="font-semibold text-lg mb-1">{tour.title}</h3>
-                            <p className="text-sm text-gray-600">Usage Date: Friday, July 18, 2025</p>
+                            <p className="text-sm text-gray-600">Usage Date: {formData.date ? new Date(formData.date).toLocaleDateString() : "Friday, July 18, 2025"}</p>
                           </div>
                         </div>
                         
                         <div className="space-y-4 border-t pt-4">
                           <div className="flex justify-between items-center">
                             <span className="text-gray-700">Option</span>
-                            <span className="font-medium">Jeju Mountain Tour</span>
+                            <span className="font-medium">{tour.title}</span>
                           </div>
                           
                           <div className="flex justify-between items-center">
                             <span className="text-gray-700">Quantity</span>
-                            <span className="font-medium">Adult/Child (Same rate) x 1</span>
+                            <span className="font-medium">Adult/Child (Same rate) x {formData.adults + formData.children}</span>
                           </div>
                           
                           <div className="flex justify-between items-center pt-2 border-t">
                             <span className="text-lg font-semibold">Total Product Amount</span>
                             <span className="text-lg font-bold text-right">
-                              ${tour.price} USD<br/>
-                              <span className="text-sm font-normal text-gray-600">${tour.price} USD</span>
+                              ${tour.price * (formData.adults + formData.children)} USD<br/>
+                              <span className="text-sm font-normal text-gray-600">${tour.price} USD per person</span>
                             </span>
                           </div>
                         </div>
@@ -400,7 +418,7 @@ const BookingInfo = () => {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Calendar className="h-4 w-4" />
-                <span>Wed, Jul 23, 2025 • 9:00 AM</span>
+                <span>{formData.date ? new Date(formData.date).toLocaleDateString() : "Wed, Jul 23, 2025"} • 9:00 AM</span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-lg font-semibold">Total</span>

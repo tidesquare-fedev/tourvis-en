@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,10 @@ const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [cardInfo, setCardInfo] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    holderName: ""
+    cardNumber: "4111 1111 1111 1111",
+    expiryDate: "12/25",
+    cvv: "123",
+    holderName: "John Doe"
   });
 
   useEffect(() => {
@@ -46,7 +47,7 @@ const Payment = () => {
       email: bookingData.email,
       phone: bookingData.phone,
       country: bookingData.country || "South Korea",
-      date: bookingData.date || "2024-07-15",
+      date: bookingData.date || new Date().toISOString().split('T')[0],
       participants: (bookingData.adults + bookingData.children).toString(),
       specialRequests: bookingData.specialRequests || "",
       tourTitle: bookingData.tour.title,
@@ -54,15 +55,16 @@ const Payment = () => {
       totalAmount: bookingData.totalAmount,
       bookingDate: new Date().toISOString().split('T')[0],
       status: "Confirmed",
+      ticketUser: bookingData.ticketUser,
       activityDetails: {
         duration: "8 hours (9:00 AM - 5:00 PM)",
-        meetingPoint: "Myeongdong Station Exit 6",
+        meetingPoint: "Tour meeting point will be confirmed",
         meetingTime: "8:45 AM (Please arrive 15 minutes early)",
         inclusions: [
           "Professional English-speaking guide",
           "Transportation by air-conditioned vehicle",
           "Entrance fees to all attractions",
-          "Traditional Korean lunch",
+          "Traditional lunch included",
           "Hotel pickup and drop-off (selected hotels)"
         ],
         exclusions: [
@@ -83,7 +85,7 @@ const Payment = () => {
     // Save to localStorage
     localStorage.setItem(`reservation_${reservationNumber}`, JSON.stringify(reservationData));
     
-    // Navigate directly to reservation details instead of booking confirmation
+    // Navigate directly to reservation details
     navigate(`/reservation-details?reservation=${reservationNumber}`);
   };
 
@@ -249,14 +251,14 @@ const Payment = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
                   <img 
-                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80"
+                    src={bookingData.tour.image || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80"}
                     alt="Tour"
                     className="w-20 h-16 object-cover rounded-lg"
                   />
                   <div>
                     <h4 className="font-semibold text-lg">{bookingData.tour.title}</h4>
                     <p className="text-gray-600">
-                      Date: {bookingData.date ? format(new Date(bookingData.date), "PPP") : "Friday, July 18, 2025"}
+                      Date: {bookingData.date ? format(new Date(bookingData.date), "PPP") : "Date to be confirmed"}
                     </p>
                   </div>
                 </div>
