@@ -85,8 +85,8 @@ const Payment = () => {
     // Save to localStorage
     localStorage.setItem(`reservation_${reservationNumber}`, JSON.stringify(reservationData));
     
-    // Navigate directly to reservation details
-    navigate(`/reservation-details?reservation=${reservationNumber}`);
+    // Navigate directly to reservation details - using replace to prevent going back
+    navigate(`/reservation-details?reservation=${reservationNumber}`, { replace: true });
   };
 
   if (!bookingData) {
