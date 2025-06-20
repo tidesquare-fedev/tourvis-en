@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -85,8 +84,11 @@ const Payment = () => {
     // Save to localStorage
     localStorage.setItem(`reservation_${reservationNumber}`, JSON.stringify(reservationData));
     
-    // Navigate directly to reservation details - using replace to prevent going back
-    navigate(`/reservation-details?reservation=${reservationNumber}`, { replace: true });
+    // Clear booking data
+    localStorage.removeItem("bookingData");
+    
+    // Navigate directly to reservation details using window.location to ensure proper navigation
+    window.location.href = `/reservation-details?reservation=${reservationNumber}`;
   };
 
   if (!bookingData) {
