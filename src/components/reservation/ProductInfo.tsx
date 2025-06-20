@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Link } from "react-router-dom";
 import { ExternalLink, FileText, Info } from "lucide-react";
 
@@ -20,6 +20,14 @@ interface Reservation {
   totalAmount: number;
   bookingDate: string;
   status: string;
+  activityDetails?: {
+    duration: string;
+    meetingPoint: string;
+    meetingTime: string;
+    inclusions: string[];
+    exclusions: string[];
+    requirements: string[];
+  };
 }
 
 interface ProductInfoProps {
@@ -81,18 +89,19 @@ export const ProductInfo = ({ reservation, hidePrice = false }: ProductInfoProps
                 View Voucher
               </Button>
               
-              <Dialog>
-                <DialogTrigger asChild>
+              <Drawer>
+                <DrawerTrigger asChild>
                   <Button variant="outline" size="sm" className="flex-1 min-w-0 text-xs">
                     <Info className="w-3 h-3 mr-1" />
                     Reservation Info
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Reservation Information</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
+                </DrawerTrigger>
+                <DrawerContent className="max-w-4xl mx-auto">
+                  <DrawerHeader>
+                    <DrawerTitle className="text-center">Reservation Information</DrawerTitle>
+                  </DrawerHeader>
+                  <div className="px-4 pb-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                    {/* Basic Reservation Info */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="font-semibold">Reservation Number:</span>
@@ -112,6 +121,7 @@ export const ProductInfo = ({ reservation, hidePrice = false }: ProductInfoProps
                       </div>
                     </div>
                     
+                    {/* Customer Information */}
                     <div className="border-t pt-4">
                       <span className="font-semibold text-sm">Customer Information:</span>
                       <div className="mt-2 space-y-1 text-sm text-gray-600">
@@ -121,7 +131,53 @@ export const ProductInfo = ({ reservation, hidePrice = false }: ProductInfoProps
                         <p><strong>Country:</strong> {reservation.country}</p>
                       </div>
                     </div>
+
+                    {/* Activity Details */}
+                    {reservation.activityDetails && (
+                      <div className="border-t pt-4">
+                        <span className="font-semibold text-sm">Activity Details:</span>
+                        <div className="mt-2 space-y-3 text-sm">
+                          <div>
+                            <strong>Duration:</strong> {reservation.activityDetails.duration}
+                          </div>
+                          <div>
+                            <strong>Meeting Point:</strong> {reservation.activityDetails.meetingPoint}
+                          </div>
+                          <div>
+                            <strong>Meeting Time:</strong> {reservation.activityDetails.meetingTime}
+                          </div>
+                          
+                          <div>
+                            <strong>Inclusions:</strong>
+                            <ul className="list-disc list-inside ml-2 text-gray-600">
+                              {reservation.activityDetails.inclusions.map((item, index) => (
+                                <li key={index}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <strong>Exclusions:</strong>
+                            <ul className="list-disc list-inside ml-2 text-gray-600">
+                              {reservation.activityDetails.exclusions.map((item, index) => (
+                                <li key={index}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <strong>Requirements:</strong>
+                            <ul className="list-disc list-inside ml-2 text-gray-600">
+                              {reservation.activityDetails.requirements.map((item, index) => (
+                                <li key={index}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     
+                    {/* Special Requests */}
                     {reservation.specialRequests && (
                       <div className="border-t pt-4">
                         <span className="font-semibold text-sm">Special Requests:</span>
@@ -129,8 +185,8 @@ export const ProductInfo = ({ reservation, hidePrice = false }: ProductInfoProps
                       </div>
                     )}
                   </div>
-                </DialogContent>
-              </Dialog>
+                </DrawerContent>
+              </Drawer>
             </div>
           </div>
         </div>

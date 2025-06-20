@@ -1,9 +1,11 @@
+
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Calendar, Users, Mail, Phone, MapPin, Clock } from "lucide-react";
+import { ProductInfo } from "@/components/reservation/ProductInfo";
 
 interface Reservation {
   reservationNumber: string;
@@ -20,7 +22,57 @@ interface Reservation {
   totalAmount: number;
   bookingDate: string;
   status: string;
+  activityDetails: {
+    duration: string;
+    meetingPoint: string;
+    meetingTime: string;
+    inclusions: string[];
+    exclusions: string[];
+    requirements: string[];
+  };
 }
+
+// Enhanced mock data with activity details
+const createMockReservation = (reservationNumber: string): Reservation => ({
+  reservationNumber,
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
+  phone: "+82-10-1234-5678",
+  country: "South Korea",
+  date: "2024-07-15",
+  participants: "2",
+  specialRequests: "Vegetarian meals preferred",
+  tourTitle: "Seoul City Highlights Tour",
+  tourPrice: 150,
+  totalAmount: 300,
+  bookingDate: new Date().toISOString().split('T')[0],
+  status: "Confirmed",
+  activityDetails: {
+    duration: "8 hours (9:00 AM - 5:00 PM)",
+    meetingPoint: "Myeongdong Station Exit 6",
+    meetingTime: "8:45 AM (Please arrive 15 minutes early)",
+    inclusions: [
+      "Professional English-speaking guide",
+      "Transportation by air-conditioned vehicle",
+      "Entrance fees to all attractions",
+      "Traditional Korean lunch",
+      "Hotel pickup and drop-off (selected hotels)"
+    ],
+    exclusions: [
+      "Personal expenses",
+      "Travel insurance",
+      "Tips and gratuities",
+      "Alcoholic beverages"
+    ],
+    requirements: [
+      "Comfortable walking shoes required",
+      "Weather-appropriate clothing",
+      "Valid passport or ID required",
+      "Moderate physical fitness required"
+    ]
+  }
+});
 
 const BookingConfirmation = () => {
   const [searchParams] = useSearchParams();
@@ -29,9 +81,21 @@ const BookingConfirmation = () => {
   useEffect(() => {
     const reservationNumber = searchParams.get('reservation');
     if (reservationNumber) {
+      // Try to get from localStorage first
       const savedReservation = localStorage.getItem(`reservation_${reservationNumber}`);
       if (savedReservation) {
-        setReservation(JSON.parse(savedReservation));
+        const parsedReservation = JSON.parse(savedReservation);
+        // Enhance with activity details if not present
+        if (!parsedReservation.activityDetails) {
+          parsedReservation.activityDetails = createMockReservation(reservationNumber).activityDetails;
+        }
+        setReservation(parsedReservation);
+      } else {
+        // Create mock reservation with full details
+        const mockReservation = createMockReservation(reservationNumber);
+        setReservation(mockReservation);
+        // Save to localStorage for consistency
+        localStorage.setItem(`reservation_${reservationNumber}`, JSON.stringify(mockReservation));
       }
     }
   }, [searchParams]);
@@ -82,101 +146,106 @@ const BookingConfirmation = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
-          {/* Reservation Details - Responsive */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center text-base sm:text-lg">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Reservation Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-sm sm:text-base">Reservation Number:</span>
-                <Badge variant="outline" className="text-sm sm:text-lg px-2 sm:px-3 py-1">
-                  {reservation.reservationNumber}
-                </Badge>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="font-semibold text-sm sm:text-base">Status:</span>
-                <Badge className="bg-green-500 text-xs sm:text-sm">Confirmed</Badge>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="font-semibold text-sm sm:text-base">Booking Date:</span>
-                <span className="text-sm sm:text-base">{new Date(reservation.bookingDate).toLocaleDateString()}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="font-semibold text-sm sm:text-base">Tour Date:</span>
-                <span className="text-sm sm:text-base">{new Date(reservation.date).toLocaleDateString()}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="font-semibold text-sm sm:text-base">Participants:</span>
-                <span className="text-sm sm:text-base">{reservation.participants} person(s)</span>
-              </div>
-              
-              <div className="flex justify-between items-start">
-                <span className="font-semibold text-sm sm:text-base">Tour:</span>
-                <span className="text-right max-w-xs text-sm sm:text-base">{reservation.tourTitle}</span>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="space-y-6">
+          {/* Product Information with all interactive elements */}
+          <ProductInfo reservation={reservation} />
 
-          {/* Contact Information - Responsive */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center text-base sm:text-lg">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Contact Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
-              <div className="flex justify-between">
-                <span className="font-semibold text-sm sm:text-base">Name:</span>
-                <span className="text-sm sm:text-base">{reservation.firstName} {reservation.lastName}</span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="font-semibold flex items-center text-sm sm:text-base">
-                  <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  Email:
-                </span>
-                <span className="text-right text-sm sm:text-base break-all">{reservation.email}</span>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="font-semibold flex items-center text-sm sm:text-base">
-                  <Phone className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  Phone:
-                </span>
-                <span className="text-sm sm:text-base">{reservation.phone}</span>
-              </div>
-              
-              {reservation.country && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+            {/* Reservation Details - Responsive */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-base sm:text-lg">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Reservation Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-sm sm:text-base">Reservation Number:</span>
+                  <Badge variant="outline" className="text-sm sm:text-lg px-2 sm:px-3 py-1">
+                    {reservation.reservationNumber}
+                  </Badge>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-semibold text-sm sm:text-base">Status:</span>
+                  <Badge className="bg-green-500 text-xs sm:text-sm">Confirmed</Badge>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-semibold text-sm sm:text-base">Booking Date:</span>
+                  <span className="text-sm sm:text-base">{new Date(reservation.bookingDate).toLocaleDateString()}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-semibold text-sm sm:text-base">Tour Date:</span>
+                  <span className="text-sm sm:text-base">{new Date(reservation.date).toLocaleDateString()}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="font-semibold text-sm sm:text-base">Participants:</span>
+                  <span className="text-sm sm:text-base">{reservation.participants} person(s)</span>
+                </div>
+                
+                <div className="flex justify-between items-start">
+                  <span className="font-semibold text-sm sm:text-base">Tour:</span>
+                  <span className="text-right max-w-xs text-sm sm:text-base">{reservation.tourTitle}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information - Responsive */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-base sm:text-lg">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Contact Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4">
+                <div className="flex justify-between">
+                  <span className="font-semibold text-sm sm:text-base">Name:</span>
+                  <span className="text-sm sm:text-base">{reservation.firstName} {reservation.lastName}</span>
+                </div>
+                
                 <div className="flex justify-between items-center">
                   <span className="font-semibold flex items-center text-sm sm:text-base">
-                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    Country:
+                    <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    Email:
                   </span>
-                  <span className="text-sm sm:text-base">{reservation.country}</span>
+                  <span className="text-right text-sm sm:text-base break-all">{reservation.email}</span>
                 </div>
-              )}
-              
-              {reservation.specialRequests && (
-                <div>
-                  <span className="font-semibold text-sm sm:text-base">Special Requests:</span>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1">{reservation.specialRequests}</p>
+                
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold flex items-center text-sm sm:text-base">
+                    <Phone className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    Phone:
+                  </span>
+                  <span className="text-sm sm:text-base">{reservation.phone}</span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                
+                {reservation.country && (
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold flex items-center text-sm sm:text-base">
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      Country:
+                    </span>
+                    <span className="text-sm sm:text-base">{reservation.country}</span>
+                  </div>
+                )}
+                
+                {reservation.specialRequests && (
+                  <div>
+                    <span className="font-semibold text-sm sm:text-base">Special Requests:</span>
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1">{reservation.specialRequests}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Payment Summary - Responsive */}
-          <Card className="md:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle className="text-base sm:text-lg">Payment Summary</CardTitle>
             </CardHeader>

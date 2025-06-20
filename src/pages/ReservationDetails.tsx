@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -20,9 +21,17 @@ interface Reservation {
   totalAmount: number;
   bookingDate: string;
   status: string;
+  activityDetails: {
+    duration: string;
+    meetingPoint: string;
+    meetingTime: string;
+    inclusions: string[];
+    exclusions: string[];
+    requirements: string[];
+  };
 }
 
-// Mock data for testing
+// Mock data for testing with activity details
 const mockReservation: Reservation = {
   reservationNumber: "KT12345678",
   firstName: "John",
@@ -37,7 +46,31 @@ const mockReservation: Reservation = {
   tourPrice: 150,
   totalAmount: 300,
   bookingDate: "2024-06-15",
-  status: "Confirmed"
+  status: "Confirmed",
+  activityDetails: {
+    duration: "8 hours (9:00 AM - 5:00 PM)",
+    meetingPoint: "Myeongdong Station Exit 6",
+    meetingTime: "8:45 AM (Please arrive 15 minutes early)",
+    inclusions: [
+      "Professional English-speaking guide",
+      "Transportation by air-conditioned vehicle",
+      "Entrance fees to all attractions",
+      "Traditional Korean lunch",
+      "Hotel pickup and drop-off (selected hotels)"
+    ],
+    exclusions: [
+      "Personal expenses",
+      "Travel insurance",
+      "Tips and gratuities",
+      "Alcoholic beverages"
+    ],
+    requirements: [
+      "Comfortable walking shoes required",
+      "Weather-appropriate clothing",
+      "Valid passport or ID required",
+      "Moderate physical fitness required"
+    ]
+  }
 };
 
 const ReservationDetails = () => {
