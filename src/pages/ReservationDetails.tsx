@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
@@ -6,6 +5,7 @@ import { ProductInfo } from "@/components/reservation/ProductInfo";
 import { PaymentInfo } from "@/components/reservation/PaymentInfo";
 import { CustomerService } from "@/components/reservation/CustomerService";
 import { useEffect, useState } from "react";
+import { Clock, MapPin, Users, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 interface Reservation {
   reservationNumber: string;
@@ -168,6 +168,84 @@ const ReservationDetails = () => {
           </div>
 
           <ProductInfo reservation={reservation} hidePrice={true} />
+          
+          {/* Activity Details Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                Activity Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Duration and Meeting Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <span className="font-semibold text-sm flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      Duration:
+                    </span>
+                    <p className="text-sm text-gray-600 ml-5">{reservation.activityDetails.duration}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-sm flex items-center">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      Meeting Point:
+                    </span>
+                    <p className="text-sm text-gray-600 ml-5">{reservation.activityDetails.meetingPoint}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-sm flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      Meeting Time:
+                    </span>
+                    <p className="text-sm text-gray-600 ml-5">{reservation.activityDetails.meetingTime}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Inclusions */}
+              <div className="border-t pt-4">
+                <span className="font-semibold text-sm flex items-center mb-2">
+                  <CheckCircle className="w-4 h-4 mr-1 text-green-600" />
+                  Included:
+                </span>
+                <ul className="list-disc list-inside ml-5 space-y-1 text-sm text-gray-600">
+                  {reservation.activityDetails.inclusions.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Exclusions */}
+              <div className="border-t pt-4">
+                <span className="font-semibold text-sm flex items-center mb-2">
+                  <XCircle className="w-4 h-4 mr-1 text-red-600" />
+                  Not Included:
+                </span>
+                <ul className="list-disc list-inside ml-5 space-y-1 text-sm text-gray-600">
+                  {reservation.activityDetails.exclusions.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Requirements */}
+              <div className="border-t pt-4">
+                <span className="font-semibold text-sm flex items-center mb-2">
+                  <AlertTriangle className="w-4 h-4 mr-1 text-orange-600" />
+                  Requirements:
+                </span>
+                <ul className="list-disc list-inside ml-5 space-y-1 text-sm text-gray-600">
+                  {reservation.activityDetails.requirements.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
           <PaymentInfo reservation={reservation} />
           <CustomerService />
 
