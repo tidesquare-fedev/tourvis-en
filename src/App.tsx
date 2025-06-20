@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +10,6 @@ import BookingInfo from "./pages/BookingInfo";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import ReservationLookup from "./pages/ReservationLookup";
 import ReservationDetails from "./pages/ReservationDetails";
-import Payment from "./pages/Payment";
 import Inquiry from "./pages/Inquiry";
 import InquiryList from "./pages/InquiryList";
 import InquiryDetail from "./pages/InquiryDetail";
@@ -27,7 +27,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/tour/:id" element={<TourDetail />} />
           <Route path="/booking-info" element={<BookingInfo />} />
-          <Route path="/payment" element={<Payment />} />
           <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           <Route path="/reservation-lookup" element={<ReservationLookup />} />
           <Route path="/reservation-details" element={<ReservationDetails />} />

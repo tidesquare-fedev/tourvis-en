@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useSearchParams } from "react-router-dom";
@@ -5,7 +6,7 @@ import { ProductInfo } from "@/components/reservation/ProductInfo";
 import { PaymentInfo } from "@/components/reservation/PaymentInfo";
 import { CustomerService } from "@/components/reservation/CustomerService";
 import { useEffect, useState } from "react";
-import { Clock, MapPin, Users, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Clock, MapPin, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 interface Reservation {
   reservationNumber: string;
@@ -169,12 +170,12 @@ const ReservationDetails = () => {
 
           <ProductInfo reservation={reservation} hidePrice={true} />
           
-          {/* Activity Details Card */}
+          {/* Reservation Info with Activity Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center text-base sm:text-lg">
                 <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Activity Details
+                Reservation Info
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
