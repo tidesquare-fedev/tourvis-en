@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,9 +37,30 @@ const Payment = () => {
       return;
     }
     
-    // Here you would integrate with actual payment processing
-    alert("Payment functionality would be integrated here");
-    navigate("/booking-confirmation");
+    // Generate reservation number and save reservation data
+    const reservationNumber = `KT${Date.now().toString().slice(-8)}`;
+    const reservationData = {
+      reservationNumber,
+      firstName: bookingData.firstName,
+      lastName: bookingData.lastName,
+      email: bookingData.email,
+      phone: bookingData.phone,
+      country: bookingData.country || "South Korea",
+      date: bookingData.date || "2024-07-15",
+      participants: (bookingData.adults + bookingData.children).toString(),
+      specialRequests: bookingData.specialRequests || "",
+      tourTitle: bookingData.tour.title,
+      tourPrice: bookingData.tour.price,
+      totalAmount: bookingData.totalAmount,
+      bookingDate: new Date().toISOString().split('T')[0],
+      status: "Confirmed"
+    };
+    
+    // Save to localStorage
+    localStorage.setItem(`reservation_${reservationNumber}`, JSON.stringify(reservationData));
+    
+    // Navigate to booking confirmation
+    navigate(`/booking-confirmation?reservation=${reservationNumber}`);
   };
 
   if (!bookingData) {
@@ -50,7 +70,7 @@ const Payment = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center">
             <img 

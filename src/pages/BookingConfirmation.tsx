@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,8 +53,8 @@ const BookingConfirmation = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header - Responsive */}
-      <header className="bg-white shadow-sm border-b">
+      {/* Header - Responsive and Sticky */}
+      <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center">
             <img 
