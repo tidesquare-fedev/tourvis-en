@@ -35,11 +35,11 @@ const TourDetail = () => {
     longDescription: "Hallasan Mountain is the symbol of Jeju Island and the highest mountain in South Korea. This majestic mountain, standing at 1,947m above sea level, was formed by volcanic activity about 25,000 years ago and is currently designated as a national park. This tour starts early in the morning, providing a special experience to enjoy the true beauty of Hallasan with the sunrise.",
     images: [
       "photo-1469474968028-56623f02e42e",
-      "photo-1472396961693-142e6e269027",
-      "photo-1500673922987-e212871fec22",
       "photo-1482938289607-e9573fc25ebb",
-      "photo-1506905925346-21bda4d32df4",
-      "photo-1441974231531-c6227db76b6e"
+      "photo-1470071459604-3b5ec3a7fe05",
+      "photo-1426604966848-d7adac402bff",
+      "photo-1469474968028-56623f02e42e",
+      "photo-1482938289607-e9573fc25ebb"
     ],
     price: 89,
     originalPrice: 120,
@@ -295,7 +295,7 @@ const TourDetail = () => {
                     className="w-full h-48 object-cover rounded-lg"
                   />
                   <img 
-                    src="https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=400&h=250&q=80"
+                    src="https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&h=250&q=80"
                     alt="Hiking trail"
                     className="w-full h-48 object-cover rounded-lg"
                   />

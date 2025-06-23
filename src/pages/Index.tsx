@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Star } from "lucide-react";
@@ -12,21 +11,21 @@ const Index = () => {
   const banners = [
     {
       id: 1,
-      image: "photo-1472396961693-142e6e269027",
+      image: "photo-1482938289607-e9573fc25ebb",
       title: "Autumn Jeju Bus Tour",
       subtitle: "Book until September!",
     },
     {
       id: 2,
-      image: "photo-1500673922987-e212871fec22",
-      title: "Osaka Airport ↔ City",
-      subtitle: "Must-take JR Haruka",
+      image: "photo-1469474968028-56623f02e42e",
+      title: "Mountain Sunrise Experience",
+      subtitle: "Korea's breathtaking views",
     },
     {
       id: 3,
-      image: "photo-1482938289607-e9573fc25ebb",
-      title: "Japan Shopping Deals?",
-      subtitle: "Up to 18% coupon pack!",
+      image: "photo-1470071459604-3b5ec3a7fe05",
+      title: "Adventure Tours",
+      subtitle: "Up to 30% off this month!",
     }
   ];
 
@@ -45,7 +44,7 @@ const Index = () => {
     {
       id: "seoul-palace-tour",
       title: "Seoul Royal Palace & Traditional Culture Tour",
-      image: "photo-1472396961693-142e6e269027",
+      image: "photo-1482938289607-e9573fc25ebb",
       originalPrice: 85,
       discountRate: 24,
       price: 65,
@@ -56,7 +55,7 @@ const Index = () => {
     {
       id: "busan-coastal-tour",
       title: "Busan Coastal Scenic Tour & Temple Visit",
-      image: "photo-1500673922987-e212871fec22",
+      image: "photo-1470071459604-3b5ec3a7fe05",
       originalPrice: 95,
       discountRate: 21,
       price: 75,
@@ -67,7 +66,7 @@ const Index = () => {
     {
       id: "gyeongju-history-tour",
       title: "Gyeongju Historical Sites Full Day Tour",
-      image: "photo-1465146344425-f00d5f5c8f07",
+      image: "photo-1426604966848-d7adac402bff",
       originalPrice: 110,
       discountRate: 18,
       price: 90,
@@ -78,7 +77,7 @@ const Index = () => {
     {
       id: "dmz-tour",
       title: "DMZ & Joint Security Area Tour from Seoul",
-      image: "photo-1509316975850-ff9c5deb0cd9",
+      image: "photo-1469474968028-56623f02e42e",
       originalPrice: 80,
       discountRate: 15,
       price: 68,
@@ -89,7 +88,7 @@ const Index = () => {
     {
       id: "nami-island-tour",
       title: "Nami Island & Petite France Day Tour",
-      image: "photo-1472396961693-142e6e269027",
+      image: "photo-1482938289607-e9573fc25ebb",
       originalPrice: 70,
       discountRate: 20,
       price: 56,
@@ -100,7 +99,7 @@ const Index = () => {
     {
       id: "andong-village-tour",
       title: "Andong Hahoe Folk Village Cultural Tour",
-      image: "photo-1500673922987-e212871fec22",
+      image: "photo-1470071459604-3b5ec3a7fe05",
       originalPrice: 90,
       discountRate: 22,
       price: 70,
@@ -111,7 +110,7 @@ const Index = () => {
     {
       id: "seoraksan-hiking",
       title: "Seoraksan National Park Hiking Adventure",
-      image: "photo-1482938289607-e9573fc25ebb",
+      image: "photo-1426604966848-d7adac402bff",
       originalPrice: 100,
       discountRate: 25,
       price: 75,
@@ -133,7 +132,7 @@ const Index = () => {
     {
       id: "jeonju-hanok-tour",
       title: "Jeonju Hanok Village Food & Culture Tour",
-      image: "photo-1465146344425-f00d5f5c8f07",
+      image: "photo-1482938289607-e9573fc25ebb",
       originalPrice: 75,
       discountRate: 19,
       price: 61,
@@ -144,7 +143,7 @@ const Index = () => {
     ...Array.from({ length: 20 }, (_, i) => ({
       id: `tour-${i + 11}`,
       title: `Amazing Korea Tour ${i + 11}`,
-      image: ["photo-1469474968028-56623f02e42e", "photo-1472396961693-142e6e269027", "photo-1500673922987-e212871fec22"][i % 3],
+      image: ["photo-1469474968028-56623f02e42e", "photo-1482938289607-e9573fc25ebb", "photo-1470071459604-3b5ec3a7fe05", "photo-1426604966848-d7adac402bff"][i % 4],
       originalPrice: 80 + Math.floor(Math.random() * 40),
       discountRate: 15 + Math.floor(Math.random() * 15),
       price: 60 + Math.floor(Math.random() * 30),

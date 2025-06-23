@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +27,7 @@ const ProductList = () => {
     {
       id: "seoul-palace-tour",
       title: "Seoul Royal Palace & Traditional Culture Tour",
-      image: "photo-1472396961693-142e6e269027",
+      image: "photo-1482938289607-e9573fc25ebb",
       originalPrice: 85,
       discountRate: 24,
       price: 65,
@@ -40,7 +39,7 @@ const ProductList = () => {
     {
       id: "busan-coastal-tour",
       title: "Busan Coastal Scenic Tour & Temple Visit",
-      image: "photo-1500673922987-e212871fec22",
+      image: "photo-1470071459604-3b5ec3a7fe05",
       originalPrice: 95,
       discountRate: 21,
       price: 75,
@@ -52,7 +51,7 @@ const ProductList = () => {
     {
       id: "gyeongju-history-tour",
       title: "Gyeongju Historical Sites Full Day Tour",
-      image: "photo-1466442929976-97f336a657be",
+      image: "photo-1426604966848-d7adac402bff",
       originalPrice: 110,
       discountRate: 18,
       price: 90,
@@ -64,7 +63,7 @@ const ProductList = () => {
     {
       id: "dmz-tour",
       title: "DMZ & Joint Security Area Tour from Seoul",
-      image: "photo-1501854140801-50d01698950b",
+      image: "photo-1469474968028-56623f02e42e",
       originalPrice: 80,
       discountRate: 15,
       price: 68,
@@ -76,7 +75,7 @@ const ProductList = () => {
     {
       id: "nami-island-tour",
       title: "Nami Island & Petite France Day Tour",
-      image: "photo-1472396961693-142e6e269027",
+      image: "photo-1482938289607-e9573fc25ebb",
       originalPrice: 70,
       discountRate: 20,
       price: 56,
@@ -88,7 +87,7 @@ const ProductList = () => {
     {
       id: "andong-village-tour",
       title: "Andong Hahoe Folk Village Cultural Tour",
-      image: "photo-1500673922987-e212871fec22",
+      image: "photo-1470071459604-3b5ec3a7fe05",
       originalPrice: 90,
       discountRate: 22,
       price: 70,
@@ -100,7 +99,7 @@ const ProductList = () => {
     {
       id: "seoraksan-hiking",
       title: "Seoraksan National Park Hiking Adventure",
-      image: "photo-1469474968028-56623f02e42e",
+      image: "photo-1426604966848-d7adac402bff",
       originalPrice: 100,
       discountRate: 25,
       price: 75,
@@ -112,7 +111,7 @@ const ProductList = () => {
     {
       id: "gangneung-beach-tour",
       title: "Gangneung Beach & Coffee Street Tour",
-      image: "photo-1501854140801-50d01698950b",
+      image: "photo-1469474968028-56623f02e42e",
       originalPrice: 65,
       discountRate: 17,
       price: 54,
@@ -124,7 +123,7 @@ const ProductList = () => {
     {
       id: "jeonju-hanok-tour",
       title: "Jeonju Hanok Village Food & Culture Tour",
-      image: "photo-1466442929976-97f336a657be",
+      image: "photo-1482938289607-e9573fc25ebb",
       originalPrice: 75,
       discountRate: 19,
       price: 61,
@@ -136,7 +135,7 @@ const ProductList = () => {
     ...Array.from({ length: 15 }, (_, i) => ({
       id: `tour-${i + 11}`,
       title: `Amazing Korea Tour ${i + 11}`,
-      image: ["photo-1469474968028-56623f02e42e", "photo-1472396961693-142e6e269027", "photo-1500673922987-e212871fec22"][i % 3],
+      image: ["photo-1469474968028-56623f02e42e", "photo-1482938289607-e9573fc25ebb", "photo-1470071459604-3b5ec3a7fe05", "photo-1426604966848-d7adac402bff"][i % 4],
       originalPrice: 80 + Math.floor(Math.random() * 40),
       discountRate: 15 + Math.floor(Math.random() * 15),
       price: 60 + Math.floor(Math.random() * 30),
