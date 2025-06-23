@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { MapPin, Clock, Users, Star, Calendar as CalendarIcon, Phone, Mail, CreditCard, Check, X, Heart, Share2, MessageCircle, ChevronDown, ChevronUp, ThumbsUp } from "lucide-react";
+import { MapPin, Clock, Users, Star, Calendar as CalendarIcon, Phone, Mail, CreditCard, Check, X, Heart, Share2, MessageCircle, ChevronDown, ChevronUp, ThumbsUp, Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { addMonths, format } from "date-fns";
@@ -16,6 +16,7 @@ const TourDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [quantity, setQuantity] = useState(0);
   const [activeSection, setActiveSection] = useState("options");
   const [showFullDescription, setShowFullDescription] = useState(false);
 
@@ -123,7 +124,21 @@ const TourDetail = () => {
   };
 
   const handleBooking = () => {
-    navigate(`/booking-info?tour=${id}`);
+    if (quantity < 1) {
+      toast({
+        title: "Quantity Required",
+        description: "Please select at least 1 participant to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate(`/booking-info?tour=${id}&date=${selectedDate?.toISOString()}&quantity=${quantity}`);
+  };
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 0 && newQuantity <= tour.maxGroup) {
+      setQuantity(newQuantity);
+    }
   };
 
   // Group images into pairs for the carousel
@@ -135,6 +150,9 @@ const TourDetail = () => {
   // Calendar months
   const currentMonth = new Date();
   const nextMonth = addMonths(currentMonth, 1);
+
+  // Calculate total price
+  const totalPrice = quantity * tour.price;
 
   return (
     <div className="min-h-screen bg-white">
@@ -241,16 +259,6 @@ const TourDetail = () => {
             <div ref={optionsRef} className="mb-12">
               <h3 className="text-xl font-semibold mb-6">Option Selection</h3>
               <div className="space-y-6">
-                <div className="p-4 border rounded-lg">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h4 className="font-medium">Basic Tour</h4>
-                      <p className="text-sm text-gray-600">Hallasan sunrise hiking + breakfast included</p>
-                    </div>
-                    <span className="text-lg font-bold text-blue-600">${tour.price}</span>
-                  </div>
-                </div>
-                
                 {/* Calendar Selection */}
                 <div>
                   <h4 className="font-medium mb-4">Select Date</h4>
@@ -281,6 +289,58 @@ const TourDetail = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Tour Options - Show when date is selected */}
+                {selectedDate && (
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Tour Options</h4>
+                    <div className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <h5 className="font-medium">Basic Tour</h5>
+                          <p className="text-sm text-gray-600 mb-2">Hallasan sunrise hiking + breakfast included</p>
+                          <p className="text-sm text-gray-500">Selected Date: {format(selectedDate, "PPP")}</p>
+                        </div>
+                        <span className="text-lg font-bold text-blue-600">${tour.price}</span>
+                      </div>
+                      
+                      {/* Quantity Selection */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm font-medium">Quantity:</span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuantityChange(quantity - 1)}
+                              disabled={quantity <= 0}
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <span className="w-8 text-center font-medium">{quantity}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuantityChange(quantity + 1)}
+                              disabled={quantity >= tour.maxGroup}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <span className="text-sm text-gray-500">
+                            (Max {tour.maxGroup} people)
+                          </span>
+                        </div>
+                        {quantity > 0 && (
+                          <div className="text-right">
+                            <div className="text-sm text-gray-600">Total</div>
+                            <div className="text-lg font-bold text-blue-600">${totalPrice}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -543,7 +603,7 @@ const TourDetail = () => {
             </div>
           </div>
 
-          {/* Simplified Booking Sidebar */}
+          {/* Booking Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-4">
               <Card className="shadow-lg">
@@ -554,12 +614,46 @@ const TourDetail = () => {
                       <span className="text-xl font-bold text-red-500">{tour.discountRate}%</span>
                       <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
                     </div>
+                    <div className="text-sm text-gray-600">per person</div>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <Button onClick={handleBooking} className="w-full" size="lg">
-                    Book Now
+                <CardContent className="space-y-4">
+                  {/* Selected Date Display */}
+                  {selectedDate && (
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-sm text-gray-600">Selected Date</div>
+                      <div className="font-semibold">{format(selectedDate, "PPP")}</div>
+                    </div>
+                  )}
+                  
+                  {/* Quantity and Total Display */}
+                  {quantity > 0 && (
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-sm text-gray-600">Participants: {quantity}</div>
+                      <div className="text-xl font-bold text-green-600">Total: ${totalPrice}</div>
+                    </div>
+                  )}
+                  
+                  <Button 
+                    onClick={handleBooking} 
+                    className="w-full" 
+                    size="lg"
+                    disabled={!selectedDate || quantity < 1}
+                  >
+                    {!selectedDate ? "Select Date" : quantity < 1 ? "Select Quantity" : "Book Now"}
                   </Button>
+                  
+                  {!selectedDate && (
+                    <p className="text-xs text-gray-500 text-center">
+                      Please select a date to continue
+                    </p>
+                  )}
+                  
+                  {selectedDate && quantity < 1 && (
+                    <p className="text-xs text-gray-500 text-center">
+                      Please select at least 1 participant
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>
