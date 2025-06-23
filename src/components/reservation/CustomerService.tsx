@@ -8,12 +8,12 @@ export const CustomerService = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>1:1 Online Inquiry</CardTitle>
+        <CardTitle>Direct Inquiry</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Business Hours: Weekdays 10:00 AM - 06:00 PM (Closed on weekends and holidays)
+            Business Hours: Weekdays 10:00 AM - 06:00 PM (Korea Standard Time)
           </p>
           <Link to="/inquiry">
             <Button variant="outline" className="flex items-center justify-center space-x-2 w-full">
