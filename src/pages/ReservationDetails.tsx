@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar, Users, Phone, Mail, CreditCard } from "lucide-react";
+import { MapPin, Calendar, Users, Phone, Mail, CreditCard, Clock } from "lucide-react";
 
 const ReservationDetails = () => {
   // Mock reservation data

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,11 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ReservationHeader } from "@/components/reservation/ReservationHeader";
-import { ProductInfo } from "@/components/reservation/ProductInfo";
-import { ContactInfo } from "@/components/reservation/ContactInfo";
-import { PaymentInfo } from "@/components/reservation/PaymentInfo";
-import { CustomerService } from "@/components/reservation/CustomerService";
 
 const BookingInfo = () => {
   const navigate = useNavigate();
@@ -57,32 +53,97 @@ const BookingInfo = () => {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <ReservationHeader />
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Booking Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="participants">Participants</Label>
+                  <Input
+                    id="participants"
+                    type="number"
+                    min="1"
+                    value={formData.participants}
+                    onChange={(e) => setFormData({ ...formData, participants: parseInt(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="date">Tour Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="mb-4">
           <CardHeader>
             <CardTitle>Tour Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <ProductInfo />
-          </CardContent>
-        </Card>
-
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ContactInfo />
-          </CardContent>
-        </Card>
-
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>Payment Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PaymentInfo />
+            <div className="flex items-start space-x-4">
+              <div className="w-32 h-24 bg-gray-200 rounded-lg flex-shrink-0">
+                <img 
+                  src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80" 
+                  alt="Jeju Hallasan Mountain Tour"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg mb-2">Jeju Hallasan Mountain Sunrise Hiking Tour</h3>
+                <div className="space-y-1 text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Duration:</span>
+                    <span>8 hours</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Location:</span>
+                    <span>Jeju, South Korea</span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t">
+                    <span>Price per person:</span>
+                    <span>$89</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -101,12 +162,10 @@ const BookingInfo = () => {
                   onChange={(e) => setFormData({ ...formData, requests: e.target.value })}
                 />
               </div>
-              <Button type="submit">Book Now</Button>
+              <Button type="submit" className="w-full">Book Now</Button>
             </form>
           </CardContent>
         </Card>
-
-        <CustomerService />
       </div>
     </div>
   );

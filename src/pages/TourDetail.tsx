@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -108,7 +109,7 @@ const TourDetail = () => {
             <div className="flex items-center space-x-4 mb-4">
               <div className="flex items-center text-gray-600">
                 <Calendar className="w-4 h-4 mr-2" />
-                {tour.date || "Daily"}
+                Daily
               </div>
               <div className="flex items-center text-gray-600">
                 <Clock className="w-4 h-4 mr-2" />
