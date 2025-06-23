@@ -171,6 +171,9 @@ const ProductList = () => {
               />
             </Link>
             <nav className="flex items-center space-x-3 sm:space-x-6">
+              <Link to="/products" className="text-xs sm:text-sm text-blue-600 font-medium">
+                Tours
+              </Link>
               <Link to="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">
                 Direct Inquiry
               </Link>

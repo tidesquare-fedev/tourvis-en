@@ -164,14 +164,16 @@ const Index = () => {
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-center">
-            <img 
-              src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
-              alt="Korea Tours" 
-              className="h-6 sm:h-8"
-            />
+            <Link to="/">
+              <img 
+                src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" 
+                alt="Korea Tours" 
+                className="h-6 sm:h-8"
+              />
+            </Link>
             <nav className="flex items-center space-x-3 sm:space-x-6">
               <Link to="/products" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">
-                All Products
+                Tours
               </Link>
               <Link to="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">
                 Direct Inquiry

@@ -8,7 +8,6 @@ interface LocationFilterProps {
 
 export const LocationFilter = ({ value, onChange }: LocationFilterProps) => {
   const locations = [
-    { value: "", label: "All Locations" },
     { value: "Seoul", label: "Seoul" },
     { value: "Busan", label: "Busan" },
     { value: "Jeju", label: "Jeju" },
@@ -26,9 +25,9 @@ export const LocationFilter = ({ value, onChange }: LocationFilterProps) => {
       <label className="block text-sm font-medium text-gray-700 mb-2">
         Location
       </label>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value || undefined} onValueChange={(val) => onChange(val || "")}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select location" />
+          <SelectValue placeholder="All Locations" />
         </SelectTrigger>
         <SelectContent className="bg-white">
           {locations.map((location) => (

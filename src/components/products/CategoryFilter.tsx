@@ -8,7 +8,6 @@ interface CategoryFilterProps {
 
 export const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
   const categories = [
-    { value: "", label: "All Categories" },
     { value: "Adventure", label: "Adventure" },
     { value: "Cultural", label: "Cultural" },
     { value: "Nature", label: "Nature" },
@@ -20,9 +19,9 @@ export const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
       <label className="block text-sm font-medium text-gray-700 mb-2">
         Category
       </label>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value || undefined} onValueChange={(val) => onChange(val || "")}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select category" />
+          <SelectValue placeholder="All Categories" />
         </SelectTrigger>
         <SelectContent className="bg-white">
           {categories.map((category) => (
