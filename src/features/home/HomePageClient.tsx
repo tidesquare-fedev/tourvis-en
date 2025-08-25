@@ -64,14 +64,15 @@ export default function HomePageClient({ banners, regions, categories, sections 
   }, [bannerApi])
 
   const tabIcons = [MapPin, Calendar, Users, Search]
-  const stripEmoji = (text: string) => text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim()
+  const stripEmoji = (text: string) => {
+    const surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g
+    const variationSel = /\uFE0F/g
+    return text.replace(surrogatePair, '').replace(variationSel, '').trim()
+  }
   const toGitmoji = (text: string) => {
-    // 간단 매핑 (필요시 확장 가능)
-    const map: Record<string, string> = {
-      '✨': '✨', '🔥': '🔥', '🐛': '🐛', '✅': '✅', '🚀': '🚀', '🎉': '🎉', '🔧': '🔧', '📝': '📝'
-    }
-    const m = text.match(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u)
-    return m ? (map[m[0]] ?? m[0]) : ''
+    const surrogatePairOne = /[\uD800-\uDBFF][\uDC00-\uDFFF]/
+    const m = text.match(surrogatePairOne)
+    return m ? m[0] : ''
   }
 
   const buildTabGroups = (cats: Category[]) => cats
