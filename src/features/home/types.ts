@@ -5,6 +5,7 @@ export const BannerSchema = z.object({
   image: z.string().default(''),
   title: z.string().default(''),
   subtitle: z.string().default(''),
+  href: z.string().optional().nullable(),
 })
 
 export type Banner = z.infer<typeof BannerSchema>

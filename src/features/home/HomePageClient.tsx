@@ -64,12 +64,30 @@ export default function HomePageClient({ banners, regions, categories, sections 
   }, [bannerApi])
 
   const tabIcons = [MapPin, Calendar, Users, Search]
-  const buildTabGroups = (cats: Category[]) => cats.slice(0, 4).map((cat, idx) => ({
-    key: `cat-${idx}`,
-    label: cat.title,
-    Icon: tabIcons[idx % tabIcons.length],
-    items: cat.items.slice(0, 4),
-  }))
+  const stripEmoji = (text: string) => text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim()
+  const toGitmoji = (text: string) => {
+    // 간단 매핑 (필요시 확장 가능)
+    const map: Record<string, string> = {
+      '✨': '✨', '🔥': '🔥', '🐛': '🐛', '✅': '✅', '🚀': '🚀', '🎉': '🎉', '🔧': '🔧', '📝': '📝'
+    }
+    const m = text.match(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u)
+    return m ? (map[m[0]] ?? m[0]) : ''
+  }
+
+  const buildTabGroups = (cats: Category[]) => cats
+    .filter((c) => Array.isArray(c.items) && c.items.length > 0)
+    .slice(0, 4)
+    .map((cat, idx) => {
+      const gitmoji = toGitmoji(cat.title)
+      const label = stripEmoji(cat.title)
+      return {
+        key: `cat-${idx}`,
+        label,
+        gitmoji,
+        Icon: tabIcons[idx % tabIcons.length],
+        items: cat.items.slice(0, 4),
+      }
+    })
 
   const tabsListRef = useRef<HTMLDivElement | null>(null)
   const [isDraggingTabs, setIsDraggingTabs] = useState(false)
@@ -97,7 +115,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
 
   const handleTabsPointerUp = () => setIsDraggingTabs(false)
 
-  const renderCarousel = (items: any[]) => (
+  const renderCarousel = (items: any[], opts?: { showArrows?: boolean }) => (
     <Carousel className="w-full" opts={{ align: 'start', slidesToScroll: 1 }}>
       <CarouselContent className="-ml-2 md:-ml-4">
         {items.slice(0, 4).map((p) => (
@@ -105,7 +123,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
             <Link href={`/tour/${p.id}`}>
               <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                 <div className="relative h-44 sm:h-52 overflow-hidden">
-                  <img src={`https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=600&q=80`} alt={p.title} className="w-full h-full object-cover" />
+                  <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
                 </div>
                 <CardContent className="p-3 sm:p-4">
                   <div className="text-[11px] sm:text-xs text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
@@ -127,10 +145,12 @@ export default function HomePageClient({ banners, regions, categories, sections 
           </CarouselItem>
         ))}
       </CarouselContent>
-      <div className="flex justify-center mt-3 space-x-4">
-        <CarouselPrevious className="relative translate-x-0 translate-y-0" />
-        <CarouselNext className="relative translate-x-0 translate-y-0" />
-      </div>
+      {(opts?.showArrows ?? true) && (
+        <div className="flex justify-center mt-3 space-x-4">
+          <CarouselPrevious className="relative translate-x-0 translate-y-0" />
+          <CarouselNext className="relative translate-x-0 translate-y-0" />
+        </div>
+      )}
     </Carousel>
   )
 
@@ -138,6 +158,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
     switch (section.templateId) {
       case 'TV_TM_CAROUSEL': {
         const list = section.regions
+        if (!Array.isArray(list) || list.length === 0) return null
         return (
           <section key={`sec-${idx}`} className="relative w-full isolate bg-sky-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -159,7 +180,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                           onBlur={() => setHoverRegionId(null)}
                           className={`relative block h-72 sm:h-96 md:h-[28rem] overflow-hidden rounded-2xl cursor-pointer group outline-none focus:outline-none focus-visible:outline-none transition-transform duration-300 ease-out ${hoverRegionId === r.id ? '-translate-y-4 sm:-translate-y-6 md:-translate-y-8 shadow-2xl' : ''}`}
                         >
-                          <img src={`https://images.unsplash.com/${r.image}?auto=format&fit=crop&w=800&q=80`} alt={r.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 active:scale-105" />
+                          <img src={r.image} alt={r.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 active:scale-105" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent group-hover:from-black/60" />
                           <div className="absolute bottom-3 left-3 text-white font-semibold text-sm sm:text-base drop-shadow">{r.name}</div>
                         </Link>
@@ -179,7 +200,8 @@ export default function HomePageClient({ banners, regions, categories, sections 
         )
       }
       case 'TV_TAB_BSTP': {
-        const cats = section.categories
+        const cats = (section.categories || []).filter(c => Array.isArray(c.items) && c.items.length > 0)
+        if (cats.length === 0) return null
         return (
           <section key={`sec-${idx}`} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
             <div className="mb-6 sm:mb-8">
@@ -192,7 +214,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                     <span className="text-base sm:text-lg font-semibold">{cat.title}</span>
                   </AccordionTrigger>
                   <AccordionContent className="pt-2">
-                    {renderCarousel(cat.items)}
+                    {renderCarousel(cat.items, { showArrows: cat.items.length > 4 })}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -202,21 +224,16 @@ export default function HomePageClient({ banners, regions, categories, sections 
       }
       case 'TV_PC_IV_LINE_BANNER_A': {
         const bs = section.banners
+        if (!Array.isArray(bs) || bs.length === 0) return null
         return (
           <section key={`sec-${idx}`} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
             <Carousel className="w-full" opts={{ align: 'start', loop: true }} setApi={setBannerApi}>
               <CarouselContent className="-ml-2 md:-ml-4">
                 {bs.map((banner) => (
                   <CarouselItem key={banner.id} className="pl-2 md:pl-4 basis-full">
-                    <Link href={`/products?banner=${banner.id}`} className="block focus:outline-none focus-visible:outline-none">
+                    <Link href={banner.href ?? `/products?banner/${banner.id}`} className="block focus:outline-none focus-visible:outline-none">
                       <div className="relative w-full h-48 sm:h-64 md:h-[20rem] rounded-xl overflow-hidden">
-                        <img src={`https://images.unsplash.com/${banner.image}?auto=format&fit=crop&w=1600&q=80`} alt={banner.title} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                          <div className="text-center text-white px-4">
-                            <h3 className="text-lg sm:text-2xl font-bold mb-1">{banner.title}</h3>
-                            <p className="text-xs sm:text-base opacity-90">{banner.subtitle}</p>
-                          </div>
-                        </div>
+                        <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" />
                       </div>
                     </Link>
                   </CarouselItem>
@@ -233,6 +250,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
       }
       case 'TV_PC_TM_PRODUCT_4X1': {
         const cat = section.category
+        if (!Array.isArray(cat.items) || cat.items.length === 0) return null
         return (
           <section key={`sec-${idx}`} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
             <div className="space-y-4">
@@ -247,7 +265,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                       <Link href={`/tour/${p.id}`}>
                         <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                           <div className="relative h-40 sm:h-48 overflow-hidden">
-                            <img src={`https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=400&q=80`} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                            <img src={p.image} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                           </div>
                           <CardContent className="p-3 sm:p-4">
                             <div className="text-[11px] sm:text-xs text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
@@ -277,10 +295,11 @@ export default function HomePageClient({ banners, regions, categories, sections 
       case 'TV_TAB_TWOGRID': {
         const cats = section.categories
         const tabGroups = buildTabGroups(cats)
+        if (tabGroups.length === 0) return null
         return (
           <section key={`sec-${idx}`} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
             <div className="mt-2">
-              <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">추천 상품</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">추천 상품</h3>
               <Tabs defaultValue={tabGroups[0]?.key ?? 'cat-0'} className="w-full">
                 <TabsList
                   ref={tabsListRef as any}
@@ -291,7 +310,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                   onTouchStart={handleTabsPointerDown}
                   onTouchMove={handleTabsPointerMove}
                   onTouchEnd={handleTabsPointerUp}
-                  className="w-full overflow-x-auto overflow-y-hidden flex gap-2 sm:gap-3 rounded-none bg-transparent p-0 border-b scrollbar-hide cursor-grab active:cursor-grabbing select-none"
+                  className="w-full overflow-x-auto overflow-y-hidden flex gap-2 sm:gap-3 rounded-none bg-transparent p-0 border-b scrollbar-hide cursor-grab active:cursor-grabbing select-none justify-start"
                 >
                   {tabGroups.map(t => (
                     <TabsTrigger
@@ -299,8 +318,8 @@ export default function HomePageClient({ banners, regions, categories, sections 
                       value={t.key}
                       className="data-[state=active]:font-bold relative rounded-none bg-transparent px-3 sm:px-4 py-2 text-sm sm:text-base data-[state=active]:text-gray-900 text-gray-500 scrollbar-hide"
                     >
-                      <t.Icon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" />
-                      {t.label}
+                      {t.gitmoji && <span className="mr-1.5">{t.gitmoji}</span>}
+                      <span className="truncate">{t.label}</span>
                       <span className="absolute left-0 right-0 -bottom-[1px] h-[2px] bg-gray-900 opacity-0 data-[state=active]:opacity-100" />
                     </TabsTrigger>
                   ))}
@@ -313,7 +332,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                           <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
                             <div className="flex items-stretch">
                               <div className="relative w-36 sm:w-44 md:w-48 shrink-0">
-                                <img src={`https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=500&q=80`} alt={p.title} className="w-full h-full object-cover aspect-[4/3]" />
+                                <img src={p.image} alt={p.title} className="w-full h-full object-cover aspect-[4/3]" />
                               </div>
                               <CardContent className="p-3 sm:p-4 flex-1">
                                 <h4 className="font-semibold text-sm sm:text-base mb-1 line-clamp-2 leading-snug">{p.title}</h4>
