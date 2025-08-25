@@ -1,5 +1,1 @@
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-
-createRoot(document.getElementById("root")!).render(<App />);
+// Next.js로 전환됨: 이 파일은 더 이상 사용되지 않습니다.

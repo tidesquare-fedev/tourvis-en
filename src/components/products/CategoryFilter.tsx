@@ -1,5 +1,6 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Mountain, Landmark, Leaf, Map, List } from "lucide-react";
 
 interface CategoryFilterProps {
   value: string;
@@ -8,30 +9,37 @@ interface CategoryFilterProps {
 
 export const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
   const categories = [
-    { value: "all", label: "All Categories" },
-    { value: "Adventure", label: "Adventure" },
-    { value: "Cultural", label: "Cultural" },
-    { value: "Nature", label: "Nature" },
-    { value: "Historical", label: "Historical" },
+    { value: "all", label: "All", Icon: List },
+    { value: "Adventure", label: "Adventure", Icon: Mountain },
+    { value: "Cultural", label: "Cultural", Icon: Landmark },
+    { value: "Nature", label: "Nature", Icon: Leaf },
+    { value: "Historical", label: "Historical", Icon: Map },
   ];
 
+  // Sidebar style category list
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Category
-      </label>
-      <Select value={value || "all"} onValueChange={(val) => onChange(val === "all" ? "" : val)}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="All Categories" />
-        </SelectTrigger>
-        <SelectContent className="bg-white">
-          {categories.map((category) => (
-            <SelectItem key={category.value} value={category.value}>
-              {category.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="text-xs font-semibold text-gray-500 mb-2 tracking-wide">CATEGORY</div>
+      <nav className="space-y-1">
+        {categories.map(({ value: v, label, Icon }) => {
+          const selected = (value || "all") === v || (v !== "all" && value === v)
+          return (
+            <button
+              key={v}
+              type="button"
+              onClick={() => onChange(v === "all" ? "" : v)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                selected
+                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                  : "bg-white border-gray-200 hover:bg-gray-50 text-gray-700"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span className="truncate">{label}</span>
+            </button>
+          )
+        })}
+      </nav>
     </div>
   );
 };

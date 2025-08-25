@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { ExternalLink, FileText, Info } from "lucide-react";
 
 interface Reservation {
@@ -77,7 +77,7 @@ export const ProductInfo = ({ reservation, hidePrice = false }: ProductInfoProps
             
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2 mt-4">
-              <Link to="/tour/1" className="flex-1 min-w-0">
+              <Link href="/tour/1" className="flex-1 min-w-0">
                 <Button variant="outline" size="sm" className="w-full text-xs">
                   <ExternalLink className="w-3 h-3 mr-1" />
                   View Details

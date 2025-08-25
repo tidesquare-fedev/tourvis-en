@@ -1,3 +1,37 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Editor/OS
+.vscode/
+.DS_Store
+__MACOSX/
+
+# Cursor
+.cursor/
+
+# TypeScript / Next
+next-env.d.ts
+*.tsbuildinfo
+
+# Vercel / Turbo
+.vercel/
+.turbo/
+
+# Logs & env
+*.log
+.env
+.env.*
+
+# Ignore a file literally named a single space
+\ 
+
 # Logs
 logs
 *.log

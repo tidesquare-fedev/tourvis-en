@@ -23,15 +23,15 @@ export const ProductFilters = ({ filters, onFiltersChange }: ProductFiltersProps
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <LocationFilter
-          value={filters.location}
-          onChange={(value) => updateFilter('location', value)}
-        />
+    <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6">
+      <div className="space-y-5">
         <CategoryFilter
           value={filters.category}
           onChange={(value) => updateFilter('category', value)}
+        />
+        <LocationFilter
+          value={filters.location}
+          onChange={(value) => updateFilter('location', value)}
         />
         <PriceFilter
           value={filters.priceRange}
