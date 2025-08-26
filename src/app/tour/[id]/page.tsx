@@ -169,9 +169,13 @@ export default function TourDetailPage() {
             </div>
 
             <div className="mb-6">
-              <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
+              {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
+                <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
+              )}
               <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold text-red-500">{tour.discountRate}%</span>
+                {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
+                  <span className="text-2xl font-bold text-red-500">{tour.discountRate}%</span>
+                )}
                 <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
               </div>
             </div>
@@ -411,9 +415,13 @@ export default function TourDetailPage() {
               <Card className="shadow-lg">
                 <CardHeader className="pb-4">
                   <div className="text-center">
-                    <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
+                    {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
+                      <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
+                    )}
                     <div className="flex items-center justify-center gap-3 mb-2">
-                      <span className="text-xl font-bold text-red-500">{tour.discountRate}%</span>
+                      {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
+                        <span className="text-xl font-bold text-red-500">{tour.discountRate}%</span>
+                      )}
                       <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
                     </div>
                     <div className="text-sm text-gray-600">per person</div>

@@ -95,17 +95,23 @@ export default function ProductsPage() {
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-center text-xs sm:text-sm text-gray-600 mb-2">
                         <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        <span className="truncate">{tour.location}, South Korea</span>
+                        <span className="truncate">{tour.location}</span>
                       </div>
                       <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 leading-tight">{tour.title}</h3>
-                      <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-3">
-                        <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
-                        {tour.rating.toFixed(1)} ({tour.reviewCount})
-                      </div>
+                      {typeof tour.rating === 'number' && tour.rating > 0 && typeof tour.reviewCount === 'number' && tour.reviewCount > 0 && (
+                        <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-3">
+                          <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
+                          {tour.rating.toFixed(1)} ({tour.reviewCount})
+                        </div>
+                      )}
                       <div className="space-y-1">
-                        <div className="text-xs sm:text-sm text-gray-500 line-through">${tour.originalPrice}</div>
+                        {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
+                          <div className="text-xs sm:text-sm text-gray-500 line-through">${tour.originalPrice}</div>
+                        )}
                         <div className="flex items-center gap-2">
-                          <span className="text-xs sm:text-sm font-bold text-red-500">{tour.discountRate}% OFF</span>
+                          {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
+                            <span className="text-xs sm:text-sm font-bold text-red-500">{tour.discountRate}% OFF</span>
+                          )}
                           <div className="text-lg sm:text-xl font-bold text-blue-600">${tour.price}</div>
                         </div>
                       </div>

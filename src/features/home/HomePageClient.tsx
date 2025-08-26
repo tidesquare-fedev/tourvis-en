@@ -64,14 +64,15 @@ export default function HomePageClient({ banners, regions, categories, sections 
   }, [bannerApi])
 
   const tabIcons = [MapPin, Calendar, Users, Search]
-  const stripEmoji = (text: string) => text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim()
+  const stripEmoji = (text: string) => {
+    const surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g
+    const variationSel = /\uFE0F/g
+    return text.replace(surrogatePair, '').replace(variationSel, '').trim()
+  }
   const toGitmoji = (text: string) => {
-    // 간단 매핑 (필요시 확장 가능)
-    const map: Record<string, string> = {
-      '✨': '✨', '🔥': '🔥', '🐛': '🐛', '✅': '✅', '🚀': '🚀', '🎉': '🎉', '🔧': '🔧', '📝': '📝'
-    }
-    const m = text.match(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u)
-    return m ? (map[m[0]] ?? m[0]) : ''
+    const surrogatePairOne = /[\uD800-\uDBFF][\uDC00-\uDFFF]/
+    const m = text.match(surrogatePairOne)
+    return m ? m[0] : ''
   }
 
   const buildTabGroups = (cats: Category[]) => cats
@@ -120,7 +121,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
       <CarouselContent className="-ml-2 md:-ml-4">
         {items.slice(0, 4).map((p) => (
           <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-            <Link href={`/tour/${p.id}`}>
+            <Link href={p.href || `/tour/${p.id}`}>
               <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                 <div className="relative h-44 sm:h-52 overflow-hidden">
                   <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
@@ -128,14 +129,20 @@ export default function HomePageClient({ banners, regions, categories, sections 
                 <CardContent className="p-3 sm:p-4">
                   <div className="text-[11px] sm:text-xs text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
                   <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 leading-tight">{p.title}</h3>
-                  <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">
-                    <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
-                    {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
-                  </div>
+                  {typeof p.rating === 'number' && p.rating > 0 && typeof p.reviewCount === 'number' && p.reviewCount > 0 && (
+                    <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">
+                      <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
+                      {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
+                    </div>
+                  )}
                   <div className="space-y-1">
-                    <div className="text-xs sm:text-sm text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
+                    {typeof p.discountRate === 'number' && p.discountRate > 0 && (
+                      <div className="text-xs sm:text-sm text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
+                    )}
                     <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-red-500">{p.discountRate}% OFF</span>
+                      {typeof p.discountRate === 'number' && p.discountRate > 0 && (
+                        <span className="text-xs sm:text-sm font-bold text-red-500">{p.discountRate}% OFF</span>
+                      )}
                       <div className="text-lg sm:text-xl font-bold text-blue-600">{typeof p.price === 'number' ? `$${p.price.toLocaleString()}` : p.price}</div>
                     </div>
                   </div>
@@ -205,7 +212,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
         return (
           <section key={`sec-${idx}`} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
             <div className="mb-6 sm:mb-8">
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Best Products</h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{(section as any).title || 'Best Products'}</h2>
             </div>
             <Accordion type="single" collapsible className="w-full space-y-4 sm:space-y-6" defaultValue="cat-0">
               {cats.map((cat, cidx) => (
@@ -262,7 +269,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {cat.items.slice(0, 4).map((p) => (
                     <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <Link href={`/tour/${p.id}`}>
+                      <Link href={p.href || `/tour/${p.id}`}>
                         <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                           <div className="relative h-40 sm:h-48 overflow-hidden">
                             <img src={p.image} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
@@ -270,14 +277,20 @@ export default function HomePageClient({ banners, regions, categories, sections 
                           <CardContent className="p-3 sm:p-4">
                             <div className="text-[11px] sm:text-xs text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
                             <h4 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 leading-tight">{p.title}</h4>
-                            <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">
-                              <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
-                              {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
-                            </div>
+                            {typeof p.rating === 'number' && p.rating > 0 && typeof p.reviewCount === 'number' && p.reviewCount > 0 && (
+                              <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">
+                                <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
+                                {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
+                              </div>
+                            )}
                             <div className="space-y-1">
-                              <div className="text-xs sm:text-sm text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
+                              {typeof p.discountRate === 'number' && p.discountRate > 0 && (
+                                <div className="text-xs sm:text-sm text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
+                              )}
                               <div className="flex items-center gap-2">
-                                <span className="text-xs sm:text-sm font-bold text-red-500">{p.discountRate}% OFF</span>
+                                {typeof p.discountRate === 'number' && p.discountRate > 0 && (
+                                  <span className="text-xs sm:text-sm font-bold text-red-500">{p.discountRate}% OFF</span>
+                                )}
                                 <div className="text-lg sm:text-xl font-bold text-blue-600">{typeof p.price === 'number' ? `$${p.price.toLocaleString()}` : p.price}</div>
                               </div>
                             </div>
@@ -299,7 +312,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
         return (
           <section key={`sec-${idx}`} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
             <div className="mt-2">
-              <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">추천 상품</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">{(section as any).title || '추천 상품'}</h3>
               <Tabs defaultValue={tabGroups[0]?.key ?? 'cat-0'} className="w-full">
                 <TabsList
                   ref={tabsListRef as any}
@@ -328,7 +341,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                   <TabsContent key={t.key} value={t.key} className="mt-4 sm:mt-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {t.items?.slice(0, 4).map((p: any) => (
-                        <Link key={p.id} href={`/tour/${p.id}`} className="block">
+                        <Link key={p.id} href={p.href || `/tour/${p.id}`} className="block">
                           <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
                             <div className="flex items-stretch">
                               <div className="relative w-36 sm:w-44 md:w-48 shrink-0">
@@ -336,13 +349,19 @@ export default function HomePageClient({ banners, regions, categories, sections 
                               </div>
                               <CardContent className="p-3 sm:p-4 flex-1">
                                 <h4 className="font-semibold text-sm sm:text-base mb-1 line-clamp-2 leading-snug">{p.title}</h4>
-                                <div className="flex items-center text-[11px] sm:text-xs text-yellow-600 mb-1.5 sm:mb-2">
-                                  <Star className="w-3 h-3 mr-1 fill-current" />
-                                  {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
-                                </div>
-                                <div className="text-[11px] sm:text-xs text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
+                                {typeof p.rating === 'number' && p.rating > 0 && typeof p.reviewCount === 'number' && p.reviewCount > 0 && (
+                                  <div className="flex items-center text-[11px] sm:text-xs text-yellow-600 mb-1.5 sm:mb-2">
+                                    <Star className="w-3 h-3 mr-1 fill-current" />
+                                    {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
+                                  </div>
+                                )}
+                                {typeof p.discountRate === 'number' && p.discountRate > 0 && (
+                                  <div className="text-[11px] sm:text-xs text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
+                                )}
                                 <div className="mt-1 flex items-center gap-2">
-                                  <span className="text-[11px] sm:text-xs font-bold text-red-500">{p.discountRate}%</span>
+                                  {typeof p.discountRate === 'number' && p.discountRate > 0 && (
+                                    <span className="text-[11px] sm:text-xs font-bold text-red-500">{p.discountRate}%</span>
+                                  )}
                                   <div className="text-sm sm:text-base font-bold text-blue-600">{typeof p.price === 'number' ? `$${p.price.toLocaleString()}` : p.price}</div>
                                 </div>
                               </CardContent>

@@ -25,6 +25,20 @@ export default async function HomePage() {
       return https
     }
 
+    const absolutize = (u: unknown): string | null => {
+      const s = typeof u === 'string' ? u.trim() : ''
+      if (!s) return null
+      try {
+        // already absolute
+        if (/^https?:\/\//i.test(s)) return s
+        // treat as path
+        const url = new URL(s, 'https://tourvis.com')
+        return url.toString()
+      } catch {
+        return null
+      }
+    }
+
     const mapProductsToItems = (list: any[]): any[] => {
       return (Array.isArray(list) ? list : []).map((p: any) => {
         const detail = p?.productDetail || {}
@@ -32,7 +46,14 @@ export default async function HomePage() {
         const imageCandidate = detail.imageUrl || detail.imageUrlWide || ''
         const price = detail.discountPrice ?? detail.price ?? ''
         const discountRate = detail.discountRate ?? ''
-        const location = [detail.nationName, detail.stateName, detail.cityName].filter(Boolean).join(' / ')
+        const location = String(
+          detail.cityName
+          ?? detail?.cityMast?.nameEn
+          ?? detail?.cityMast?.nameKr
+          ?? detail.stateName
+          ?? detail.nationName
+          ?? ''
+        )
         const rating = Number(detail.tntReviewRating ?? detail?.review?.reviewScore ?? 0) || undefined
         const reviewCount = Number(detail.tntReviewCount ?? detail?.review?.reviewCount ?? 0) || undefined
         return {
@@ -41,6 +62,7 @@ export default async function HomePage() {
           image: normalizeImage(imageCandidate),
           category: detail.category ?? null,
           location: location || null,
+          href: absolutize(p?.productLink ?? detail?.productLink ?? detail?.linkUrl ?? p?.linkUrl ?? ''),
           rating,
           reviewCount,
           originalPrice: typeof detail.price === 'string' ? Number(detail.price) : detail.price ?? null,
@@ -73,7 +95,7 @@ export default async function HomePage() {
             image: normalizeImage(b?.imageUrl || b?.image || b?.imageUrlWide || b?.listImg || b?.moImg || b?.tabImg || ''),
             title: String(b?.title ?? d?.title ?? entry?.name ?? ''),
             subtitle: String(b?.subTitle ?? ''),
-            href: typeof b?.linkUrl === 'string' ? b.linkUrl : null,
+            href: absolutize(b?.linkUrl ?? b?.link ?? ''),
           }))
         } else if (Array.isArray((d as any).bannerList)) {
           const list = (d as any).bannerList.slice().sort((a: any, b: any) => (a?.orderSeq ?? 0) - (b?.orderSeq ?? 0))
@@ -82,7 +104,7 @@ export default async function HomePage() {
             image: normalizeImage(b.image || b.imageUrl || b.imageUrlWide || b.listImg || b.moImg || b.tabImg || ''),
             title: String(b.title ?? d?.title ?? entry?.name ?? ''),
             subtitle: String(b.subTitle ?? ''),
-            href: typeof b?.linkUrl === 'string' ? b.linkUrl : null,
+            href: absolutize(b?.linkUrl ?? b?.link ?? ''),
           }))
         } else if (Array.isArray((d as any).productList)) {
           const list = (d as any).productList.slice().sort((a: any, b: any) => (a?.orderSeq ?? 0) - (b?.orderSeq ?? 0))
@@ -94,7 +116,7 @@ export default async function HomePage() {
               image: normalizeImage(img),
               title: String(p.productName ?? detail.name ?? ''),
               subtitle: String(detail.description ?? ''),
-              href: typeof p?.productLink === 'string' ? p.productLink : null,
+              href: absolutize(p?.productLink ?? detail?.productLink ?? detail?.linkUrl ?? p?.linkUrl ?? ''),
             }
           })
         } else {
@@ -105,7 +127,7 @@ export default async function HomePage() {
               image: normalizeImage(img),
               title: String((d as any).title ?? entry?.name ?? ''),
               subtitle: String((d as any).subTitle ?? ''),
-              href: typeof (d as any)?.linkUrl === 'string' ? (d as any).linkUrl : null,
+              href: absolutize((d as any)?.linkUrl ?? (d as any)?.link ?? ''),
             }]
           }
         }
@@ -124,17 +146,17 @@ export default async function HomePage() {
             items: mapProductsToItems(t?.productList || []),
           }))
           tmpCategories.push(...categories)
-          tmpSections.push({ templateId: 'TV_TAB_BSTP', categories })
+          tmpSections.push({ templateId: 'TV_TAB_BSTP', categories, title: String(d?.name ?? entry?.name ?? d?.title ?? 'Best Products') })
         } else if (Array.isArray(d?.productList)) {
           const items = mapProductsToItems(d.productList)
-          const title = String(d?.title ?? entry?.name ?? 'Best Products')
+          const title = String(d?.title ?? d?.name ?? entry?.name ?? 'Best Products')
           const categories = [{ title, items }]
           tmpCategories.push(...categories)
-          tmpSections.push({ templateId: 'TV_TAB_BSTP', categories })
+          tmpSections.push({ templateId: 'TV_TAB_BSTP', categories, title: String(d?.name ?? entry?.name ?? 'Best Products') })
         } else {
           const fallback = tmpCategories.slice(0, 4)
           if (fallback.length > 0) {
-            tmpSections.push({ templateId: 'TV_TAB_BSTP', categories: fallback })
+            tmpSections.push({ templateId: 'TV_TAB_BSTP', categories: fallback, title: String(d?.name ?? entry?.name ?? 'Best Products') })
           }
         }
         continue
@@ -172,7 +194,7 @@ export default async function HomePage() {
           return { title, items }
         })
         tmpCategories.push(...categories)
-        tmpSections.push({ templateId: 'TV_TAB_TWOGRID', categories })
+        tmpSections.push({ templateId: 'TV_TAB_TWOGRID', categories, title: String(d?.name ?? entry?.name ?? d?.title ?? '') })
       } else if (type === 'inventory') {
         const imageCandidate = d.listImg || d.moImg || d.tabImg || d.image || ''
         const title = d.title || entry?.name || ''

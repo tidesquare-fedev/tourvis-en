@@ -25,6 +25,7 @@ export const ProductItemSchema = z.object({
   image: z.string().default(''),
   category: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
+  href: z.string().optional().nullable(),
   rating: z.number().optional().nullable(),
   reviewCount: z.number().optional().nullable(),
   originalPrice: z.number().or(z.string()).optional().nullable(),
@@ -59,9 +60,9 @@ export type SectionTemplate =
 
 export type Section =
   | { templateId: 'TV_TM_CAROUSEL'; regions: Region[] }
-  | { templateId: 'TV_TAB_BSTP'; categories: Category[] }
+  | { templateId: 'TV_TAB_BSTP'; categories: Category[]; title?: string }
   | { templateId: 'TV_PC_IV_LINE_BANNER_A'; banners: Banner[] }
   | { templateId: 'TV_PC_TM_PRODUCT_4X1'; category: Category }
-  | { templateId: 'TV_TAB_TWOGRID'; categories: Category[] }
+  | { templateId: 'TV_TAB_TWOGRID'; categories: Category[]; title?: string }
 
 
