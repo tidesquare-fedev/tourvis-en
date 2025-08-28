@@ -14,9 +14,11 @@ interface ProductFiltersProps {
   onFiltersChange: (filters: FiltersState) => void;
   dynamicCategories?: string[];
   dynamicLocations?: string[];
+  priceMin?: number;
+  priceMax?: number;
 }
 
-export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dynamicLocations }: ProductFiltersProps) => {
+export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dynamicLocations, priceMin, priceMax }: ProductFiltersProps) => {
   const updateFilter = (key: keyof FiltersState, value: any) => {
     onFiltersChange({
       ...filters,
@@ -40,6 +42,8 @@ export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dy
         <PriceFilter
           value={filters.priceRange}
           onChange={(value) => updateFilter('priceRange', value)}
+          min={priceMin}
+          max={priceMax}
         />
       </div>
     </div>

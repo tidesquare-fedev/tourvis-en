@@ -128,7 +128,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                   <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
                 </div>
                 <CardContent className="p-3 sm:p-4">
-                  <div className="text-[11px] sm:text-xs text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
+                  <div className="text-sm text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
                   <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 leading-tight">{p.title}</h3>
                   {typeof p.rating === 'number' && p.rating > 0 && typeof p.reviewCount === 'number' && p.reviewCount > 0 && (
                     <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">
@@ -276,7 +276,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                             <img src={p.image} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                           </div>
                           <CardContent className="p-3 sm:p-4">
-                            <div className="text-[11px] sm:text-xs text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
+                            <div className="text-sm text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
                             <h4 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 leading-tight">{p.title}</h4>
                             {typeof p.rating === 'number' && p.rating > 0 && typeof p.reviewCount === 'number' && p.reviewCount > 0 && (
                               <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">

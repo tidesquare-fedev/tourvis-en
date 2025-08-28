@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { AppHeader } from '@/components/shared/AppHeader'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -70,17 +71,7 @@ export default function InquiryListPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-            <div className="flex justify-between items-center">
-              <span className="logo h-6 sm:h-8 w-24 sm:w-28" role="img" aria-label="TOURVIS" />
-              <nav className="flex items-center space-x-3 sm:space-x-6">
-                <Link href="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-                <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
-              </nav>
-            </div>
-          </div>
-        </header>
+        <AppHeader active="inquiry" />
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Card>
             <CardHeader>
@@ -117,17 +108,7 @@ export default function InquiryListPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex justify-between items-center">
-            <img src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" alt="TOURVIS" className="h-6 sm:h-8" />
-            <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link href="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-              <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <AppHeader active="inquiry" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <div>
