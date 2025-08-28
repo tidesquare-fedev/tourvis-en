@@ -5,16 +5,19 @@ import { Mountain, Landmark, Leaf, Map, List } from "lucide-react";
 interface CategoryFilterProps {
   value: string;
   onChange: (value: string) => void;
+  options?: string[];
 }
 
-export const CategoryFilter = ({ value, onChange }: CategoryFilterProps) => {
-  const categories = [
-    { value: "all", label: "All", Icon: List },
-    { value: "Adventure", label: "Adventure", Icon: Mountain },
-    { value: "Cultural", label: "Cultural", Icon: Landmark },
-    { value: "Nature", label: "Nature", Icon: Leaf },
-    { value: "Historical", label: "Historical", Icon: Map },
-  ];
+export const CategoryFilter = ({ value, onChange, options }: CategoryFilterProps) => {
+  const categories = (Array.isArray(options) && options.length > 0)
+    ? [{ value: "all", label: "All", Icon: List }, ...options.map((label) => ({ value: label, label, Icon: List }))]
+    : [
+        { value: "all", label: "All", Icon: List },
+        { value: "Adventure", label: "Adventure", Icon: Mountain },
+        { value: "Cultural", label: "Cultural", Icon: Landmark },
+        { value: "Nature", label: "Nature", Icon: Leaf },
+        { value: "Historical", label: "Historical", Icon: Map },
+      ]
 
   // Sidebar style category list
   return (

@@ -12,9 +12,11 @@ interface FiltersState {
 interface ProductFiltersProps {
   filters: FiltersState;
   onFiltersChange: (filters: FiltersState) => void;
+  dynamicCategories?: string[];
+  dynamicLocations?: string[];
 }
 
-export const ProductFilters = ({ filters, onFiltersChange }: ProductFiltersProps) => {
+export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dynamicLocations }: ProductFiltersProps) => {
   const updateFilter = (key: keyof FiltersState, value: any) => {
     onFiltersChange({
       ...filters,
@@ -28,10 +30,12 @@ export const ProductFilters = ({ filters, onFiltersChange }: ProductFiltersProps
         <CategoryFilter
           value={filters.category}
           onChange={(value) => updateFilter('category', value)}
+          options={dynamicCategories}
         />
         <LocationFilter
           value={filters.location}
           onChange={(value) => updateFilter('location', value)}
+          options={dynamicLocations}
         />
         <PriceFilter
           value={filters.priceRange}

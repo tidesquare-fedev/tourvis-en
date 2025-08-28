@@ -127,10 +127,13 @@ export default function TourDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-6">
           <Link href="/" className="flex items-center">
-            <img src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" alt="Korea Tours" className="h-8" />
+            <span className="logo h-8 w-28" role="img" aria-label="TOURVIS" />
           </Link>
+          <div className="flex-1 hidden md:block">
+            {/** 상세 페이지에는 별도 검색박스가 현재 요구에 명시되지 않아 보류 */}
+          </div>
           <nav className="flex items-center space-x-6">
             <Link href="/reservation-lookup" className="text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
           </nav>

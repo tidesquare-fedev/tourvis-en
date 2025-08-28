@@ -3,8 +3,11 @@ import Providers from './providers'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Korea Tours',
+  title: 'TOURVIS',
   description: 'Tour ticket explorer',
+  icons: {
+    icon: 'https://tourvis.com/favicon.ico',
+  },
 }
 
 export default function RootLayout({

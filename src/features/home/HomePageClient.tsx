@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import SearchBox from '@/components/shared/SearchBox'
 import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -121,7 +122,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
       <CarouselContent className="-ml-2 md:-ml-4">
         {items.slice(0, 4).map((p) => (
           <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-            <Link href={p.href || `/tour/${p.id}`}>
+            <Link href={p.href || `/activity/product/${p.id}`}>
               <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                 <div className="relative h-44 sm:h-52 overflow-hidden">
                   <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
@@ -269,7 +270,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {cat.items.slice(0, 4).map((p) => (
                     <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <Link href={p.href || `/tour/${p.id}`}>
+                      <Link href={p.href || `/activity/product/${p.id}`}>
                         <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                           <div className="relative h-40 sm:h-48 overflow-hidden">
                             <img src={p.image} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
@@ -341,7 +342,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                   <TabsContent key={t.key} value={t.key} className="mt-4 sm:mt-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {t.items?.slice(0, 4).map((p: any) => (
-                        <Link key={p.id} href={p.href || `/tour/${p.id}`} className="block">
+                        <Link key={p.id} href={p.href || `/activity/product/${p.id}`} className="block">
                           <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
                             <div className="flex items-stretch">
                               <div className="relative w-36 sm:w-44 md:w-48 shrink-0">
@@ -384,16 +385,15 @@ export default function HomePageClient({ banners, regions, categories, sections 
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-[60] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3 sm:gap-6">
             <Link href="/">
-              <img
-                src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg"
-                alt="Korea Tours"
-                className="h-6 sm:h-8"
-              />
+              <span className="logo h-6 sm:h-8 w-24 sm:w-28" role="img" aria-label="TOURVIS" />
             </Link>
+            <div className="flex-1 hidden md:block">
+              <SearchBox />
+            </div>
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link href="/products" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Tours</Link>
+              <Link href="/activity/search" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Tours</Link>
               <Link href="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Direct Inquiry</Link>
               <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Reservations</Link>
             </nav>

@@ -104,6 +104,13 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+  .logo {
+    display: inline-block;
+    background-image: url('https://cdns.tourvis.com/common/dist/images/logo-tourvis.png');
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: contain;
+  }
 }
 
 

@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { MapPin, Star } from 'lucide-react'
 import { ProductFilters } from '@/components/products/ProductFilters'
+import SearchBox from '@/components/shared/SearchBox'
 
 export default function ProductsPage() {
   const [filters, setFilters] = useState({ location: '', category: '', priceRange: [0, 200] as [number, number] })
@@ -22,7 +23,7 @@ export default function ProductsPage() {
     { id: 'jeonju-hanok-tour', title: 'Jeonju Hanok Village Food & Culture Tour', image: 'photo-1482938289607-e9573fc25ebb', originalPrice: 75, discountRate: 19, price: 61, rating: 4.7, reviewCount: 298, location: 'Jeonju', category: 'Cultural' },
     ...Array.from({ length: 15 }, (_, i) => ({
       id: `tour-${i + 11}`,
-      title: `Amazing Korea Tour ${i + 11}`,
+      title: `TOURVIS ${i + 11}`,
       image: ['photo-1469474968028-56623f02e42e', 'photo-1482938289607-e9573fc25ebb', 'photo-1470071459604-3b5ec3a7fe05', 'photo-1426604966848-d7adac402bff'][i % 4],
       originalPrice: 80 + Math.floor(Math.random() * 40),
       discountRate: 15 + Math.floor(Math.random() * 15),
@@ -47,12 +48,15 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3 sm:gap-6">
             <Link href="/">
-              <img src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" alt="Korea Tours" className="h-6 sm:h-8" />
+              <span className="logo h-6 sm:h-8 w-24 sm:w-28" role="img" aria-label="TOURVIS" />
             </Link>
+            <div className="flex-1 hidden md:block">
+              <SearchBox />
+            </div>
             <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link href="/products" className="text-xs sm:text-sm text-blue-600 font-medium">Tours</Link>
+              <Link href="/activity/search" className="text-xs sm:text-sm text-blue-600 font-medium">Tours</Link>
               <Link href="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Direct Inquiry</Link>
               <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Reservations</Link>
             </nav>
@@ -87,7 +91,7 @@ export default function ProductsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
               {filteredTours.map((tour) => (
-                <Link key={tour.id} href={`/tour/${tour.id}`}>
+                <Link key={tour.id} href={`/activity/product/${tour.id}`}>
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                     <div className="relative h-40 sm:h-48 overflow-hidden">
                       <img src={`https://images.unsplash.com/${tour.image}?auto=format&fit=crop&w=400&q=80`} alt={tour.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />

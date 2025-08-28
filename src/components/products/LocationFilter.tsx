@@ -4,22 +4,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface LocationFilterProps {
   value: string;
   onChange: (value: string) => void;
+  options?: string[];
 }
 
-export const LocationFilter = ({ value, onChange }: LocationFilterProps) => {
-  const locations = [
-    { value: "all", label: "All Locations" },
-    { value: "Seoul", label: "Seoul" },
-    { value: "Busan", label: "Busan" },
-    { value: "Jeju", label: "Jeju" },
-    { value: "Gyeongju", label: "Gyeongju" },
-    { value: "Incheon", label: "Incheon" },
-    { value: "Sokcho", label: "Sokcho" },
-    { value: "Gangneung", label: "Gangneung" },
-    { value: "Jeonju", label: "Jeonju" },
-    { value: "Andong", label: "Andong" },
-    { value: "Gapyeong", label: "Gapyeong" },
-  ];
+export const LocationFilter = ({ value, onChange, options }: LocationFilterProps) => {
+  const base = (Array.isArray(options) && options.length > 0) ? options : [
+    "Seoul","Busan","Jeju","Gyeongju","Incheon","Sokcho","Gangneung","Jeonju","Andong","Gapyeong",
+  ]
+  const locations = [{ value: "all", label: "All Locations" }, ...base.map((l) => ({ value: l, label: l }))]
 
   return (
     <div>
