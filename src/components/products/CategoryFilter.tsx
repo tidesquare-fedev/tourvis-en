@@ -6,9 +6,10 @@ interface CategoryFilterProps {
   value: string;
   onChange: (value: string) => void;
   options?: string[];
+  variant?: 'list' | 'pills';
 }
 
-export const CategoryFilter = ({ value, onChange, options }: CategoryFilterProps) => {
+export const CategoryFilter = ({ value, onChange, options, variant = 'list' }: CategoryFilterProps) => {
   const categories = (Array.isArray(options) && options.length > 0)
     ? [{ value: "all", label: "All", Icon: List }, ...options.map((label) => ({ value: label, label, Icon: List }))]
     : [
@@ -19,7 +20,32 @@ export const CategoryFilter = ({ value, onChange, options }: CategoryFilterProps
         { value: "Historical", label: "Historical", Icon: Map },
       ]
 
-  // Sidebar style category list
+  if (variant === 'pills') {
+    return (
+      <div>
+        <div className="text-xs font-semibold text-gray-500 mb-2 tracking-wide">CATEGORY</div>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide no-scrollbar">
+          {categories.map(({ value: v, label }) => {
+            const selected = (value || "all") === v || (v !== "all" && value === v)
+            return (
+              <button
+                key={v}
+                type="button"
+                onClick={() => onChange(v === "all" ? "" : v)}
+                className={`whitespace-nowrap px-3 py-1.5 rounded-full border text-sm transition-colors ${
+                  selected ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200 text-gray-700"
+                }`}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  // Sidebar style list
   return (
     <div>
       <div className="text-xs font-semibold text-gray-500 mb-2 tracking-wide">CATEGORY</div>

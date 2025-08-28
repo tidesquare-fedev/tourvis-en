@@ -17,7 +17,7 @@ export default function SearchPageClient({ items }: { items: ProductItem[] }) {
 
   const filtered = useMemo(() => {
     return items.filter((it) => {
-      const locationMatch = !filters.location || (it.location || '') === filters.location
+      const locationMatch = filters.locations.length === 0 || filters.locations.includes(it.location || '')
       const categoryMatch = !filters.category || (it.category || '') === filters.category
       const price = typeof it.price === 'number' ? it.price : Number.MAX_SAFE_INTEGER
       const priceMatch = price >= filters.priceRange[0] && price <= filters.priceRange[1]
@@ -46,7 +46,7 @@ export default function SearchPageClient({ items }: { items: ProductItem[] }) {
           <div className="col-span-12 md:col-span-9">
             <div className="mb-6"><p className="text-gray-600">{filtered.length} tours found</p></div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-6">
               {filtered.map((it) => (
                 <ActivityCard key={it.id} item={it as any} />
               ))}

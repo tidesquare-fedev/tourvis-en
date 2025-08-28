@@ -125,7 +125,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
             <Link href={p.href || `/activity/product/${p.id}`}>
               <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
                 <div className="relative h-44 sm:h-52 overflow-hidden">
-                  <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                  <img src={p.image} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                 </div>
                 <CardContent className="p-3 sm:p-4">
                   <div className="text-sm text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
@@ -343,10 +343,10 @@ export default function HomePageClient({ banners, regions, categories, sections 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {t.items?.slice(0, 4).map((p: any) => (
                         <Link key={p.id} href={p.href || `/activity/product/${p.id}`} className="block">
-                          <Card className="overflow-hidden hover:shadow-md transition-shadow duration-300">
+                          <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                             <div className="flex items-stretch">
-                              <div className="relative w-36 sm:w-44 md:w-48 shrink-0">
-                                <img src={p.image} alt={p.title} className="w-full h-full object-cover aspect-[4/3]" />
+                              <div className="relative w-36 sm:w-44 md:w-48 shrink-0 overflow-hidden">
+                                <img src={p.image} alt={p.title} className="w-full h-full object-cover aspect-[4/3] hover:scale-105 transition-transform duration-300" />
                               </div>
                               <CardContent className="p-3 sm:p-4 flex-1">
                                 <h4 className="font-semibold text-sm sm:text-base mb-1 line-clamp-2 leading-snug">{p.title}</h4>
@@ -392,11 +392,14 @@ export default function HomePageClient({ banners, regions, categories, sections 
             <div className="flex-1 hidden md:block">
               <SearchBox />
             </div>
-            <nav className="flex items-center space-x-3 sm:space-x-6">
+            <nav className="ml-auto flex items-center space-x-3 sm:space-x-6">
               <Link href="/activity/search" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Tours</Link>
               <Link href="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Direct Inquiry</Link>
               <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Reservations</Link>
             </nav>
+          </div>
+          <div className="mt-2 md:hidden">
+            <SearchBox />
           </div>
         </div>
       </header>

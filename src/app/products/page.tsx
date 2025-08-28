@@ -26,7 +26,7 @@ export default function ProductsPage() {
 
   const filteredTours = useMemo(() => {
     return allTours.filter((tour) => {
-      const locationMatch = !filters.location || tour.location === filters.location
+      const locationMatch = filters.locations.length === 0 || filters.locations.includes(tour.location)
       const categoryMatch = !filters.category || tour.category === filters.category
       const priceMatch = tour.price >= filters.priceRange[0] && tour.price <= filters.priceRange[1]
       return locationMatch && categoryMatch && priceMatch

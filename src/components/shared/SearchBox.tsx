@@ -64,9 +64,8 @@ export default function SearchBox({ channelId = 3, host, placeholder = 'Search t
           onKeyDown={(e) => { if (e.key === 'Enter') onSubmit() }}
           placeholder={placeholder}
           aria-label="Search keyword"
-          className="w-44 sm:w-64 md:w-72 lg:w-80 h-9 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full sm:w-64 md:w-72 lg:w-80 h-9 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button type="submit" className="h-9 px-3 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">Search</button>
       </div>
     </form>
   )
