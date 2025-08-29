@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
-import { Info, X, Edit, Apple, Calendar, Users } from 'lucide-react'
+import { Info, X, Edit, Apple, Calendar, Users, ArrowLeft } from 'lucide-react'
 
 const tours = {
   'jeju-hallasan-hiking': { id: 'jeju-hallasan-hiking', title: 'Jeju Hallasan Mountain Sunrise Hiking Tour', price: 89, image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80' },
@@ -118,17 +118,21 @@ function BookingInfoContent() {
   const isStepAccessible = (step: number) => step <= activeStep || completedSteps.includes(step)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center">
+    <div className="min-h-screen bg-white">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon" aria-label="Back" onClick={() => router.back()}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </div>
+          <Link href="/" className="flex items-center ml-auto md:ml-0">
             <span className="logo h-8 w-28" role="img" aria-label="TOURVIS" />
           </Link>
-          <Link href="/reservation-lookup" className="text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Booking Information</h1>
           <p className="text-gray-600">Please enter your information and preferences for the booking.</p>

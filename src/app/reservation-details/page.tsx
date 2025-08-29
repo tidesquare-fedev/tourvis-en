@@ -85,10 +85,10 @@ function ReservationDetailsContent() {
   if (!reservation) return <div>Loading...</div>
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <AppHeader active="reservation" />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="space-y-4 sm:space-y-6">
           <div className="text-left">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Reservation Details</h2>
@@ -148,15 +148,11 @@ function ReservationDetailsContent() {
           <CustomerService />
 
           <div className="text-center">
-            <Button variant="outline" size="sm" style={{ backgroundColor: '#f8f9fa', color: '#6c757d' }} className="w-full sm:w-auto text-xs sm:text-sm">Request Cancellation</Button>
+            <span className="text-sm sm:text-base text-gray-600">Request Cancellation</span>
           </div>
         </div>
 
-        <div className="text-center mt-6 sm:mt-8">
-          <Link href="/reservation-lookup">
-            <Button variant="outline" style={{ backgroundColor: '#01c5fd', color: 'white' }} className="w-full sm:w-auto text-sm sm:text-base">Back to Search</Button>
-          </Link>
-        </div>
+        {/* Removed Back to Search button as requested */}
       </div>
     </div>
   )

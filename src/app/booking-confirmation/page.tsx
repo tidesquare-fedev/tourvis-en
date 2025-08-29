@@ -2,12 +2,13 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, Calendar, Users, Mail, Phone, MapPin } from 'lucide-react'
+import { CheckCircle2, Calendar, Users, Mail, Phone, MapPin, ArrowLeft } from 'lucide-react'
 import { ProductInfo } from '@/components/reservation/ProductInfo'
 
 interface Reservation { reservationNumber: string; firstName: string; lastName: string; email: string; phone: string; country: string; date: string; participants: string; specialRequests: string; tourTitle: string; tourPrice: number; totalAmount: number; bookingDate: string; status: string; activityDetails: { duration: string; meetingPoint: string; meetingTime: string; inclusions: string[]; exclusions: string[]; requirements: string[] } }
@@ -38,6 +39,7 @@ const createMockReservation = (reservationNumber: string): Reservation => ({
 })
 
 function BookingConfirmationContent() {
+  const router = useRouter()
   const params = useSearchParams()
   const [reservation, setReservation] = useState<Reservation | null>(null)
 
@@ -66,20 +68,19 @@ function BookingConfirmationContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex justify-between items-center">
-            <span className="logo h-6 sm:h-8 w-24 sm:w-28" role="img" aria-label="TOURVIS" />
-            <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link href="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-              <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
-            </nav>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon" aria-label="Back" onClick={() => router.back()}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
           </div>
+          <span className="logo h-6 sm:h-8 w-24 sm:w-28 ml-auto md:ml-0" role="img" aria-label="TOURVIS" />
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="text-center mb-6 sm:mb-8">
           <CheckCircle2 className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h1>

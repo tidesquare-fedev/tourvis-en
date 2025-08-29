@@ -35,10 +35,10 @@ export default function ReservationLookupPage() {
   const handleInputChange = (field: string, value: string) => setSearchData((prev) => ({ ...prev, [field]: value }))
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <AppHeader active="reservation" />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Check Reservation</h1>
           <p className="text-base sm:text-lg text-gray-600">Enter your reservation number and email address to check your booking information</p>
@@ -81,11 +81,7 @@ export default function ReservationLookupPage() {
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 sm:mt-8">
-          <Link href="/">
-            <Button variant="outline" style={{ backgroundColor: '#01c5fd', color: 'white' }} className="w-full sm:w-auto text-sm sm:text-base">Back to Home</Button>
-          </Link>
-        </div>
+        {/* Removed Back to Home button per requirements */}
       </div>
     </div>
   )

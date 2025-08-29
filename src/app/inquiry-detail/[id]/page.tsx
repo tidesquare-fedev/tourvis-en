@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -31,6 +31,7 @@ const getStatusText = (status: string) => ({ pending: 'Pending', answered: 'Answ
 
 export default function InquiryDetailPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
   const inquiry = params?.id ? mockInquiryDetails[params.id] : null
 
   useEffect(() => {
@@ -39,19 +40,18 @@ export default function InquiryDetailPage() {
 
   if (!inquiry) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-            <div className="flex justify-between items-center">
-              <img src="https://i.namu.wiki/i/FbtahqHU60dnSITTtIs-h90AEG8OS8WhMlCv12wGgqqUhQr5T_VWe0OTKA7vJRQNxIJLAx4jKhcn9ILNtNWT1Q.svg" alt="KoreaTours" className="h-6 sm:h-8" />
-              <nav className="flex items-center space-x-3 sm:space-x-6">
-                <Link href="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-                <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
-              </nav>
+      <div className="min-h-screen bg-white">
+        <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
+            <div className="md:hidden">
+              <Button variant="ghost" size="icon" aria-label="Back" onClick={() => router.back()}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
             </div>
+            <span className="logo h-6 sm:h-8 w-24 sm:w-28 ml-auto md:ml-0" role="img" aria-label="TOURVIS" />
           </div>
         </header>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <Card>
             <CardContent className="p-6 sm:p-8 text-center">
               <h2 className="text-lg sm:text-xl font-semibold mb-4">Inquiry Not Found</h2>
@@ -65,22 +65,20 @@ export default function InquiryDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex justify-between items-center">
-            <span className="logo h-6 sm:h-8 w-24 sm:w-28" role="img" aria-label="KoreaTours" />
-            <span className="logo h-6 sm:h-8 w-24 sm:w-28" role="img" aria-label="KoreaTours" />
-            <nav className="flex items-center space-x-3 sm:space-x-6">
-              <Link href="/" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-              <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Check Reservation</Link>
-            </nav>
+    <div className="min-h-screen bg-white">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon" aria-label="Back" onClick={() => router.back()}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
           </div>
+          <span className="logo h-6 sm:h-8 w-24 sm:w-28 ml-auto md:ml-0" role="img" aria-label="TOURVIS" />
         </div>
       </header>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4">
-          <Link href="/inquiry-list" className="order-1 sm:order-1"><Button variant="ghost" size="sm" className="flex items-center"><ArrowLeft className="w-4 h-4 mr-2" />Back to List</Button></Link>
+          <Link href="/inquiry-list" className="order-1 sm:order-1 hidden md:inline-block"><Button variant="ghost" size="sm" className="flex items-center"><ArrowLeft className="w-4 h-4 mr-2" />Back to List</Button></Link>
           <div className="order-2 sm:order-2 flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Inquiry Details</h1>
             <p className="text-base sm:text-lg text-gray-600">View inquiry content and responses</p>

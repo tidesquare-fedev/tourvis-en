@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MessageCircle, Plus, Lock } from 'lucide-react'
+import { MessageCircle, Plus, Lock, Search } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface InquiryItem {
@@ -70,12 +70,16 @@ export default function InquiryListPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         <AppHeader active="inquiry" />
-        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Check Inquiry</h1>
+            <p className="text-base sm:text-lg text-gray-600">Enter your name and password to view your 1:1 inquiry history and check the response</p>
+          </div>
+          <Card className="max-w-md mx-auto mb-6 sm:mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center text-lg"><Lock className="w-5 h-5 mr-2" />My Inquiries</CardTitle>
+              <CardTitle className="flex items-center text-lg"><Search className="w-5 h-5 mr-2" />Inquiry Search</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-4">
@@ -87,7 +91,7 @@ export default function InquiryListPage() {
                   <Label htmlFor="password">Password</Label>
                   <Input id="password" type="password" value={loginData.password} onChange={(e) => setLoginData((p) => ({ ...p, password: e.target.value }))} placeholder="Enter your password" required />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#01c5fd' }}>{loading ? 'Logging in...' : 'Login'}</Button>
+                <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#01c5fd' }}>{loading ? 'Searching...' : 'Search Inquiry'}</Button>
               </form>
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-600 mb-2">Don't have any inquiries yet?</p>
@@ -101,15 +105,32 @@ export default function InquiryListPage() {
               </div>
             </CardContent>
           </Card>
+          <Card className="mt-6 sm:mt-8">
+            <CardHeader>
+              <CardTitle className="text-base sm:text-lg">Need Help?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <h4 className="font-semibold mb-2 text-sm sm:text-base">Can't find your reservation?</h4>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-2">Please make sure you're using the exact reservation number and email address provided at the time of booking.</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2 text-sm sm:text-base">Customer Support</h4>
+                  <p className="text-xs sm:text-sm text-gray-600">Email: support@koreatours.com<br />Phone: +82-2-1234-5678<br />Hours: 9:00 AM - 6:00 PM (KST)</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <AppHeader active="inquiry" />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">My Inquiry History</h1>
@@ -163,9 +184,24 @@ export default function InquiryListPage() {
             </div>
           </CardContent>
         </Card>
-        <div className="text-center mt-6 sm:mt-8">
-          <Link href="/"><Button variant="outline" style={{ backgroundColor: '#01c5fd', color: 'white' }} className="w-full sm:w-auto">Back to Home</Button></Link>
-        </div>
+        <Card className="mt-6 sm:mt-8">
+          <CardHeader>
+            <CardTitle className="text-base sm:text-lg">Need Help?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <h4 className="font-semibold mb-2 text-sm sm:text-base">Can't find your reservation?</h4>
+                <p className="text-xs sm:text-sm text-gray-600 mb-2">Please make sure you're using the exact reservation number and email address provided at the time of booking.</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2 text-sm sm:text-base">Customer Support</h4>
+                <p className="text-xs sm:text-sm text-gray-600">Email: support@koreatours.com<br />Phone: +82-2-1234-5678<br />Hours: 9:00 AM - 6:00 PM (KST)</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        {/* Removed Back to Home button per requirements */}
       </div>
     </div>
   )

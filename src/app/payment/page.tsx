@@ -65,17 +65,21 @@ export default function PaymentPage() {
   if (!bookingData) return <div>Loading...</div>
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon" aria-label="Back" onClick={() => router.back()}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </div>
+          <Link href="/" className="flex items-center ml-auto md:ml-0">
             <span className="logo h-8 w-28" role="img" aria-label="TOURVIS" />
           </Link>
-          <Button variant="ghost" onClick={() => router.back()} className="flex items-center gap-2"><ArrowLeft className="h-4 w-4" />Back</Button>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             <Card>
