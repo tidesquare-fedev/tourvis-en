@@ -1,16 +1,23 @@
 'use client'
 
-import Link from 'next/link'
 import { AppHeader } from '@/components/shared/AppHeader'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useState, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Calendar } from '@/components/ui/calendar'
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
-import { MapPin, Clock, Users, Star, Calendar as CalendarIcon, Check, X, MessageCircle, ChevronDown, ChevronUp, ThumbsUp, Plus, Minus } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { addMonths, format } from 'date-fns'
+import { format } from 'date-fns'
+import { Check, X } from 'lucide-react'
+import { TourImageGallery } from '@/features/tour/components/TourImageGallery'
+import { TourHeader } from '@/features/tour/components/TourHeader'
+import { TourStats } from '@/features/tour/components/TourStats'
+import { TourHighlights } from '@/features/tour/components/TourHighlights'
+import { TourSectionTabs } from '@/features/tour/components/TourSectionTabs'
+import { TourDatePicker } from '@/features/tour/components/TourDatePicker'
+import { TourOptions } from '@/features/tour/components/TourOptions'
+import { TourDescription } from '@/features/tour/components/TourDescription'
+import { TourReviews } from '@/features/tour/components/TourReviews'
+import { TourBookingCard } from '@/features/tour/components/TourBookingCard'
+import { TopReviewsCarousel } from '@/features/tour/components/TopReviewsCarousel'
+import { TourApiResponse } from '@/types/tour'
 
 export default function TourDetailPage() {
   const params = useParams<{ id: string }>()
@@ -20,6 +27,7 @@ export default function TourDetailPage() {
   const [quantity, setQuantity] = useState(0)
   const [activeSection, setActiveSection] = useState('options')
   const [showFullDescription, setShowFullDescription] = useState(false)
+  const [showAllReviews, setShowAllReviews] = useState(false)
 
   const optionsRef = useRef<HTMLDivElement>(null)
   const descriptionRef = useRef<HTMLDivElement>(null)
@@ -27,62 +35,656 @@ export default function TourDetailPage() {
   const reviewsRef = useRef<HTMLDivElement>(null)
   const cancellationRef = useRef<HTMLDivElement>(null)
 
+  // Mock API data - 실제로는 API에서 가져올 데이터
+  const tourData: TourApiResponse = {
+    basic: {
+      code: null,
+      provider_code: "PRV3006455682",
+      name: "로마 바티칸 박물관, 시스티나 성당 및 바실리카 투어",
+      sub_name: "로마 바티칸 박물관, 시스티나 성당 및 바실리",
+      calendar_type: "DATE",
+      price_scope: "DATE",
+      timeslot_is: true,
+      inventory_scope: "LABEL_TIMESLOT",
+      need_reservation: false,
+      min_book_days: 0,
+      working_date_type: "PROVIDER",
+      latitude: "41.903111",
+      longitude: "12.49576",
+      currency: "EUR",
+      timezone: null,
+      sort_order: 100,
+      booking_type: "AUTO",
+      areas: [
+        { code: "100104", name: "이탈리아" },
+        { code: "5418", name: "로마" }
+      ],
+      categories: [
+        { code: "CG04", name: "역사문화명소" },
+        { code: "CG03", name: "박물관/미술관/전시" },
+        { code: "CG70", name: "일일투어" }
+      ]
+    },
+    summary: {
+      confirm_hour: "IN0H",
+      voucher_type: "M_VOUCHER",
+      customs: [],
+      product_policies: ["INSTANT_CONFIRMATION"]
+    },
+    filter: {
+      min_depart: null,
+      language: ["ENGLISH", "ETC"],
+      duration: "IN4H",
+      depart_hour: []
+    },
+    detail: {
+      notice_title: null,
+      notice_detail: null,
+      highlight_title: "바티칸 박물관과 시스티나 성당을 우선입장하고 성 베드로 대성당 방문을 선택하실 수 있습니다. 원하는 체험을 선택하고 스트레스 없이 바티칸의 걸작을 둘러보세요.",
+      highlight_detail: "<ul><li>바티칸 박물관의 주요 명소를 우선 입장할 수 있습니다.</li><li>바티칸의 지도 갤러리, 거대한 타피스트리, 고대 로툰다 조각상을 감상하세요.</li><li>시스티나 성당에서 미켈란젤로의 걸작들을 감상하세요.</li><li>피에타와 베르니니의 발다키니를 포함한 성 베드로 대성당을 탐험하기 위해 업그레이드하세요.</li><li>전문가 안내로 진행되는 스토리텔링을 통해 바티칸의 예술과 역사가 생생하게 살아납니다.</li></ul>",
+      event: "",
+      description: "<p>바티칸은 매우 넓고, 솔직히 말해 혼자 탐험하기에는 압도적일 수 있습니다. 바로 그 이유 때문에 우리 전문 가이드가 함께합니다. 주요 명소를 직접 안내해 드리며, 놓치는 것 없이 완벽한 경험을 선사합니다.</p>",
+      preparations: "",
+      how_to_use: "",
+      warnings: "",
+      additional_info: "",
+      meeting_address: "",
+      meeting_latitude: "",
+      meeting_longitude: "",
+      meeting_info: "",
+      pickup_drop: "",
+      includes: "바티칸 박물관 및 시스티나 성당 우선입장 티켓으로 입장 가능\n성 베드로 대성당 우선입장 티켓 스킵 (일부 옵션으로 이용 가능)\n열정적이고 전문적인 라이센스 투어 가이드\n가이드의 설명을 명확하게 들을 수 있는 오디오 시스템",
+      meeting_image: null,
+      excludes: "",
+      qnas: [],
+      primary_image: {
+        display_name: "1",
+        file_url: "https://cdn.getyourguide.com/img/tour/a05866aaf07a1c1a7bd66074b53bebd7877ab261eefc1efd7b57e6b6b3c64714.jpg/145.jpg",
+        file_size: 100
+      },
+      images: [
+        {
+          display_name: "1",
+          file_url: "https://cdn.getyourguide.com/img/tour/a05866aaf07a1c1a7bd66074b53bebd7877ab261eefc1efd7b57e6b6b3c64714.jpg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "2", 
+          file_url: "https://cdn.getyourguide.com/img/tour/675fa45a06605bb1c4dfe1096eee6b986062f520547e174837bde2a6e1d4b417.jpeg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "3",
+          file_url: "https://cdn.getyourguide.com/img/tour/66157649959eed06e162dfde8795eb1da315dd167ce40687236fcfa00a6d0059.jpg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "4",
+          file_url: "https://cdn.getyourguide.com/img/tour/54ed558038a28c8f406ff4c2b776cad0cab6fa38216609e74e76ee22c9a28609.jpg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "5",
+          file_url: "https://cdn.getyourguide.com/img/tour/feea8a72dc654be8bc092856bbfc79f576740dd313089cbb47546633ddda3934.jpg/145.jpg",
+          file_size: 100
+        }
+      ],
+      additional_fields: []
+    },
+    refund: {
+      code: "REF3006749759",
+      refund_type: "CONDITIONAL",
+      cancel_type: "AUTO",
+      cancel_time: "PROVIDER",
+      cancel_info: "",
+      provider_cancel_days: null,
+      partial_cancel_is: null
+    },
+    memo: null,
+    seo: null,
+    voucher_info: {
+      contact_point: "/",
+      remark: "",
+      delivery_type: "ATTACH",
+      details: []
+    },
+    attrs: null,
+    course_groups: [],
+    priority_provider_title: false,
+    option: {
+      per_min: 1,
+      per_max: 5230,
+      outer_id: null,
+      booking_api_is: true,
+      resell_is: null,
+      options: [
+        {
+          code: null,
+          title: "영어 가이드 투어 2 곳 (바실리카 없음)",
+          description: "영어 가이드 투어를 통해 바티칸 박물관과 시스티나 성당을 우선입장할 수 있는 혜택을 누리며 하루를 알차게 보내세요.",
+          per_min: 1,
+          per_max: 25,
+          outer_id: "429439^1076178",
+          sort_order: 0,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 45,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 35,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 25
+            }
+          ],
+          timeslots: [
+            { code: null, title: "09:00", description: null, outer_id: "09:00", sort_order: 0 },
+            { code: null, title: "10:30", description: null, outer_id: "10:30", sort_order: 1 },
+            { code: null, title: "13:30", description: null, outer_id: "13:30", sort_order: 2 },
+            { code: null, title: "15:00", description: null, outer_id: "15:00", sort_order: 3 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        },
+        {
+          code: null,
+          title: "3개 사이트 모두의 영어 가이드 투어",
+          description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당에 대한 우선입장권과 영어를 구사하는 전문 가이드가 있어 대기 시간을 줄이고 바로 관람에 들어가 보세요.",
+          per_min: 1,
+          per_max: 20,
+          outer_id: "429439^773702",
+          sort_order: 1,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 65,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 50,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 20
+            }
+          ],
+          timeslots: [
+            { code: null, title: "08:30", description: null, outer_id: "08:30", sort_order: 0 },
+            { code: null, title: "10:00", description: null, outer_id: "10:00", sort_order: 1 },
+            { code: null, title: "13:00", description: null, outer_id: "13:00", sort_order: 2 },
+            { code: null, title: "14:30", description: null, outer_id: "14:30", sort_order: 3 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        },
+        {
+          code: null,
+          title: "프랑스어 가이드 투어 2 곳 (바실리카 없음)",
+          description: "프랑스어 가이드 투어로 바티칸 박물관과 시스티나 성당을 우선입장하여 하루를 알차게 보내세요.",
+          per_min: 1,
+          per_max: 25,
+          outer_id: "429439^1076320",
+          sort_order: 2,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 45,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 35,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 25
+            }
+          ],
+          timeslots: [
+            { code: null, title: "09:00", description: null, outer_id: "09:00", sort_order: 0 },
+            { code: null, title: "13:30", description: null, outer_id: "13:30", sort_order: 1 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        },
+        {
+          code: null,
+          title: "3곳 모두 프랑스어 가이드 투어",
+          description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당 우선입장권과 프랑스어 전문 가이드와 함께라면 대기 시간을 줄이고 바로 관람할 수 있어요.",
+          per_min: 1,
+          per_max: 20,
+          outer_id: "429439^780825",
+          sort_order: 3,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 65,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 50,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 20
+            }
+          ],
+          timeslots: [
+            { code: null, title: "09:00", description: null, outer_id: "09:00", sort_order: 0 },
+            { code: null, title: "13:30", description: null, outer_id: "13:30", sort_order: 1 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        },
+        {
+          code: null,
+          title: "독일 가이드 투어 2 곳 (바실리카 없음)",
+          description: "독일어 가이드 투어로 바티칸 박물관과 시스티나 성당을 우선입장하여 하루를 알차게 보내세요.",
+          per_min: 1,
+          per_max: 25,
+          outer_id: "429439^1076293",
+          sort_order: 4,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 45,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 35,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 25
+            }
+          ],
+          timeslots: [
+            { code: null, title: "13:00", description: null, outer_id: "13:00", sort_order: 0 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        },
+        {
+          code: null,
+          title: "스페인어 가이드 투어 2 곳 (바실리카 없음)",
+          description: "스페인어 가이드 투어로 바티칸 박물관과 시스티나 성당을 우선입장하여 하루를 알차게 보내세요.",
+          per_min: 1,
+          per_max: 25,
+          outer_id: "429439^1076287",
+          sort_order: 5,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 45,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 35,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 25
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 25
+            }
+          ],
+          timeslots: [
+            { code: null, title: "11:00", description: null, outer_id: "11:00", sort_order: 0 },
+            { code: null, title: "14:00", description: null, outer_id: "14:00", sort_order: 1 },
+            { code: null, title: "14:30", description: null, outer_id: "14:30", sort_order: 2 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        },
+        {
+          code: null,
+          title: "세 곳 모두 스페인어 가이드 투어",
+          description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당에 대한 우선입장권과 스페인어 전문 가이드와 함께라면 대기 시간을 줄이고 바로 관람할 수 있어요.",
+          per_min: 1,
+          per_max: 20,
+          outer_id: "429439^781127",
+          sort_order: 6,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 65,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 50,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 20
+            }
+          ],
+          timeslots: [
+            { code: null, title: "11:00", description: null, outer_id: "11:00", sort_order: 0 },
+            { code: null, title: "14:00", description: null, outer_id: "14:00", sort_order: 1 },
+            { code: null, title: "14:30", description: null, outer_id: "14:30", sort_order: 2 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        },
+        {
+          code: null,
+          title: "세 곳 모두의 독일어 가이드 투어",
+          description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당에 대한 우선입장권과 독일어 전문 가이드가 있어 대기 시간을 줄이고 바로 관람할 수 있습니다.",
+          per_min: 1,
+          per_max: 20,
+          outer_id: "429439^781124",
+          sort_order: 7,
+          sale_start_date: null,
+          sale_end_date: null,
+          use_start_date: null,
+          use_end_date: null,
+          use_period: null,
+          stock_quantity: null,
+          labels: [
+            {
+              code: null,
+              title: "성인(나이 18-99)",
+              net_price_currency: 65,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "ADULT;1;INDIVIDUALS",
+              sort_order: 0,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "어린이(나이 7-17)",
+              net_price_currency: 50,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "CHILD;3;INDIVIDUALS",
+              sort_order: 1,
+              per_min: null,
+              per_max: 20
+            },
+            {
+              code: null,
+              title: "유아(나이 0-6)",
+              net_price_currency: 0,
+              sale_price_currency: null,
+              normal_price_currency: null,
+              required: false,
+              outer_id: "INFANT;4;INDIVIDUALS",
+              sort_order: 2,
+              per_min: null,
+              per_max: 20
+            }
+          ],
+          timeslots: [
+            { code: null, title: "13:00", description: null, outer_id: "13:00", sort_order: 0 }
+          ],
+          dynamic_price: false,
+          attrs: null,
+          resell_is: false
+        }
+      ]
+    }
+  }
+
+  // 기존 데이터 구조에 맞게 변환
   const tour = {
-    id: 'jeju-hallasan-hiking',
-    title: 'Jeju Hallasan Mountain Sunrise Hiking Tour',
-    subtitle: "Experience the breathtaking sunrise from Korea's highest peak",
-    description: "Experience the breathtaking sunrise from Korea's highest peak. This unforgettable journey takes you through pristine forests and volcanic landscapes to witness one of the most spectacular sunrises in Asia. Our expert guides will lead you through ancient trails while sharing fascinating stories about the island's volcanic history and unique ecosystem.",
-    longDescription: 'Hallasan Mountain is the symbol of Jeju Island and the highest mountain in South Korea. This majestic mountain, standing at 1,947m above sea level, was formed by volcanic activity about 25,000 years ago and is currently designated as a national park. This tour starts early in the morning, providing a special experience to enjoy the true beauty of Hallasan with the sunrise.',
-    images: [
-      'photo-1469474968028-56623f02e42e',
-      'photo-1482938289607-e9573fc25ebb',
-      'photo-1470071459604-3b5ec3a7fe05',
-      'photo-1426604966848-d7adac402bff',
-      'photo-1469474968028-56623f02e42e',
-      'photo-1482938289607-e9573fc25ebb',
-    ],
-    price: 89,
-    originalPrice: 120,
-    discountRate: 26,
-    duration: '8 hours',
+    id: params.id,
+    title: tourData.basic.name,
+    subtitle: tourData.basic.sub_name,
+    description: tourData.detail.description.replace(/<[^>]*>/g, ''),
+    longDescription: tourData.detail.highlight_title,
+    images: tourData.detail.images.map(img => img.file_url),
+    price: tourData.option.options[0]?.labels[0]?.net_price_currency || 45,
+    originalPrice: null,
+    discountRate: null,
+    duration: tourData.filter.duration.replace('IN', '').replace('H', ' hours'),
     rating: 4.7,
     reviewCount: 587,
-    location: 'Jeju Island, South Korea',
-    category: 'Adventure',
-    minAge: 12,
-    maxGroup: 12,
-    language: 'English, Korean',
-    meetingPoint: 'Jeju Airport Terminal 1',
-    highlights: [
-      "Watch sunrise from Korea's highest peak (1,947m)",
-      'Guided hike through Hallasan National Park',
-      'Learn about volcanic geology and local flora',
-      'Traditional Korean breakfast included',
-      'Small group experience (max 12 people)',
-      'Professional English-speaking guide',
-    ],
-    included: [
-      'Professional English-speaking guide',
-      'Transportation from/to meeting point',
-      'Traditional Korean breakfast',
-      'Hiking equipment (walking sticks, headlamps)',
-      'Entrance fees to National Park',
-      'Travel insurance',
-    ],
-    notIncluded: ['Personal expenses', 'Lunch and dinner', 'Tips for guide (optional)', 'Travel to/from Jeju Island'],
+    location: tourData.basic.areas.map(area => area.name).join(', '),
+    category: tourData.basic.categories[0]?.name || '',
+    minAge: 7,
+    maxGroup: 25,
+    language: tourData.filter.language.join(', '),
+    meetingPoint: 'Via Mocenigo, 15, Roma',
+    highlights: tourData.detail.highlight_detail
+      .replace(/<ul><li>/g, '')
+      .replace(/<\/li><li>/g, '|')
+      .replace(/<\/li><\/ul>/g, '')
+      .split('|'),
+    included: tourData.detail.includes.split('\n').filter(item => item.trim()),
+    notIncluded: ['개인 비용', '팁 (선택사항)', '식사'],
     itinerary: [
-      { time: '02:30', activity: 'Pick-up from designated meeting points' },
-      { time: '03:30', activity: 'Arrive at trailhead, equipment check and briefing' },
-      { time: '04:00', activity: 'Begin hiking to Baengnokdam crater' },
-      { time: '06:00', activity: 'Reach summit area for sunrise viewing' },
-      { time: '07:30', activity: 'Traditional Korean breakfast at mountain hut' },
-      { time: '08:30', activity: 'Explore crater area and take photos' },
-      { time: '09:30', activity: 'Begin descent' },
-      { time: '11:30', activity: 'Return to trailhead and transportation back' },
+      { time: '09:00', activity: '미팅 포인트에서 만남' },
+      { time: '09:30', activity: '바티칸 박물관 우선 입장' },
+      { time: '11:00', activity: '시스티나 성당 관람' },
+      { time: '12:30', activity: '투어 종료' },
     ],
     reviews: [
-      { name: 'Kim Min-su', rating: 5, date: '2025.06.09', comment: "Used it for 3 nights and 4 days and it worked well without being complicated\nIt didn't send photos very well, but there were no other problems!", helpful: 31, tags: ['Reasonable price'] },
-      { name: 'Lee Seo-yeon', rating: 5, date: '2025.06.16', comment: 'It was a really good experience. The guide was kind and the sunrise was so beautiful!', helpful: 15, tags: ['Detailed product description'] },
+      { name: 'Kim Min-su', rating: 5, date: '2025.06.09', comment: "정말 좋은 경험이었습니다. 가이드가 친절하고 시스티나 성당이 너무 아름다웠어요!", helpful: 31, tags: ['합리적인 가격'] },
+      { name: 'Lee Seo-yeon', rating: 5, date: '2025.06.16', comment: '바티칸 박물관의 예술 작품들이 정말 인상적이었습니다. 우선입장으로 대기시간 없이 관람할 수 있어서 좋았어요.', helpful: 15, tags: ['상세한 상품 설명'] },
+      { name: 'Park Ji-hoon', rating: 4, date: '2025.05.22', comment: '가이드의 설명이 매우 상세했고, 미켈란젤로의 작품을 직접 볼 수 있어서 감동적이었습니다.', helpful: 12 },
+      { name: 'Choi Min-jung', rating: 5, date: '2025.04.10', comment: '성 베드로 대성당까지 포함된 투어로 정말 알찬 하루였습니다. 추천합니다!', helpful: 8 },
+      { name: 'Jung Ho-seok', rating: 5, date: '2025.03.18', comment: '소그룹으로 진행되어 더욱 집중해서 관람할 수 있었습니다. 가이드님이 역사적 배경도 잘 설명해주셨어요.', helpful: 19 },
     ],
   }
 
@@ -116,13 +718,17 @@ export default function TourDetailPage() {
     }
   }
 
-  const imageGroups: string[][] = []
-  for (let i = 0; i < tour.images.length; i += 2) {
-    imageGroups.push(tour.images.slice(i, i + 2))
+  const STAR_COLOR = '#ff00cc'
+
+  const maskName = (fullName: string): string => {
+    if (!fullName || typeof fullName !== 'string') return ''
+    const maskPart = (part: string) => (part.length <= 1 ? part : part[0] + '*'.repeat(Math.max(1, part.length - 1)))
+    return fullName
+      .split(' ')
+      .map((segment) => segment.split('-').map(maskPart).join('-'))
+      .join(' ')
   }
 
-  const currentMonth = new Date()
-  const nextMonth = addMonths(currentMonth, 1)
   const totalPrice = quantity * tour.price
 
   return (
@@ -132,34 +738,8 @@ export default function TourDetailPage() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="mb-6">
-              <Carousel className="w-full">
-                <CarouselContent>
-                  {imageGroups.map((group, index) => (
-                    <CarouselItem key={index}>
-                      <div className="grid grid-cols-2 gap-2 h-80">
-                        {group.map((image, imgIndex) => (
-                          <img key={imgIndex} src={`https://images.unsplash.com/${image}?auto=format&fit=crop&w=600&h=400&q=80`} alt={`${tour.title} ${index * 2 + imgIndex + 1}`} className="w-full h-full object-cover rounded-lg" />
-                        ))}
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            </div>
-
-            <div className="flex items-center gap-2 mb-3">
-              <MapPin className="w-4 h-4 text-gray-500" />
-              <span className="text-gray-600">{tour.location}</span>
-            </div>
-
-            <div className="mb-4">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{tour.title}</h1>
-              <p className="text-lg text-gray-600">{tour.subtitle}</p>
-            </div>
-
+            <TourImageGallery images={tour.images} title={tour.title} />
+            <TourHeader location={tour.location} title={tour.title} subtitle={tour.subtitle} />
             <div className="mb-6">
               {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
                 <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
@@ -170,142 +750,44 @@ export default function TourDetailPage() {
                 )}
                 <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
               </div>
+              <TourStats
+                duration={tour.duration}
+                maxGroup={tour.maxGroup}
+                minAge={tour.minAge}
+                language={tour.language}
+              />
+              <div className="border-t border-gray-200 my-8"></div>
+              <TopReviewsCarousel 
+                reviews={tour.reviews as any} 
+                starColor={STAR_COLOR} 
+                rating={tour.rating}
+                reviewCount={tour.reviewCount}
+                onScrollToReviews={() => scrollToSection('reviews')}
+                maskName={maskName}
+              />
+              <TourHighlights highlights={tour.highlights} />
+              <TourSectionTabs sections={sections.map(({ id, label }) => ({ id, label }))} activeSection={activeSection} onClick={scrollToSection} />
             </div>
 
-            <div className="mb-8 p-4 bg-blue-50 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-blue-900">Tour Highlights</h3>
-              <ul className="space-y-2">
-                {tour.highlights.map((highlight, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-blue-800 text-sm">{highlight}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="sticky top-0 z-10 bg-white border-b mb-6">
-              <div className="flex space-x-1 overflow-x-auto">
-                {sections.map((section) => (
-                  <button key={section.id} onClick={() => scrollToSection(section.id)} className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${activeSection === section.id ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'}`}>
-                    {section.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div ref={optionsRef} className="mb-12">
+            <div ref={optionsRef} className="mb-14">
               <h3 className="text-xl font-semibold mb-6">Option Selection</h3>
               <div className="space-y-6">
-                <div>
-                  <h4 className="font-medium mb-4">Select Date</h4>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <h5 className="text-sm font-medium text-gray-700 mb-2">{format(currentMonth, 'MMMM yyyy')}</h5>
-                      <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} month={currentMonth} className="rounded-md border" />
-                    </div>
-                    <div>
-                      <h5 className="text-sm font-medium text-gray-700 mb-2">{format(nextMonth, 'MMMM yyyy')}</h5>
-                      <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} month={nextMonth} className="rounded-md border" />
-                    </div>
-                  </div>
-                </div>
-
+                <TourDatePicker selectedDate={selectedDate} onSelect={setSelectedDate} />
                 {selectedDate && (
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Tour Options</h4>
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1">
-                          <h5 className="font-medium">Basic Tour</h5>
-                          <p className="text-sm text-gray-600 mb-2">Hallasan sunrise hiking + breakfast included</p>
-                          <p className="text-sm text-gray-500">Selected Date: {format(selectedDate, 'PPP')}</p>
-                        </div>
-                        <span className="text-lg font-bold text-blue-600">${tour.price}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <span className="text-sm font-medium">Quantity:</span>
-                          <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => handleQuantityChange(quantity - 1)} disabled={quantity <= 0}>
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <span className="w-8 text-center font-medium">{quantity}</span>
-                            <Button variant="outline" size="sm" onClick={() => handleQuantityChange(quantity + 1)} disabled={quantity >= tour.maxGroup}>
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <span className="text-sm text-gray-500">(Max {tour.maxGroup} people)</span>
-                        </div>
-                        {quantity > 0 && (
-                          <div className="text-right">
-                            <div className="text-sm text-gray-600">Total</div>
-                            <div className="text-lg font-bold text-blue-600">${totalPrice}</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <TourOptions selectedDate={selectedDate} options={tourData.option.options} quantity={quantity} onQuantityChange={handleQuantityChange} />
                 )}
               </div>
             </div>
 
-            <div ref={descriptionRef} className="mb-12">
-              <h3 className="text-xl font-semibold mb-6">Product Description</h3>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=400&h=250&q=80" alt="Hallasan sunrise" className="w-full h-48 object-cover rounded-lg" />
-                  <img src="https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&w=400&h=250&q=80" alt="Hiking trail" className="w-full h-48 object-cover rounded-lg" />
-                </div>
-                <div>
-                  <p className="text-gray-700 leading-relaxed mb-4">{tour.description}</p>
-                  {showFullDescription && <p className="text-gray-700 leading-relaxed mb-4">{tour.longDescription}</p>}
-                  <button onClick={() => setShowFullDescription(!showFullDescription)} className="flex items-center text-blue-600 hover:text-blue-700 font-medium">
-                    {showFullDescription ? (
-                      <>
-                        Show Less <ChevronUp className="w-4 h-4 ml-1" />
-                      </>
-                    ) : (
-                      <>
-                        Show More <ChevronDown className="w-4 h-4 ml-1" />
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <Clock className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <div className="text-sm text-gray-600">Duration</div>
-                      <div className="font-semibold">{tour.duration}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <Users className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <div className="text-sm text-gray-600">Max Group</div>
-                      <div className="font-semibold">{tour.maxGroup} people</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <CalendarIcon className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <div className="text-sm text-gray-600">Min Age</div>
-                      <div className="font-semibold">{tour.minAge} years</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <MessageCircle className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <div className="text-sm text-gray-600">Language</div>
-                      <div className="font-semibold">{tour.language}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div ref={descriptionRef} className="mb-14">
+              <TourDescription
+                description={tour.description}
+                longDescription={tour.longDescription}
+                images={[tour.images[0], tour.images[1]]}
+              />
             </div>
 
-            <div ref={guideRef} className="mb-12">
+            <div ref={guideRef} className="mb-14">
               <h3 className="text-xl font-semibold mb-6">Usage Guide</h3>
               <div className="space-y-6">
                 <div>
@@ -351,95 +833,27 @@ export default function TourDetailPage() {
               </div>
             </div>
 
-            <div ref={reviewsRef} className="mb-12">
-              <h3 className="text-xl font-semibold mb-6">Reviews</h3>
-              <div className="mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="text-3xl font-bold">{tour.rating}</div>
-                  <div className="text-gray-500">/ 5</div>
-                </div>
-                <div className="text-gray-600 mb-4">
-                  <span className="font-semibold">{tour.reviewCount}</span> verified reviews on TourVis!
-                </div>
-              </div>
-              <div className="space-y-4">
-                {tour.reviews.map((review, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center">
-                          <span className="font-semibold text-lg">{review.rating}.0</span>
-                        </div>
-                        <span className="text-sm text-gray-500">{review.name}</span>
-                        <span className="text-sm text-gray-500">{review.date}</span>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <span className="text-sm text-gray-600">Tour date: {review.date}</span>
-                    </div>
-                    <p className="text-gray-700 mb-3 whitespace-pre-line">{review.comment}</p>
-                    {review.tags && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {review.tags.map((tag, tagIndex) => (
-                          <span key={tagIndex} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full text-xs">😊 {tag}</span>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-1 hover:text-blue-600">
-                          <span>Was this review helpful?</span>
-                        </button>
-                        <button className="flex items-center gap-1 hover:text-blue-600">
-                          <ThumbsUp className="w-4 h-4" />
-                          <span>{review.helpful}</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div ref={reviewsRef} className="mb-14">
+              <TourReviews
+                rating={tour.rating}
+                reviews={tour.reviews as any}
+                showAll={showAllReviews}
+                onShowAll={() => setShowAllReviews(true)}
+                maskName={maskName}
+                starColor={STAR_COLOR}
+              />
             </div>
           </div>
 
           <div className="lg:col-span-1">
-            <div className="sticky top-4">
-              <Card className="shadow-lg">
-                <CardHeader className="pb-4">
-                  <div className="text-center">
-                    {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
-                      <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
-                    )}
-                    <div className="flex items-center justify-center gap-3 mb-2">
-                      {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
-                        <span className="text-xl font-bold text-red-500">{tour.discountRate}%</span>
-                      )}
-                      <span className="text-3xl font-bold text-blue-600">${tour.price}</span>
-                    </div>
-                    <div className="text-sm text-gray-600">per person</div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {selectedDate && (
-                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                      <div className="text-sm text-gray-600">Selected Date</div>
-                      <div className="font-semibold">{format(selectedDate, 'PPP')}</div>
-                    </div>
-                  )}
-                  {quantity > 0 && (
-                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                      <div className="text-sm text-gray-600">Participants: {quantity}</div>
-                      <div className="text-xl font-bold text-green-600">Total: ${totalPrice}</div>
-                    </div>
-                  )}
-                  <Button onClick={handleBooking} className="w-full" size="lg" disabled={!selectedDate || quantity < 1}>
-                    {!selectedDate ? 'Select Date' : quantity < 1 ? 'Select Quantity' : 'Book Now'}
-                  </Button>
-                  {!selectedDate && <p className="text-xs text-gray-500 text-center">Please select a date to continue</p>}
-                  {selectedDate && quantity < 1 && <p className="text-xs text-gray-500 text-center">Please select at least 1 participant</p>}
-                </CardContent>
-              </Card>
-            </div>
+            <TourBookingCard
+              discountRate={tour.discountRate}
+              originalPrice={tour.originalPrice}
+              price={tour.price}
+              selectedDate={selectedDate}
+              quantity={quantity}
+              onBook={handleBooking}
+            />
           </div>
         </div>
       </div>
