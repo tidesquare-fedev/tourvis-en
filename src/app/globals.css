@@ -92,6 +92,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  html, body {
+    overflow-x: hidden;
+    /* sticky 헤더가 제대로 작동하도록 overflow 설정 */
+  }
 }
 
 
@@ -110,6 +114,35 @@
     background-repeat: no-repeat;
     background-position: left center;
     background-size: contain;
+  }
+  /* Responsive helpers for booking layout */
+  .booking-grid {
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 1024px) {
+    .booking-grid {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+  /* Sidebar collapse on small screens */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: static !important;
+    }
+  }
+  /* Media defaults for images/iframes/videos */
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+  /* Long HTML content wrapping (API HTML) */
+  .prose, .content-wrap {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  /* Buttons minimum touch target */
+  .btn-touch {
+    min-height: 44px;
   }
 }
 

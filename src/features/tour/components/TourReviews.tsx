@@ -1,6 +1,6 @@
 "use client"
 
-import { ThumbsUp, Star, Check, X } from 'lucide-react'
+import { ThumbsUp, Star, Check, X, ChevronDown, ChevronUp } from 'lucide-react'
 
 type Review = { name: string; rating: number; date: string; comment: string; helpful: number; tags?: string[] }
 
@@ -9,11 +9,12 @@ type TourReviewsProps = {
   reviews: Review[]
   showAll: boolean
   onShowAll: () => void
+  onShowLess?: () => void
   maskName: (name: string) => string
   starColor?: string
 }
 
-export function TourReviews({ rating, reviews, showAll, onShowAll, maskName, starColor = '#ff00cc' }: TourReviewsProps) {
+export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, maskName, starColor = '#ff00cc' }: TourReviewsProps) {
   const renderStars = (value: number) => {
     const safe = Math.max(0, Math.min(5, Math.floor(Number(value) || 0)))
     return (
@@ -42,13 +43,13 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, maskName, sta
   }))
 
   return (
-    <div className="mb-12">
-      <h3 className="text-xl font-semibold mb-6">Reviews</h3>
-      <div className="mb-8 p-6 bg-gray-50 rounded-lg">
-        <div className="flex flex-col lg:flex-row lg:justify-center items-center gap-8">
+    <div className="mb-10 md:mb-12 min-w-0">
+      <h3 className="text-[20px] md:text-[22px] font-semibold mb-4 md:mb-6">Reviews</h3>
+      <div className="mb-6 md:mb-8 p-4 md:p-6 bg-gray-50 rounded-lg">
+        <div className="flex flex-col lg:flex-row lg:justify-center items-center gap-6 md:gap-8">
           {/* Left side - Overall rating */}
           <div className="flex flex-col items-center lg:flex-1">
-            <div className="text-6xl font-bold mb-2">{rating}</div>
+            <div className="text-4xl md:text-6xl font-bold mb-2">{rating}</div>
             <div className="mb-2">{renderStars(rating)}</div>
             <div className="text-sm text-gray-600">based on {totalReviews.toLocaleString()} reviews</div>
           </div>
@@ -56,11 +57,11 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, maskName, sta
           {/* Right side - Star distribution */}
           <div className="flex-1 w-full max-w-md">
             <div className="text-center mb-4">
-              <h4 className="text-sm font-semibold mb-2 text-gray-700">Total reviews and rating from TOURVIS & GetYourGuide</h4>
+              <h4 className="text-xs md:text-sm font-semibold mb-2 text-gray-700">Total reviews and rating from TOURVIS & GetYourGuide</h4>
             </div>
             {starDistribution.map(({ stars, count, percentage }) => (
               <div key={stars} className="flex items-center gap-3 mb-2">
-                <div className="w-12 text-sm text-gray-700">{stars} star</div>
+                <div className="w-12 text-xs md:text-sm text-gray-700">{stars} star</div>
                 <div className="flex-1 bg-gray-300 rounded-full h-2">
                   <div 
                     className="h-2 rounded-full transition-all duration-300" 
@@ -70,7 +71,7 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, maskName, sta
                     }}
                   />
                 </div>
-                <div className="w-12 text-sm text-gray-700 text-right">{count.toLocaleString()}</div>
+                <div className="w-12 text-xs md:text-sm text-gray-700 text-right">{count.toLocaleString()}</div>
               </div>
             ))}
           </div>
@@ -92,7 +93,7 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, maskName, sta
             <div className="mb-3">
               <span className="text-sm text-gray-600">Tour date: {review.date}</span>
             </div>
-            <p className="text-gray-700 mb-3 whitespace-pre-line">{review.comment}</p>
+            <p className={`text-gray-700 mb-3 whitespace-pre-line ${showAll ? '' : 'line-clamp-3'}`}>{review.comment}</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center gap-4">
                 <button className="flex items-center gap-1 hover:text-blue-600">
@@ -106,9 +107,17 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, maskName, sta
             </div>
           </div>
         ))}
-        {reviews.length > 3 && !showAll && (
-          <div className="text-center">
-            <button className="text-sm text-blue-600 underline" onClick={onShowAll}>더보기</button>
+        {reviews.length >= 3 && (
+          <div className="mt-2 flex justify-start">
+            {!showAll ? (
+              <button className="text-sm text-blue-600 hover:underline inline-flex items-center" onClick={onShowAll}>
+                Show More <ChevronDown className="w-4 h-4 ml-1" />
+              </button>
+            ) : (
+              <button className="text-sm text-blue-600 hover:underline inline-flex items-center" onClick={onShowLess || onShowAll}>
+                Show Less <ChevronUp className="w-4 h-4 ml-1" />
+              </button>
+            )}
           </div>
         )}
       </div>

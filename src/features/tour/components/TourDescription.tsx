@@ -13,7 +13,7 @@ export function TourDescription({ description, longDescription, images }: TourDe
   const [showFullDescription, setShowFullDescription] = useState(false)
   return (
     <div className="mb-14">
-      <h3 className="text-xl font-semibold mb-6">Product Description</h3>
+      <h3 className="text-[22px] font-semibold mb-6">Product Description</h3>
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4 mb-6">
           <img 
@@ -28,8 +28,16 @@ export function TourDescription({ description, longDescription, images }: TourDe
           />
         </div>
         <div>
-          <p className="text-gray-700 leading-relaxed mb-4">{description}</p>
-          {showFullDescription && <p className="text-gray-700 leading-relaxed mb-4">{longDescription}</p>}
+          <div 
+            className={`text-gray-700 leading-relaxed mb-4 ${showFullDescription ? '' : 'line-clamp-5'}`}
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
+          {showFullDescription && (
+            <div 
+              className="text-gray-700 leading-relaxed mb-4"
+              dangerouslySetInnerHTML={{ __html: longDescription }}
+            />
+          )}
           <button onClick={() => setShowFullDescription(!showFullDescription)} className="flex items-center text-blue-600 hover:text-blue-700 font-medium">
             {showFullDescription ? (
               <>

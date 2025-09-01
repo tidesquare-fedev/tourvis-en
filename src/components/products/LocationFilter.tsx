@@ -61,7 +61,7 @@ function LocationPills({ value, onChange, locations }: { value: string[]; onChan
       {showToggle && (
         <div className="mt-2">
           <button type="button" onClick={toggle} className="text-xs text-blue-600 hover:underline">
-            {expanded ? '접기' : '더보기'}
+            {expanded ? 'Show Less' : 'Show More'}
           </button>
         </div>
       )}

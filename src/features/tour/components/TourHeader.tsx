@@ -16,8 +16,8 @@ export function TourHeader({ location, title, subtitle }: TourHeaderProps) {
         <span className="text-gray-600">{location}</span>
       </div>
       <div className="mb-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{title}</h1>
-        <p className="text-lg text-gray-600">{subtitle}</p>
+        <h1 className="text-[20px] font-bold text-gray-900 mb-2">{title}</h1>
+        <p className="text-[14px] text-gray-600">{subtitle}</p>
       </div>
     </>
   )

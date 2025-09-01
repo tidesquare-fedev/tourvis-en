@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from 'react'
-import { addMonths, format } from 'date-fns'
+import { addMonths, format, startOfMonth, isBefore } from 'date-fns'
+import { enUS } from 'date-fns/locale'
 import { Calendar } from '@/components/ui/calendar'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 type TourDatePickerProps = {
   selectedDate?: Date
@@ -13,35 +15,97 @@ export function TourDatePicker({ selectedDate, onSelect }: TourDatePickerProps) 
   const [baseMonth, setBaseMonth] = useState<Date>(new Date())
   const currentMonth = baseMonth
   const nextMonth = addMonths(baseMonth, 1)
+  const weekdayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+  const formatters = {
+    formatWeekdayName: (date: Date) => weekdayLabels[date.getDay()],
+  }
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const minMonth = startOfMonth(today)
+  const canGoPrev = !isBefore(startOfMonth(baseMonth), minMonth)
+
+  const clampMonth = (m: Date) => (isBefore(startOfMonth(m), minMonth) ? minMonth : m)
 
   return (
-    <div>
-      <h4 className="font-medium mb-4">Select Date</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 justify-items-center place-content-center mx-auto">
-        <div className="w-full max-w-[420px] p-3 sm:p-4 border rounded-xl bg-white shadow-sm">
-          <h5 className="text-sm font-medium text-gray-700 mb-3 text-center">{format(currentMonth, 'MMMM yyyy')}</h5>
-          <div className="flex justify-center">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={onSelect}
-              month={currentMonth}
-              onMonthChange={setBaseMonth}
-              className="rounded-md border"
-            />
+    <div className="overflow-hidden">
+      <h4 className="font-medium mb-4 text-[18px]">Select Date</h4>
+      <div className="relative">
+        {/* Navigation buttons */}
+        <button
+          type="button"
+          aria-label="Previous month"
+          onClick={() => setBaseMonth(clampMonth(addMonths(baseMonth, -1)))}
+          disabled={!canGoPrev}
+          className="absolute left-0 top-2 md:top-1 -translate-y-1/2 md:translate-y-0 w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-40 disabled:pointer-events-none"
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-700" />
+        </button>
+        <button
+          type="button"
+          aria-label="Next month"
+          onClick={() => setBaseMonth(addMonths(baseMonth, 1))}
+          className="absolute right-0 top-2 md:top-1 -translate-y-1/2 md:translate-y-0 w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full hover:bg-gray-100"
+        >
+          <ChevronRight className="w-5 h-5 text-gray-700" />
+        </button>
+
+        <div className="flex flex-col md:flex-row md:items-start md:justify-center gap-8 md:gap-12">
+          {/* Current month */}
+          <div className="w-full max-w-[420px]">
+            <h5 className="text-base md:text-[22px] font-semibold text-center mb-2">{format(currentMonth, 'MMMM yyyy')}</h5>
+            <div className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={onSelect}
+                month={currentMonth}
+                onMonthChange={setBaseMonth}
+                locale={enUS}
+                showOutsideDays
+                fixedWeeks
+                className="border-0 shadow-none"
+                formatters={formatters as any}
+                classNames={{
+                  caption: 'hidden',
+                  head_cell: 'w-10 text-center text-gray-500 font-normal',
+                  row: 'grid grid-cols-7 mt-2',
+                  cell: 'h-10 w-10 text-center p-0',
+                  day: 'h-10 w-10 rounded-full aria-selected:bg-blue-600 aria-selected:text-white hover:bg-gray-100',
+                  day_outside: 'text-gray-300',
+                  day_disabled: 'text-gray-300 opacity-50 pointer-events-none',
+                }}
+                disabled={(date: Date) => date < today}
+              />
+            </div>
           </div>
-        </div>
-        <div className="w-full max-w-[420px] p-3 sm:p-4 border rounded-xl bg-white shadow-sm">
-          <h5 className="text-sm font-medium text-gray-700 mb-3 text-center">{format(nextMonth, 'MMMM yyyy')}</h5>
-          <div className="flex justify-center">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={onSelect}
-              month={nextMonth}
-              onMonthChange={(m) => setBaseMonth(addMonths(m, -1))}
-              className="rounded-md border"
-            />
+
+          {/* Next month (mobile 숨김) */}
+          <div className="w-full max-w-[420px] hidden md:block">
+            <h5 className="text-[22px] font-semibold text-center mb-2">{format(nextMonth, 'MMMM yyyy')}</h5>
+            <div className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={onSelect}
+                month={nextMonth}
+                onMonthChange={(m) => setBaseMonth(addMonths(m, -1))}
+                locale={enUS}
+                showOutsideDays
+                fixedWeeks
+                className="border-0 shadow-none"
+                formatters={formatters as any}
+                classNames={{
+                  caption: 'hidden',
+                  head_cell: 'w-10 text-center text-gray-500 font-normal',
+                  row: 'grid grid-cols-7 mt-2',
+                  cell: 'h-10 w-10 text-center p-0',
+                  day: 'h-10 w-10 rounded-full aria-selected:bg-blue-600 aria-selected:text-white hover:bg-gray-100',
+                  day_outside: 'text-gray-300',
+                  day_disabled: 'text-gray-300 opacity-50 pointer-events-none',
+                }}
+                disabled={(date: Date) => date < today}
+              />
+            </div>
           </div>
         </div>
       </div>

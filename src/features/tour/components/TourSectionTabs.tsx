@@ -10,15 +10,16 @@ type TourSectionTabsProps = {
 
 export function TourSectionTabs({ sections, activeSection, onClick }: TourSectionTabsProps) {
   return (
-    <div className="sticky top-0 z-10 bg-white border-b mb-8">
-      <div className="flex space-x-1 overflow-x-auto">
+    <div className="border-b mb-8 w-full">
+      <div className="flex gap-2 px-1 overflow-x-auto scrollbar-hide max-w-full min-w-0">
         {sections.map((section) => (
           <button
             key={section.id}
             onClick={() => onClick(section.id)}
-            className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors ${activeSection === section.id ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-blue-600'}`}
+            className={`relative px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${activeSection === section.id ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'}`}
           >
             {section.label}
+            <span className={`absolute left-0 right-0 -bottom-px h-0.5 transition-all ${activeSection === section.id ? 'bg-blue-600' : 'bg-transparent'}`}></span>
           </button>
         ))}
       </div>

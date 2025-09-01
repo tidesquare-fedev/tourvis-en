@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import SearchBox from '@/components/shared/SearchBox'
+import { AppHeader } from '@/components/shared/AppHeader'
 import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -383,26 +384,8 @@ export default function HomePageClient({ banners, regions, categories, sections 
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-[60] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-center gap-3 sm:gap-6">
-            <Link href="/">
-              <span className="logo h-6 sm:h-8 w-24 sm:w-28" role="img" aria-label="TOURVIS" />
-            </Link>
-            <div className="flex-1 hidden md:block">
-              <SearchBox />
-            </div>
-            <nav className="ml-auto flex items-center space-x-3 sm:space-x-6">
-              <Link href="/activity/search" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Tours</Link>
-              <Link href="/inquiry-list" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Direct Inquiry</Link>
-              <Link href="/reservation-lookup" className="text-xs sm:text-sm text-gray-600 hover:text-blue-600 transition-colors">Reservations</Link>
-            </nav>
-          </div>
-          <div className="mt-2 md:hidden">
-            <SearchBox />
-          </div>
-        </div>
-      </header>
+      <AppHeader active="tours" />
+      <div className="pt-20"></div> {/* 헤더 높이만큼 여백 추가 */}
 
       {(sections && sections.length > 0
         ? sections
