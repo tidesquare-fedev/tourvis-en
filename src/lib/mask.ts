@@ -15,7 +15,8 @@ export function maskName(fullName: string): string {
   // Split by whitespace, and hyphen inside token; keep delimiters
   const maskPart = (part: string): string => {
     if (!part) return ''
-    const [first, ...rest] = part
+    const first = part.charAt(0)
+    const rest = part.slice(1)
     return `${first || ''}${repeatStar(rest.length)}`
   }
   return normalize
