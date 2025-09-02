@@ -122,7 +122,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
               <img
                 src={typeof allImages[currentMainImageIndex] === 'string' 
                   ? allImages[currentMainImageIndex] 
-                  : allImages[currentMainImageIndex]?.file_url || allImages[currentMainImageIndex]}
+                  : (allImages[currentMainImageIndex] as any)?.file_url || String(allImages[currentMainImageIndex])}
                 alt={tour.title}
                 className="w-full h-[300px] sm:h-[400px] lg:h-[600px] object-cover rounded-none lg:rounded-2xl shadow-lg cursor-pointer"
                 onClick={handleMainImageClick}
@@ -158,7 +158,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                       onClick={() => handleThumbnailClick(index)}
                     >
                       <img
-                        src={typeof image === 'string' ? image : image?.file_url || image}
+                        src={typeof image === 'string' ? image : (image as any)?.file_url || String(image)}
                         alt={`${tour.title} ${index + 1}`}
                         className={`w-full h-20 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-all duration-200 ${
                           currentMainImageIndex === index ? 'ring-2 ring-blue-500' : ''
@@ -280,7 +280,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                   onClick={() => handleThumbnailClick(index)}
                 >
                   <img
-                    src={typeof image === 'string' ? image : image?.file_url || image}
+                    src={typeof image === 'string' ? image : (image as any)?.file_url || String(image)}
                     alt={`${tour.title} ${index + 1}`}
                     className={`w-full h-20 sm:h-24 lg:h-32 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-all duration-200 ${
                       currentMainImageIndex === index ? 'ring-2 ring-blue-500' : ''
@@ -332,7 +332,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                 <img
                   src={typeof allImages[selectedImageIndex] === 'string' 
                     ? allImages[selectedImageIndex] 
-                    : allImages[selectedImageIndex]?.file_url || allImages[selectedImageIndex]}
+                    : (allImages[selectedImageIndex] as any)?.file_url || String(allImages[selectedImageIndex])}
                   alt={`${tour.title} ${selectedImageIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
                 />
@@ -383,7 +383,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                       }`}
                     >
                       <img
-                        src={typeof image === 'string' ? image : image?.file_url || image}
+                        src={typeof image === 'string' ? image : (image as any)?.file_url || String(image)}
                         alt={`${tour.title} ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
