@@ -17,8 +17,7 @@ type TourBookingCardProps = {
 export function TourBookingCard({ discountRate, originalPrice, price, selectedDate, quantity, onBook, onValidateMsg }: TourBookingCardProps) {
   const total = quantity > 0 ? quantity * price : undefined
   return (
-    <div className="sticky top-4">
-      <Card className="shadow-lg">
+    <Card className="shadow-lg">
         <CardHeader className="pb-4">
           <div className="text-center">
             {typeof discountRate === 'number' && discountRate > 0 && (
@@ -54,7 +53,6 @@ export function TourBookingCard({ discountRate, originalPrice, price, selectedDa
           {onValidateMsg && <p className="text-xs text-gray-500 text-center">{onValidateMsg}</p>}
         </CardContent>
       </Card>
-    </div>
   )
 }
 

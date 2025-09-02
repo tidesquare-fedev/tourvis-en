@@ -159,7 +159,7 @@ export function TourImageGallery({ images, title }: TourImageGalleryProps) {
           <div className="relative bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-semibold">상품 사진</h3>
+              <h3 className="text-lg font-semibold">See all</h3>
               <button
                 onClick={handleCloseModal}
                 className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"

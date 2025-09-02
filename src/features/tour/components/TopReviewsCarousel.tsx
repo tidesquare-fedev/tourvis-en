@@ -1,8 +1,9 @@
 "use client"
 
-import { useMemo, useState } from 'react'
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
-import { Star, ChevronUp, ChevronDown } from 'lucide-react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
+import { Star, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import useEmblaCarousel from 'embla-carousel-react'
 
 type Review = { name: string; rating: number; date: string; comment: string }
 
@@ -32,19 +33,19 @@ function ReviewCard({ review, starColor, maskName }: { review: Review; starColor
 
   return (
     <div className="h-full">
-      <div className="border rounded-2xl shadow-sm p-5 h-full">
-        <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-2 text-sm text-gray-600 mb-3">
-          <div className="flex items-center gap-2">
+      <div className="border rounded-2xl shadow-sm p-4 h-full">
+        <div className="mb-3">
+          <div className="flex items-center gap-2 mb-2">
             {renderStars(review.rating)}
             <span className="font-semibold text-gray-800">{Number(review.rating).toFixed(1)}</span>
           </div>
-          <div className="flex items-center gap-2 md:ml-2">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="font-medium">{maskName ? maskName(review.name) : review.name}</span>
-            <span className="hidden md:inline">·</span>
+            <span>·</span>
             <span>{review.date}</span>
           </div>
         </div>
-        <p className={`text-gray-800 leading-relaxed ${expanded ? '' : 'line-clamp-3'}`}>{review.comment}</p>
+        <p className={`text-gray-800 leading-relaxed text-sm ${expanded ? '' : 'line-clamp-2'}`}>{review.comment}</p>
         {needsMore && (
           <button className="mt-2 text-sm text-blue-600 hover:underline inline-flex items-center" onClick={() => setExpanded((v) => !v)}>
             {expanded ? (
@@ -67,6 +68,31 @@ export function TopReviewsCarousel({ reviews, starColor = '#ff00cc', rating, rev
   const topReviews = [...(reviews || [])]
     .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
     .slice(0, 10)
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false })
+  const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
+  const [nextBtnDisabled, setNextBtnDisabled] = useState(true)
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev()
+  }, [emblaApi])
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext()
+  }, [emblaApi])
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return
+    setPrevBtnDisabled(!emblaApi.canScrollPrev())
+    setNextBtnDisabled(!emblaApi.canScrollNext())
+  }, [emblaApi])
+
+  useEffect(() => {
+    if (!emblaApi) return
+    onSelect()
+    emblaApi.on('select', onSelect)
+    emblaApi.on('reInit', onSelect)
+  }, [emblaApi, onSelect])
 
   const renderStars = (value: number) => {
     const safe = Math.max(0, Math.min(5, Math.floor(Number(value) || 0)))
@@ -98,21 +124,37 @@ export function TopReviewsCarousel({ reviews, starColor = '#ff00cc', rating, rev
           </div>
         )}
       </div>
-      <Carousel className="w-full relative overflow-hidden">
-        <CarouselContent>
-          {topReviews.map((review, index) => (
-            <CarouselItem key={index} className="basis-[85%] sm:basis-[60%] md:basis-1/2">
-              <ReviewCard review={review} starColor={starColor} maskName={maskName} />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
+      <div className="relative group">
+        <div className="overflow-hidden" ref={emblaRef}>
+          <div className="flex">
+            {topReviews.map((review, index) => (
+              <div key={index} className="flex-[0_0_85%] sm:flex-[0_0_60%] md:flex-[0_0_50%] px-2">
+                <ReviewCard review={review} starColor={starColor} maskName={maskName} />
+              </div>
+            ))}
+          </div>
+        </div>
         {topReviews.length > 2 && (
           <>
-            <CarouselPrevious className="absolute left-2 md:-left-8 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-md disabled:opacity-0 disabled:pointer-events-none" />
-            <CarouselNext className="absolute right-2 md:-right-8 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white shadow-md disabled:opacity-0 disabled:pointer-events-none" />
+            {!prevBtnDisabled && (
+              <button
+                className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 transition-colors"
+                onClick={scrollPrev}
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-700" />
+              </button>
+            )}
+            {!nextBtnDisabled && (
+              <button
+                className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 transition-colors"
+                onClick={scrollNext}
+              >
+                <ChevronRight className="w-5 h-5 text-gray-700" />
+              </button>
+            )}
           </>
         )}
-      </Carousel>
+      </div>
     </div>
   )
 }

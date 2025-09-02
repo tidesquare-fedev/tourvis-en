@@ -91,5 +91,27 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities }: any) {
+			addUtilities({
+				'.scrollbar-hide': {
+					/* IE and Edge */
+					'-ms-overflow-style': 'none',
+					/* Firefox */
+					'scrollbar-width': 'none',
+					/* Safari and Chrome */
+					'&::-webkit-scrollbar': {
+						display: 'none'
+					}
+				},
+				'.line-clamp-2': {
+					'display': '-webkit-box',
+					'-webkit-line-clamp': '2',
+					'-webkit-box-orient': 'vertical',
+					'overflow': 'hidden'
+				}
+			})
+		}
+	],
 } satisfies Config;

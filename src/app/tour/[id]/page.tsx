@@ -17,6 +17,7 @@ import { TourDescription } from '@/features/tour/components/TourDescription'
 import { TourReviews } from '@/features/tour/components/TourReviews'
 import { TourBookingCard } from '@/features/tour/components/TourBookingCard'
 import { TopReviewsCarousel } from '@/features/tour/components/TopReviewsCarousel'
+import { TourHeroSection } from '@/features/tour/components/TourHeroSection'
 import { TourApiResponse } from '@/types/tour'
 
 export default function TourDetailPage() {
@@ -1055,37 +1056,21 @@ export default function TourDetailPage() {
       
 
 
-      <div className="max-w-7xl mx-auto px-4 pt-20 pb-24">
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 booking-grid min-w-0">
-          <div className="lg:col-span-2 min-w-0">
-            <TourImageGallery images={tour.images} title={tour.title} />
-            <TourHeader location={tour.location} title={tour.title} subtitle={tour.subtitle} />
+      {/* New Hero Section */}
+      <TourHeroSection 
+        tourData={tourData} 
+        tour={{...tour, reviews: tour.reviews}} 
+        starColor={STAR_COLOR}
+        onScrollToReviews={() => scrollToSection('reviews')}
+        maskName={maskName}
+      />
+
+
+
+      <div className="max-w-7xl mx-auto px-4 pb-24">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 min-w-0 lg:items-start booking-container">
+          <div className="flex-1 min-w-0">
             <div className="mb-6">
-              {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
-                <div className="text-lg text-gray-500 line-through mb-1">${tour.originalPrice}</div>
-              )}
-              <div className="flex items-center gap-2 md:gap-3">
-                {typeof tour.discountRate === 'number' && tour.discountRate > 0 && (
-                  <span className="text-2xl font-bold text-red-500">{tour.discountRate}%</span>
-                )}
-                <span className="text-2xl md:text-3xl font-bold text-blue-600">${tour.price}</span>
-              </div>
-              <TourStats
-                durationCode={tourData.filter.duration}
-                languages={tourData.filter.language?.filter(Boolean)}
-                confirmHour={tourData.summary.confirm_hour}
-                voucherType={tourData.summary.voucher_type}
-                productPolicies={tourData.summary.product_policies}
-              />
-              <div className="border-t border-gray-200 my-8"></div>
-              <TopReviewsCarousel 
-                reviews={tour.reviews as any} 
-                starColor={STAR_COLOR} 
-                rating={tour.rating}
-                reviewCount={tour.reviewCount}
-                onScrollToReviews={() => scrollToSection('reviews')}
-                maskName={maskName}
-              />
               <TourHighlights highlights={tour.highlights} />
               <TourSectionTabs sections={sections.map(({ id, label }) => ({ id, label }))} activeSection={activeSection} onClick={scrollToSection} />
             </div>
@@ -1268,8 +1253,8 @@ export default function TourDetailPage() {
                     </div>
                     </div>
 
-          <div className="lg:col-span-1 sidebar">
-            <div className="lg:sticky lg:top-24">
+          <div className="lg:w-80 lg:flex-shrink-0">
+            <div className="relative lg:sticky lg:top-20 lg:self-start lg:z-10">
               <TourBookingCard
                 discountRate={tour.discountRate}
                 originalPrice={tour.originalPrice}
@@ -1279,7 +1264,7 @@ export default function TourDetailPage() {
                 onBook={handleBooking}
               />
             </div>
-            <div className="fixed inset-x-0 bottom-0 z-40 bg-white/90 backdrop-blur border-t p-3 lg:hidden">
+            <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-3 lg:hidden shadow-lg">
               <div className="max-w-7xl mx-auto px-2">
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
@@ -1289,7 +1274,7 @@ export default function TourDetailPage() {
                   <button
                     onClick={handleBooking}
                     disabled={!canBook}
-                    className="px-5 py-3 rounded-lg bg-black text-white disabled:opacity-40 disabled:pointer-events-none"
+                    className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-40 disabled:pointer-events-none hover:bg-blue-700 transition-colors"
                   >
                     {canBook ? 'Book now' : 'Select date & qty'}
                         </button>

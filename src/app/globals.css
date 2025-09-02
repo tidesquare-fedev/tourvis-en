@@ -115,15 +115,15 @@
     background-position: left center;
     background-size: contain;
   }
-  /* Responsive helpers for booking layout */
-  .booking-grid {
-    grid-template-columns: 1fr;
+
+  /* Ensure parent container allows sticky */
+  .booking-container {
+    min-height: 100vh;
+    overflow: visible;
+    transform: none;
+    will-change: auto;
   }
-  @media (min-width: 1024px) {
-    .booking-grid {
-      grid-template-columns: 2fr 1fr;
-    }
-  }
+  
   /* Sidebar collapse on small screens */
   @media (max-width: 768px) {
     .sidebar {
