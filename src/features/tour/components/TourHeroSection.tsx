@@ -34,9 +34,16 @@ type TourHeroSectionProps = {
 }
 
 export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, maskName }: TourHeroSectionProps) {
-  const primaryImage = tourData.detail.primary_image?.file_url || tour.images[0]
-  const additionalImages = tourData.detail.images?.slice(1, 5) || tour.images.slice(1, 5)
-  const allImages = tourData.detail.images || tour.images
+  // tour.images가 문자열 배열이므로 이를 우선으로 사용
+  const allImages = tour.images && tour.images.length > 0 ? tour.images : 
+    (tourData.detail.images?.map(img => img.file_url) || [])
+  const primaryImage = allImages[0] || tourData.detail.primary_image?.file_url
+  const additionalImages = allImages.slice(1, 5)
+  
+  // 디버깅용 로그
+  console.log('TourHeroSection - tour.images:', tour.images)
+  console.log('TourHeroSection - allImages:', allImages)
+  console.log('TourHeroSection - primaryImage:', primaryImage)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [currentMainImageIndex, setCurrentMainImageIndex] = useState(0)
@@ -120,12 +127,14 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
           <div className="order-1 lg:order-1">
             <div className="relative group">
               <img
-                src={typeof allImages[currentMainImageIndex] === 'string' 
-                  ? allImages[currentMainImageIndex] 
-                  : (allImages[currentMainImageIndex] as any)?.file_url || String(allImages[currentMainImageIndex])}
+                src={allImages[currentMainImageIndex] || 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=600&fit=crop'}
                 alt={tour.title}
                 className="w-full h-[300px] sm:h-[400px] lg:h-[600px] object-cover rounded-none lg:rounded-2xl shadow-lg cursor-pointer"
                 onClick={handleMainImageClick}
+                onError={(e) => {
+                  console.log('Image failed to load:', e.currentTarget.src)
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=600&fit=crop'
+                }}
               />
               
               {/* Navigation Buttons */}
@@ -147,10 +156,10 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
               )}
             </div>
             
-            {/* Thumbnails - Mobile: Right below hero image, Desktop: Bottom */}
+            {/* Additional Images Thumbnails - Mobile: Below main image */}
             {allImages.length > 1 && (
               <div className="mt-4 lg:hidden px-4">
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-4 gap-2">
                   {allImages.slice(0, 4).map((image, index) => (
                     <div 
                       key={index} 
@@ -160,7 +169,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                       <img
                         src={typeof image === 'string' ? image : (image as any)?.file_url || String(image)}
                         alt={`${tour.title} ${index + 1}`}
-                        className={`w-full h-20 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-all duration-200 ${
+                        className={`w-full h-16 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-all duration-200 ${
                           currentMainImageIndex === index ? 'ring-2 ring-blue-500' : ''
                         }`}
                       />
@@ -176,8 +185,8 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                           }}
                         >
                           <div className="text-white text-center">
-                            <div className="text-sm sm:text-lg font-semibold mb-1">See More</div>
-                            <div className="text-xs sm:text-sm opacity-90">+{allImages.length}</div>
+                            <div className="text-xs font-semibold mb-1">See More</div>
+                            <div className="text-xs opacity-90">+{allImages.length}</div>
                           </div>
                         </div>
                       )}
@@ -186,6 +195,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                 </div>
               </div>
             )}
+
           </div>
 
           {/* Tour Information - Mobile: Bottom, Desktop: Right */}
@@ -214,7 +224,12 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Clock className="w-5 h-5 text-blue-500" />
                 <div>
-                  <div className="font-semibold text-gray-900">{tour.duration}</div>
+                  <div className="font-semibold text-gray-900">{(() => {
+                    const durationCode = tourData.filter?.duration
+                    if (durationCode === 'OV6H') return 'Over 6 hours'
+                    if (durationCode === 'OV8H') return 'Over 8 hours'
+                    return tour.duration
+                  })()}</div>
                   <div className="text-xs text-gray-500">Duration</div>
                 </div>
               </div>
@@ -223,7 +238,24 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Globe className="w-5 h-5 text-green-500" />
                 <div>
-                  <div className="font-semibold text-gray-900">{tour.language}</div>
+                  <div className="font-semibold text-gray-900">{(() => {
+                    const languages = tourData.filter?.language || []
+                    const languageMap: Record<string, string> = {
+                      'ENGLISH': 'English',
+                      'KOREAN': 'Korean',
+                      'JAPANESE': 'Japanese',
+                      'CHINESE': 'Chinese',
+                      'SPANISH': 'Spanish',
+                      'FRENCH': 'French',
+                      'GERMAN': 'German',
+                      'ITALIAN': 'Italian',
+                      'PORTUGUESE': 'Portuguese',
+                      'RUSSIAN': 'Russian',
+                      'ETC': 'Korean'
+                    }
+                    const friendlyLanguages = languages.map(lang => languageMap[lang] || lang)
+                    return friendlyLanguages.join(', ') || tour.language
+                  })()}</div>
                   <div className="text-xs text-gray-500">Language</div>
                 </div>
               </div>
@@ -234,7 +266,10 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Instant confirmation</div>
+                  <div className="font-semibold text-gray-900">{(() => {
+                    const hasInstantConfirmation = (tourData.summary?.product_policies || []).includes('INSTANT_CONFIRMATION') || tourData.summary?.confirm_hour === 'IN0H'
+                    return hasInstantConfirmation ? 'Instant confirmation' : 'Confirmation required'
+                  })()}</div>
                   <div className="text-xs text-gray-500">Confirm</div>
                 </div>
               </div>
@@ -245,13 +280,18 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                   <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Mobile voucher</div>
+                  <div className="font-semibold text-gray-900">{(() => {
+                    const voucherType = tourData.summary?.voucher_type
+                    if (voucherType === 'M_VOUCHER') return 'Mobile voucher'
+                    if (voucherType === 'P_VOUCHER') return 'Printed voucher'
+                    return 'Mobile voucher'
+                  })()}</div>
                   <div className="text-xs text-gray-500">Voucher</div>
                 </div>
               </div>
             </div>
 
-            {/* Real Traveler Stories */}
+            {/* Real Traveler Reviews */}
             <div className="mt-6">
               <TopReviewsCarousel 
                 reviews={tour.reviews as any} 
@@ -282,7 +322,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                   <img
                     src={typeof image === 'string' ? image : (image as any)?.file_url || String(image)}
                     alt={`${tour.title} ${index + 1}`}
-                    className={`w-full h-20 sm:h-24 lg:h-32 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-all duration-200 ${
+                    className={`w-full h-32 object-cover rounded-lg shadow-sm group-hover:shadow-md transition-all duration-200 ${
                       currentMainImageIndex === index ? 'ring-2 ring-blue-500' : ''
                     }`}
                   />
@@ -298,8 +338,8 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                       }}
                     >
                       <div className="text-white text-center">
-                        <div className="text-sm sm:text-lg font-semibold mb-1">See More</div>
-                        <div className="text-xs sm:text-sm opacity-90">+{allImages.length}</div>
+                        <div className="text-lg font-semibold mb-1">See More</div>
+                        <div className="text-sm opacity-90">+{allImages.length}</div>
                       </div>
                     </div>
                   )}

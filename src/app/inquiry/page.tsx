@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -90,8 +90,7 @@ export default function InquiryPage() {
   const setField = (field: string, value: string) => setInquiryData((p) => ({ ...p, [field]: value }))
 
   return (
-    <div className="min-h-screen bg-white">
-      <AppHeader active="inquiry" />
+    <LayoutProvider>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-4">
@@ -182,7 +181,7 @@ export default function InquiryPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </LayoutProvider>
   )
 }
 

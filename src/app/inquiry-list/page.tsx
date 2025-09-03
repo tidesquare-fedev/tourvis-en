@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -70,8 +70,7 @@ export default function InquiryListPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white">
-        <AppHeader active="inquiry" />
+      <LayoutProvider>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Check Inquiry</h1>
@@ -123,13 +122,12 @@ export default function InquiryListPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </LayoutProvider>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <AppHeader active="inquiry" />
+    <LayoutProvider>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <div>
@@ -203,7 +201,7 @@ export default function InquiryListPage() {
         </Card>
         {/* Removed Back to Home button per requirements */}
       </div>
-    </div>
+    </LayoutProvider>
   )
 }
 

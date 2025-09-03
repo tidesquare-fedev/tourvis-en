@@ -6,6 +6,13 @@ export type TourvisHomePayload = {
   svcDivn: string
 }
 
+export type TourDetailPayload = {
+  brand: string
+  platform: string
+  productCode: string
+  language?: string
+}
+
 export interface FetchResult<T> {
   ok: boolean
   data: T | null
@@ -18,6 +25,33 @@ export async function fetchTourvisHome<T = unknown>(
 ): Promise<FetchResult<T>> {
   try {
     const res = await fetch('https://dapi.tourvis.com/api/page/getPageInfo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Dynamic content → no-store per team policy
+      cache: 'no-store',
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      return { ok: false, data: null, error: `HTTP ${res.status}` }
+    }
+
+    const json = (await res.json()) as T
+    return { ok: true, data: json }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'unknown error'
+    return { ok: false, data: null, error: message }
+  }
+}
+
+// Server-only fetch for Tour detail info
+export async function fetchTourDetail<T = unknown>(
+  payload: TourDetailPayload,
+): Promise<FetchResult<T>> {
+  try {
+    const res = await fetch('https://dapi.tourvis.com/api/product/getProductDetail', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

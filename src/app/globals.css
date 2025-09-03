@@ -81,6 +81,14 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Layout variables */
+    --header-height: 4rem; /* 64px */
+    --header-height-mobile: 3rem; /* 48px */
+    --sticky-nav-height: 3rem; /* 48px */
+    --content-padding: 1rem; /* 16px */
+    --content-padding-mobile: 0.75rem; /* 12px */
+    --max-content-width: 80rem; /* 1280px */
   }
 }
 
@@ -124,6 +132,34 @@
     will-change: auto;
   }
   
+  /* Fixed booking card - 독립적으로 배치 */
+  .booking-fixed {
+    position: fixed !important;
+    top: 5rem !important;
+    right: 1rem !important;
+    width: 20rem !important;
+    z-index: 30 !important;
+    max-height: calc(100vh - 6rem) !important;
+    overflow-y: auto !important;
+  }
+  
+  /* 좌측 컨텐츠 영역 여백 */
+  .content-with-booking {
+    margin-right: 21rem !important;
+  }
+  
+  @media (max-width: 1024px) {
+    .content-with-booking {
+      margin-right: 0 !important;
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .booking-sticky {
+      position: static !important;
+    }
+  }
+  
   /* Sidebar collapse on small screens */
   @media (max-width: 768px) {
     .sidebar {
@@ -143,6 +179,32 @@
   /* Buttons minimum touch target */
   .btn-touch {
     min-height: 44px;
+  }
+  
+  /* Layout utilities */
+  .content-container {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding: 0 var(--content-padding);
+  }
+  
+  @media (max-width: 768px) {
+    .content-container {
+      padding: 0 var(--content-padding-mobile);
+    }
+  }
+  
+  /* Header spacing utilities */
+  .header-spacing {
+    height: var(--header-height);
+  }
+  
+  .header-spacing-mobile {
+    height: var(--header-height-mobile);
+  }
+  
+  .sticky-nav-spacing {
+    height: var(--sticky-nav-height);
   }
 }
 

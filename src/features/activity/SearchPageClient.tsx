@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from 'react'
 import { ProductFilters } from '@/components/products/ProductFilters'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { useDerivedFilters } from '@/features/activity/hooks/useDerivedFilters'
 import { ActivityCard } from '@/features/activity/components/ActivityCard'
@@ -26,8 +26,7 @@ export default function SearchPageClient({ items }: { items: ProductItem[] }) {
   }, [items, filters])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <AppHeader active="tours" />
+    <LayoutProvider>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SectionHeader title="All Tours" subtitle="Explore Tours, Tickets & Activities" />
@@ -60,7 +59,7 @@ export default function SearchPageClient({ items }: { items: ProductItem[] }) {
           </div>
         </div>
       </div>
-    </div>
+    </LayoutProvider>
   )
 }
 

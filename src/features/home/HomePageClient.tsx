@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import SearchBox from '@/components/shared/SearchBox'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -383,9 +383,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <AppHeader active="tours" />
-      <div className="pt-20"></div> {/* 헤더 높이만큼 여백 추가 */}
+    <LayoutProvider>
 
       {(sections && sections.length > 0
         ? sections
@@ -397,7 +395,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
             { templateId: 'TV_TAB_TWOGRID', categories: twoGridCats },
           ] as Section[]
       ).map((sec, idx) => renderSection(sec, idx))}
-    </div>
+    </LayoutProvider>
   )
 }
 

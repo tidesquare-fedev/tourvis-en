@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,8 +35,7 @@ export default function ReservationLookupPage() {
   const handleInputChange = (field: string, value: string) => setSearchData((prev) => ({ ...prev, [field]: value }))
 
   return (
-    <div className="min-h-screen bg-white">
-      <AppHeader active="reservation" />
+    <LayoutProvider>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="text-center mb-6 sm:mb-8">
@@ -83,7 +82,7 @@ export default function ReservationLookupPage() {
 
         {/* Removed Back to Home button per requirements */}
       </div>
-    </div>
+    </LayoutProvider>
   )
 }
 

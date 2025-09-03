@@ -8,7 +8,7 @@ const STAR = '*'
 
 const repeatStar = (count: number): string => (count > 0 ? STAR.repeat(count) : '')
 
-export function maskName(fullName: string): string {
+export function maskName(fullName: string | undefined): string {
   if (!fullName || typeof fullName !== 'string') return ''
   const normalize = fullName.trim()
   if (!normalize) return ''

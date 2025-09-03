@@ -1,8 +1,9 @@
 "use client"
 
 import { ThumbsUp, Star, Check, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { maskName } from '@/lib/mask'
 
-type Review = { name: string; rating: number; date: string; comment: string; helpful: number; tags?: string[] }
+type Review = { name?: string; rating: number; date: string; comment: string; helpful: number; tags?: string[] }
 
 type TourReviewsProps = {
   rating: number
@@ -10,11 +11,10 @@ type TourReviewsProps = {
   showAll: boolean
   onShowAll: () => void
   onShowLess?: () => void
-  maskName: (name: string) => string
   starColor?: string
 }
 
-export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, maskName, starColor = '#ff00cc' }: TourReviewsProps) {
+export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, starColor = '#ff00cc' }: TourReviewsProps) {
   const renderStars = (value: number) => {
     const safe = Math.max(0, Math.min(5, Math.floor(Number(value) || 0)))
     return (
@@ -86,7 +86,7 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, m
                   {renderStars(review.rating as number)}
                   <span className="font-semibold text-lg">{review.rating}.0</span>
                 </div>
-                <span className="text-sm text-gray-500">{maskName(String(review.name))}</span>
+                <span className="text-sm text-gray-500">{maskName(review.name)}</span>
                 <span className="text-sm text-gray-500">{review.date}</span>
               </div>
             </div>
@@ -110,11 +110,11 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, m
         {reviews.length >= 3 && (
           <div className="mt-2 flex justify-start">
             {!showAll ? (
-              <button className="text-sm text-blue-600 hover:underline inline-flex items-center" onClick={onShowAll}>
+              <button className="text-sm text-gray-900 hover:underline inline-flex items-center" onClick={onShowAll}>
                 Show More <ChevronDown className="w-4 h-4 ml-1" />
               </button>
             ) : (
-              <button className="text-sm text-blue-600 hover:underline inline-flex items-center" onClick={onShowLess || onShowAll}>
+              <button className="text-sm text-gray-900 hover:underline inline-flex items-center" onClick={onShowLess || onShowAll}>
                 Show Less <ChevronUp className="w-4 h-4 ml-1" />
               </button>
             )}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from 'react'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { ProductFilters } from '@/components/products/ProductFilters'
 import { ActivityCard } from '@/features/activity/components/ActivityCard'
@@ -34,8 +34,7 @@ export default function ProductsPage() {
   }, [allTours, filters])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <AppHeader active="tours" />
+    <LayoutProvider>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SectionHeader title="All Tours" subtitle="Explore Tours, Tickets & Activities" />
 
@@ -67,7 +66,7 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </LayoutProvider>
   )
 }
 

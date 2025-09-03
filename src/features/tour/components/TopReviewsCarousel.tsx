@@ -47,7 +47,7 @@ function ReviewCard({ review, starColor, maskName }: { review: Review; starColor
         </div>
         <p className={`text-gray-800 leading-relaxed text-sm ${expanded ? '' : 'line-clamp-2'}`}>{review.comment}</p>
         {needsMore && (
-          <button className="mt-2 text-sm text-blue-600 hover:underline inline-flex items-center" onClick={() => setExpanded((v) => !v)}>
+          <button className="mt-2 text-sm text-gray-900 hover:underline inline-flex items-center" onClick={() => setExpanded((v) => !v)}>
             {expanded ? (
               <>
                 Show Less <ChevronUp className="w-4 h-4 ml-1" />
@@ -110,7 +110,7 @@ export function TopReviewsCarousel({ reviews, starColor = '#ff00cc', rating, rev
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h3 className="text-lg md:text-xl font-semibold">Real Traveler Stories</h3>
+        <h3 className="text-lg md:text-xl font-semibold">Real Traveler Reviews</h3>
         {typeof rating === 'number' && (
           <div className="flex items-center gap-2 flex-shrink-0">
             {renderStars(rating)}

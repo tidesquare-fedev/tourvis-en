@@ -25,10 +25,55 @@ export interface TourBasic {
   inventory_scope: string
   need_reservation: boolean
   min_book_days: number
+  max_book_days: number
+  min_participants: number
+  max_participants: number
+  duration: number
+  duration_unit: string
+  meeting_point: string
+  meeting_point_address: string
+  meeting_point_latitude: number
+  meeting_point_longitude: number
+  meeting_point_description: string
+  meeting_point_image: string
+  cancellation_policy: string
+  cancellation_hours: number
+  cancellation_description: string
+  instant_confirmation: boolean
+  mobile_voucher: boolean
+  print_voucher: boolean
+  languages: string[]
+  included: string[]
+  excluded: string[]
+  bring_items: string[]
+  not_allowed: string[]
+  not_suitable: string[]
+  additional_info: string
+  images: string[]
+  reviews: Array<{
+    id: number
+    name: string
+    rating: number
+    date: string
+    comment: string
+    helpful: number
+  }>
+  price: number
+  originalPrice: number
+  discountRate: number
+  currency: string
+  available_dates: string[]
+  timeslots: Array<{
+    id: string
+    name: string
+    start_time: string
+    end_time: string
+    price: number
+    available: boolean
+  }>
   working_date_type: string
   latitude: string
   longitude: string
-  currency: string
   timezone: string | null
   sort_order: number
   booking_type: string
@@ -57,6 +102,14 @@ export interface TourDetail {
   highlight_detail: string
   event: string
   description: string
+  highlights: string[]
+  itinerary: Array<{
+    day: number
+    title: string
+    description: string
+    duration: string
+    activities: string[]
+  }>
   preparations: string
   how_to_use: string
   warnings: string

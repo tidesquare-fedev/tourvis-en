@@ -1,45 +1,1724 @@
-'use client'
-
-import { AppHeader } from '@/components/shared/AppHeader'
-import { useParams, useRouter } from 'next/navigation'
-import { useState, useRef, useEffect } from 'react'
-import { useToast } from '@/hooks/use-toast'
-import { format } from 'date-fns'
-import { Check, X, MapPin, AlertTriangle, Package, XCircle, Info, ChevronRight } from 'lucide-react'
-import { TourImageGallery } from '@/features/tour/components/TourImageGallery'
-import { TourHeader } from '@/features/tour/components/TourHeader'
-import { TourStats } from '@/features/tour/components/TourStats'
-import { TourHighlights } from '@/features/tour/components/TourHighlights'
-import { TourSectionTabs } from '@/features/tour/components/TourSectionTabs'
-import { TourDatePicker } from '@/features/tour/components/TourDatePicker'
-import { TourOptions } from '@/features/tour/components/TourOptions'
-import { TourDescription } from '@/features/tour/components/TourDescription'
-import { TourReviews } from '@/features/tour/components/TourReviews'
-import { TourBookingCard } from '@/features/tour/components/TourBookingCard'
-import { TopReviewsCarousel } from '@/features/tour/components/TopReviewsCarousel'
-import { TourHeroSection } from '@/features/tour/components/TourHeroSection'
 import { TourApiResponse } from '@/types/tour'
+import TourDetailClient from './TourDetailClient.tsx'
 
-export default function TourDetailPage() {
-  const params = useParams<{ id: string }>()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
-  const [quantity, setQuantity] = useState(0)
-  const [activeSection, setActiveSection] = useState('options')
-  const [showFullDescription, setShowFullDescription] = useState(false)
-  const [showAllReviews, setShowAllReviews] = useState(false)
-  const [infoModal, setInfoModal] = useState<{ title: string; content: string } | null>(null)
-  const [showStickyHeader, setShowStickyHeader] = useState(false)
+interface TourDetailPageProps {
+  params: { id: string }
+}
 
-  const optionsRef = useRef<HTMLDivElement>(null)
-  const descriptionRef = useRef<HTMLDivElement>(null)
-  const guideRef = useRef<HTMLDivElement>(null)
-  const reviewsRef = useRef<HTMLDivElement>(null)
-  const cancellationRef = useRef<HTMLDivElement>(null)
-
-  // Mock API data - 실제로는 API에서 가져올 데이터
-  const baseTourRome: TourApiResponse = {
+export default function TourDetailPage({ params }: TourDetailPageProps) {
+  // 상품 ID에 따라 다른 데이터 반환
+  const getMockTourData = (id: string): TourApiResponse => {
+    if (id === 'PRD2001371482') {
+      // 아우슈비츠 투어 데이터
+      return {
+        basic: {
+          code: null,
+          provider_code: "PRV3006455682",
+          name: "크라쿠프: 픽업 및 점심 옵션이 포함 된 아우슈비츠 가이드 투어",
+          sub_name: "크라쿠프: 픽업 및 점심 옵션이 포함 된 아우",
+          calendar_type: "DATE",
+          price_scope: "DATE",
+          timeslot_is: true,
+          inventory_scope: "LABEL_TIMESLOT",
+          need_reservation: false,
+          min_book_days: 0,
+          working_date_type: "PROVIDER",
+          latitude: "50.0592719",
+          longitude: "19.9428865",
+          timezone: "Europe/Warsaw",
+          sort_order: 100,
+          booking_type: "AUTO",
+          max_book_days: 365,
+          min_participants: 1,
+          max_participants: 20,
+          duration: 360,
+          duration_unit: "MINUTE",
+          meeting_point: "위엘로폴 2 (키스&라이드 정류장)",
+          meeting_point_address: "크라쿠프, 폴란드",
+          meeting_point_latitude: 50.0592719,
+          meeting_point_longitude: 19.9428865,
+          meeting_point_description: "미팅 포인트는 예약한 옵션에 따라 다를 수 있습니다",
+          meeting_point_image: null,
+          cancellation_policy: "CONDITIONAL",
+          cancellation_hours: 24,
+          cancellation_description: "조건부 취소 정책",
+          instant_confirmation: true,
+          mobile_voucher: true,
+          print_voucher: false,
+          languages: ["ENGLISH", "ETC"],
+          included: [
+            "가이드",
+            "호텔 또는 미팅 포인트에서 픽업 (선택한 옵션에 따라 다름)",
+            "에어컨이 완비된 편안한 버스로 왕복 교통편 제공",
+            "우선입장 티켓",
+            "햄, 후무스, 치즈가 포함된 도시락(옵션 선택 시)"
+          ],
+          excluded: [],
+          areas: [
+            { code: "4826", name: "오시비엥침" },
+            { code: "100171", name: "폴란드" },
+            { code: "14169", name: "크라쿠프" }
+          ],
+          categories: [
+            { code: "CG70", name: "일일투어" },
+            { code: "CG35", name: "역사/문화 투어" },
+            { code: "CG04", name: "역사문화명소" },
+            { code: "CG28", name: "워킹투어" },
+            { code: "CG19", name: "익스트림 액티비티" }
+          ],
+          reviews: [
+            {
+              id: 1,
+              name: "김**",
+              rating: 5,
+              comment: "정말 의미있는 투어였습니다. 가이드분이 친절하고 설명도 잘해주셨어요.",
+              date: "2024-01-15",
+              helpful: 8
+            },
+            {
+              id: 2, 
+              name: "이**",
+              rating: 4,
+              comment: "역사적으로 중요한 장소를 방문할 수 있어서 좋았습니다.",
+              date: "2024-01-10",
+              helpful: 5
+            }
+          ],
+          available_dates: [],
+          timeslots: [],
+          price: 89,
+          originalPrice: 120,
+          discountRate: 26,
+          currency: "EUR",
+          bring_items: ["여권 또는 신분증"],
+          not_allowed: ["수하물 또는 큰 가방"],
+          not_suitable: ["만 12세 미만의 어린이", "휠체어 사용자"],
+          additional_info: "예약 시 제공된 이름과 입장 시 제시한 신분증의 이름이 일치해야 합니다.",
+          images: [
+            "https://cdn.getyourguide.com/img/tour/63613fcaed711.jpeg/145.jpg",
+            "https://cdn.getyourguide.com/img/tour/636f83dbd45e4.jpeg/145.jpg",
+            "https://cdn.getyourguide.com/img/tour/5b686bf34ff6e.jpeg/145.jpg",
+            "https://cdn.getyourguide.com/img/tour/5b686bf3a279e.jpeg/145.jpg",
+            "https://cdn.getyourguide.com/img/tour/5b686bf631d22.jpeg/145.jpg"
+          ]
+        },
+        summary: {
+          confirm_hour: "IN0H",
+          voucher_type: "M_VOUCHER",
+          customs: [],
+          product_policies: ["INSTANT_CONFIRMATION"]
+        },
+        filter: {
+          min_depart: null,
+          language: ["ENGLISH", "ETC"],
+          duration: "OV6H",
+          depart_hour: []
+        },
+        detail: {
+          notice_title: null,
+          notice_detail: null,
+          highlight_title: "아우슈비츠-비르케나우 가이드 투어를 통해 20세기 유럽 역사에서 가장 어두운 장 중 하나였던 아우슈비츠를 탐험하세요. 가이드의 도움을 받아 강제 수용소의 원래 건물을 둘러보세요.",
+          highlight_detail: "<ul><li>제2차 세계대전 당시 유럽의 어두운 역사 탐험하기</li><li>아우슈비츠와 비르케나우 강제 수용소를 가슴 아프게 둘러보세요.</li><li>나치가 잔학 행위를 저지른 장소를 확인하고 희생자들의 개인 유물을 살펴보세요.</li></ul>",
+          highlights: [
+            "아우슈비츠 제1 수용소 방문",
+            "비르케나우 수용소 투어", 
+            "전문 가이드 설명",
+            "왕복 교통편 제공",
+            "우선입장 티켓"
+          ],
+          event: "",
+          description: "<p>크라쿠프를 출발하여 아우슈비츠-비르케나우 기념관 및 박물관으로 이동하여 나치에 의해 지어진 폴란드 최대의 강제 수용소를 둘러보세요. 전문 가이드와 함께 아우슈비츠 제1 수용소와 아우슈비츠 제2 수용소를 가슴 아프게 둘러보세요.<br><br>도착하자마자 점심을 먹으며 잠시 휴식을 취한 후 아우슈비츠 제1 수용소를 둘러보며 악명 높은 '노동의 대가' 표지판과 공포가 계획된 관리 건물을 둘러보세요.<br>나치가 끔찍한 대량 학살을 저지른 가스실 내부를 살펴보고, 수감자들을 추모하는 전시회에서 수감자들의 개인 유물을 관람하세요.<br><br>비르케나우 수용소로 이동하기 전 15분간의 짧은 휴식을 취한 후 1시간 동안 가이드 투어를 진행합니다. 수감자들이 수용소에 들어온 곳과 그들이 강제로 생활해야 했던 나무 막사를 둘러보세요.<br>크라쿠프로 돌아와 구시가지 또는 구 유대인 지구에서 원하는 장소에서 하차하세요.<p>",
+          preparations: "",
+          how_to_use: "",
+          warnings: "",
+          additional_info: "<ul><li>예약 시 제공된 이름과 입장 시 제시한 신분증의 이름이 일치하지 않을 경우 입장이 거부될 수 있습니다.</li><li>픽업 시간이 변경될 수 있습니다(투어 시작 시간은 오전 5:30부터 오후 1:30까지 가능)<br>일정을 계획할 때 이 점을 고려하시기 바랍니다<br>원하는 시간을 선택할 수 있지만, 해당 시간이 보장되지는 않습니다<br>예외적인 상황에서는 출발 시간이 언급된 시간보다 빠르거나 늦어질 수 있습니다.</li><li>투어 시간은 기념관 방문자 서비스에 의해 결정됩니다.</li><li>온라인으로 아우슈비츠 예약이 불가능한 경우, 티켓을 구매하기 위해 줄을 서서 기다려야 합니다<br>대기 시간은 방문객 수에 따라 다르며, 박물관 및 투어 운영사는 이에 대해 어떠한 영향력도 행사할 수 없습니다.</li><li>이 상품은 영어로 작성되어 있으며, 운영사는 다른 언어로의 번역에 대한 오류에 대해 책임을 지지 않습니다.</li><li>운영사의 통제 범위를 벗어난 사유로 투어가 취소될 수 있습니다<br>이 경우, 고객은 전액 환불을 받게 됩니다.</li></ul>",
+          meeting_address: "",
+          meeting_latitude: "",
+          meeting_longitude: "",
+          meeting_info: "",
+          pickup_drop: "<p><ul><li><b>픽업</b><ul><li><b>미팅 포인트에서 픽업이 포함된 영어 투어</b><ul><li>투어 하루 전에 정확한 출발 시간을 안내해 드리겠습니다.</ul></li></ul></li><br><ul><li><b>미팅 포인트에서 픽업이 포함된 영어로 진행되는 막바지 투어</b><ul><li>가이드가 선택하신 미팅 포인트에서 픽업해 드립니다. 전날에 정확한 출발 시간과 버스 번호를 알려드립니다.</ul></li></ul></li><br><ul><li><b>프라이빗 호텔 교통편이 포함된 영어 가이드 그룹 투어</b><ul><li>크라쿠프에 있는 호텔이나 아파트에서 픽업 서비스를 받으세요.</ul></li></ul></li><br><ul><li><b>호텔 픽업 서비스가 포함된 프랑스어 가이드 투어</b><ul><li>오전 6시에서 오후 1시 30분 사이에 호텔에서 픽업 서비스를 받으실 수 있습니다.</ul></li></ul></li><br><ul><li><b>프라이빗 호텔 교통편이 포함 된 독일 가이드 그룹 투어</b><ul><li>크라쿠프 구시가지 또는 구 유대인 지구(카지미에츠)에 있는 호텔이나 아파트에서 픽업 서비스를 받으실 수 있습니다. 운전 기사가 해당 지역에 정차할 수 없는 경우 가능한 한 가까운 다른 장소로 이동합니다.</ul></li></ul></li><br><ul><li><b>프라이빗 호텔 교통편이 포함 된 프랑스 가이드 그룹 투어</b><ul><li>크라쿠프 구시가지 또는 구 유대인 지구(카지미에츠)에 있는 호텔이나 아파트에서 픽업 서비스를 받으실 수 있습니다. 운전 기사가 해당 지역에 정차할 수 없는 경우 가능한 한 가까운 다른 장소로 이동합니다.</ul></li></ul></li><br><ul><li><b>프라이빗 호텔 교통편이 포함 된 스페인어 가이드 그룹 투어</b><ul><li>크라쿠프 구시가지 또는 구 유대인 지구(카지미에츠)에 있는 호텔이나 아파트에서 픽업 서비스를 받으실 수 있습니다. 운전 기사가 해당 지역에 정차할 수 없는 경우 가능한 한 가까운 다른 장소로 이동합니다.</ul></li></ul></li></ul></li><p>",
+          includes: "가이드\n호텔 또는 미팅 포인트에서 픽업 (선택한 옵션에 따라 다름)\n에어컨이 완비된 편안한 버스로 왕복 교통편 제공\n우선입장 티켓\n햄, 후무스, 치즈가 포함된 도시락(옵션 선택 시)",
+          meeting_image: null,
+          excludes: "",
+          qnas: [],
+          primary_image: {
+            display_name: "1",
+            file_url: "https://cdn.getyourguide.com/img/tour/63613fcaed711.jpeg/145.jpg",
+            file_size: 100
+          },
+          images: [
+            { display_name: "1", file_url: "https://cdn.getyourguide.com/img/tour/63613fcaed711.jpeg/145.jpg", file_size: 100 },
+            { display_name: "2", file_url: "https://cdn.getyourguide.com/img/tour/636f83dbd45e4.jpeg/145.jpg", file_size: 100 },
+            { display_name: "3", file_url: "https://cdn.getyourguide.com/img/tour/5b686bf34ff6e.jpeg/145.jpg", file_size: 100 },
+            { display_name: "4", file_url: "https://cdn.getyourguide.com/img/tour/5b686bf3a279e.jpeg/145.jpg", file_size: 100 },
+            { display_name: "5", file_url: "https://cdn.getyourguide.com/img/tour/5b686bf631d22.jpeg/145.jpg", file_size: 100 }
+          ],
+          itinerary: [
+            {
+              day: 1,
+              title: "크라쿠프 출발",
+              description: "크라쿠프에서 아우슈비츠로 이동합니다.",
+              duration: "1시간 30분",
+              activities: [
+                "호텔 또는 미팅 포인트에서 픽업",
+                "편안한 버스로 이동",
+                "가이드의 사전 설명"
+              ]
+            },
+            {
+              day: 2,
+              title: "아우슈비츠 제1 수용소",
+              description: "아우슈비츠 제1 수용소를 둘러보며 역사적 의미를 되새깁니다.",
+              duration: "2시간",
+              activities: [
+                "노동의 대가 표지판 관람",
+                "관리 건물 방문",
+                "가스실 내부 탐방",
+                "수감자 유물 전시회 관람"
+              ]
+            },
+            {
+              day: 3,
+              title: "비르케나우 수용소",
+              description: "비르케나우 수용소에서 수감자들의 생활을 엿볼 수 있습니다.",
+              duration: "1시간",
+              activities: [
+                "수용소 입구 방문",
+                "나무 막사 관람",
+                "기차 선로 탐방",
+                "추모 공간 방문"
+              ]
+            },
+            {
+              day: 4,
+              title: "크라쿠프 복귀",
+              description: "투어를 마치고 크라쿠프로 돌아갑니다.",
+              duration: "1시간 30분",
+              activities: [
+                "버스로 복귀",
+                "구시가지 또는 유대인 지구 하차",
+                "투어 마무리"
+              ]
+            }
+          ],
+          additional_fields: [
+            {
+              key: "meetingPoint",
+              title: "미팅포인트",
+              content: "<p><p>미팅 포인트는 예약한 옵션에 따라 다를 수 있습니다.</p><br><ul><li><b>선택한 미팅 포인트에서 출발하는 프랑스어 가이드 투어</b> <a href='https://maps.google.com/?q=50.0592719,19.9428865' target='_blank' >(구글맵 바로가기)</a></br><br>위엘로폴 2 (키스&라이드 정류장)</li></ul><p>"
+            },
+            {
+              key: "notSuitable",
+              title: "참가가 어려워요",
+              content: "<li>만 12세 미만의 어린이</li>\n<li>휠체어 사용자</li>"
+            },
+            {
+              key: "bringItem",
+              title: "준비물",
+              content: "<li>여권 또는 신분증</li>"
+            },
+            {
+              key: "notAllowed",
+              title: "허용되지 않아요",
+              content: "<li>수하물 또는 큰 가방</li>"
+            }
+          ]
+        },
+        refund: {
+          code: "REF3006749759",
+          refund_type: "CONDITIONAL",
+          cancel_type: "AUTO",
+          cancel_time: "PROVIDER",
+          cancel_info: "",
+          provider_cancel_days: null,
+          partial_cancel_is: null
+        },
+        memo: "",
+        seo: null,
+        voucher_info: {
+          contact_point: "/",
+          remark: "",
+          delivery_type: "ATTACH",
+          details: []
+        },
+        attrs: null,
+        course_groups: [],
+        priority_provider_title: false,
+        option: {
+          per_min: 0,
+          per_max: 5014,
+          outer_id: null,
+          booking_api_is: true,
+          resell_is: null,
+          options: [
+            {
+              code: "OPT3007126384",
+              title: "미팅 포인트에서 영어 투어",
+              description: "원하는 출발 시간과 미팅 장소를 선택하세요. 오전 6시에서 오후 1시 30분 사이에 출발이 가능합니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796701",
+              sort_order: 0,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892595",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892593",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892594",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007126385",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892596",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892597",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892598",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007134203",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007126390",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007126391",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007773993",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007126392",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892599",
+              title: "호텔 픽업 서비스 가이드 투어",
+              description: "호텔과 원하는 출발 시간을 선택하세요. 오전 6시~오후 1시 30분 사이에 출발 가능합니다. 원하는 시간을 선택하실 수 있지만 보장되지 않습니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^316219",
+              sort_order: 1,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892603",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892601",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892602",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892600",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892604",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892605",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892606",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892618",
+              title: "선택한 미팅 포인트에서 출발하는 독일어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796702",
+              sort_order: 2,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892619",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892620",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892621",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892622",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892623",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892624",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892625",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892626",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892627",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892628",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892629",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892630",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007676722",
+              title: "미팅 포인트에서 이탈리아어 투어",
+              description: "미팅 장소와 원하는 출발 시간을 선택하세요. 당사는 이를 보장할 수는 없지만 최선을 다해 조정합니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다. 오전 6시~오후 1시 30분 사이에 출발이 가능합니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796699",
+              sort_order: 3,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007676723",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007676724",
+                  title: "어린이(나이 5-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892613",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007676725",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007676726",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007676727",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892614",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007676728",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892615",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892616",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892617",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007676731",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892631",
+              title: "선택한 미팅 포인트에서 출발하는 프랑스어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796700",
+              sort_order: 4,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892632",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892633",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892634",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892635",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892636",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892637",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892638",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892639",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892640",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892641",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892642",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892643",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892644",
+              title: "선택한 미팅 포인트에서 출발하는 스페인어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796703",
+              sort_order: 5,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892645",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892646",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892647",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892648",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892649",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892650",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892651",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892652",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892653",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892654",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892655",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892656",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892657",
+              title: "선택한 미팅 포인트에서 출발하는 포르투갈어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796704",
+              sort_order: 6,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892658",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892659",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892660",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892661",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892662",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892663",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892664",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892665",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892666",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892667",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892668",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892669",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892670",
+              title: "선택한 미팅 포인트에서 출발하는 러시아어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796705",
+              sort_order: 7,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892671",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892672",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892673",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892674",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892675",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892676",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892677",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892678",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892679",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892680",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892681",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892682",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892683",
+              title: "선택한 미팅 포인트에서 출발하는 일본어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796706",
+              sort_order: 8,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892684",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892685",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892686",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892687",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892688",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892689",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892690",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892691",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892692",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892693",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892694",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892695",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892696",
+              title: "선택한 미팅 포인트에서 출발하는 중국어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796707",
+              sort_order: 9,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892697",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892698",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892699",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892700",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892701",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892702",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892703",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892704",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892705",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892706",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892707",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892708",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            },
+            {
+              code: "OPT3007892709",
+              title: "선택한 미팅 포인트에서 출발하는 한국어 가이드 투어",
+              description: "원하는 출발 시간과 크라쿠프 시내의 여러 미팅 포인트 중 하나를 선택하세요. 오전 6시부터 오후 1시 30분 사이에 출발하실 수 있습니다. 원하는 시간이 보장되는 것은 아닙니다. 투어 하루 전에 정확한 출발 시간을 알려드립니다.",
+              per_min: 1,
+              per_max: 5014,
+              outer_id: "157299^796708",
+              sort_order: 10,
+              sale_start_date: null,
+              sale_end_date: null,
+              use_start_date: null,
+              use_end_date: null,
+              use_period: null,
+              stock_quantity: null,
+              labels: [
+                {
+                  code: "LAB3007892710",
+                  title: "성인(나이 18-64)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: true,
+                  outer_id: "ADULT;1;INDIVIDUALS",
+                  sort_order: 0,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892711",
+                  title: "어린이(나이 5-12)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "CHILD;3;INDIVIDUALS",
+                  sort_order: 1,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892712",
+                  title: "청소년(나이 13-17)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "YOUTH;2;INDIVIDUALS",
+                  sort_order: 2,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892713",
+                  title: "유아(나이 0-4)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "INFANT;4;INDIVIDUALS",
+                  sort_order: 3,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892714",
+                  title: "학생(나이 18-26)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "STUDENT;6;INDIVIDUALS",
+                  sort_order: 4,
+                  per_min: null,
+                  per_max: 5014
+                },
+                {
+                  code: "LAB3007892715",
+                  title: "시니어(나이 65-99)",
+                  net_price_currency: 0,
+                  sale_price_currency: null,
+                  normal_price_currency: null,
+                  required: false,
+                  outer_id: "SENIOR;5;INDIVIDUALS",
+                  sort_order: 5,
+                  per_min: null,
+                  per_max: 5014
+                }
+              ],
+              timeslots: [
+                {
+                  code: "TSL3007892716",
+                  title: "06:00",
+                  description: null,
+                  outer_id: "06:00",
+                  sort_order: 0
+                },
+                {
+                  code: "TSL3007892717",
+                  title: "07:00",
+                  description: null,
+                  outer_id: "07:00",
+                  sort_order: 1
+                },
+                {
+                  code: "TSL3007892718",
+                  title: "08:00",
+                  description: null,
+                  outer_id: "08:00",
+                  sort_order: 2
+                },
+                {
+                  code: "TSL3007892719",
+                  title: "09:00",
+                  description: null,
+                  outer_id: "09:00",
+                  sort_order: 3
+                },
+                {
+                  code: "TSL3007892720",
+                  title: "10:00",
+                  description: null,
+                  outer_id: "10:00",
+                  sort_order: 4
+                },
+                {
+                  code: "TSL3007892721",
+                  title: "11:00",
+                  description: null,
+                  outer_id: "11:00",
+                  sort_order: 5
+                }
+              ],
+              dynamic_price: false,
+              attrs: null,
+              resell_is: false
+            }
+          ]
+        }
+      }
+    }
+    
+    // 기본 바티칸 투어 데이터 (기존 데이터)
+    return {
     basic: {
       code: null,
       provider_code: "PRV3006455682",
@@ -51,34 +1730,182 @@ export default function TourDetailPage() {
       inventory_scope: "LABEL_TIMESLOT",
       need_reservation: false,
       min_book_days: 0,
+      max_book_days: 365,
+      min_participants: 1,
+      max_participants: 20,
+      duration: 240,
+      duration_unit: "MINUTE",
+      meeting_point: "크라운 투어스 사무실",
+      meeting_point_address: "비아 모체니고 15번지, 로마",
+      meeting_point_latitude: 41.9076077,
+      meeting_point_longitude: 12.4516077,
+      meeting_point_description: "바티칸 박물관에서 약 2분 거리",
+      meeting_point_image: null,
+      cancellation_policy: "CONDITIONAL",
+      cancellation_hours: 24,
+      cancellation_description: "조건부 취소 정책",
+      instant_confirmation: true,
+      mobile_voucher: true,
+      print_voucher: false,
+      languages: ["ENGLISH", "ETC"],
+      included: [
+        "바티칸 박물관 및 시스티나 성당 우선입장 티켓으로 입장 가능",
+        "성 베드로 대성당 우선입장 티켓 스킵 (일부 옵션으로 이용 가능)",
+        "열정적이고 전문적인 라이센스 투어 가이드",
+        "가이드의 설명을 명확하게 들을 수 있는 오디오 시스템",
+        "원활한 시작을위한 미팅 포인트에서의 지원",
+        "미팅 포인트에서 무료 와이파이 제공",
+        "크라운 투어 앱을 통한 독점 디지털 콘텐츠, 지도 및 팁 제공"
+      ],
+      excluded: [
+        "개인 비용",
+        "팁 (선택사항)",
+        "식사"
+      ],
+      bring_items: [
+        "편한 신발",
+        "여권 또는 신분증(사본 허용)"
+      ],
+      not_allowed: [
+        "반바지",
+        "짧은 치마",
+        "민소매 셔츠"
+      ],
+      not_suitable: [
+        "휠체어 사용자"
+      ],
+      additional_info: "바티칸 박물관은 세계에서 가장 유명한 박물관 중 하나입니다. 미켈란젤로의 시스티나 성당과 라파엘로의 방들을 포함한 수많은 예술 작품을 감상할 수 있습니다.",
+      images: [
+        "https://cdn.getyourguide.com/img/tour/a05866aaf07a1c1a7bd66074b53bebd7877ab261eefc1efd7b57e6b6b3c64714.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/675fa45a06605bb1c4dfe1096eee6b986062f520547e174837bde2a6e1d4b417.jpeg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/66157649959eed06e162dfde8795eb1da315dd167ce40687236fcfa00a6d0059.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/54ed558038a28c8f406ff4c2b776cad0cab6fa38216609e74e76ee22c9a28609.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/feea8a72dc654be8bc092856bbfc79f576740dd313089cbb47546633ddda3934.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/401305c94a90ce53a34dab2ef67d492acaa162506066ab78532ddd7245df1af1.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/22d934a42f97cbcd1f56357d541eee3eeaab0217ac4c83ccfd235223597f48e1.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/0a8ba01596768332caa0af4b3cd49b706207eba316530a77a23b13e1ce6cbcd7.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/f6989f6c5df2f64b0e44aa90adff7cf8cc08ce9c9912b9cec1822659e1925dcf.jpg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/62465b897a49cd64.jpeg/145.jpg",
+        "https://cdn.getyourguide.com/img/tour/55117b356dacbc34d60a5c9ccc10b0549b996bdf039ab084ea84a202e7859711.jpeg/145.jpg"
+      ],
+      reviews: [
+        {
+          id: 1,
+          name: "K** M**-s*",
+          rating: 5,
+          date: "2025.06.09",
+          comment: "정말 좋은 경험이었습니다. 가이드가 친절하고 시스티나 성당이 너무 아름다웠어요!",
+          helpful: 31
+        },
+        {
+          id: 2,
+          name: "L** S**-y***",
+          rating: 5,
+          date: "2025.06.16",
+          comment: "바티칸 박물관의 예술 작품들이 정말 인상적이었습니다. 우선입장으로 대기시간 없이 관람할 수 있어서 좋았어요.",
+          helpful: 15
+        },
+        {
+          id: 3,
+          name: "C*** M**-j***",
+          rating: 5,
+          date: "2025.04.10",
+          comment: "성 베드로 대성당까지 포함된 투어로 정말 알찬 하루였습니다. 추천합니다!",
+          helpful: 8
+        },
+        {
+          id: 4,
+          name: "J*** H*-s***",
+          rating: 5,
+          date: "2025.03.18",
+          comment: "소그룹으로 진행되어 더욱 집중해서 관람할 수 있었습니다. 가이드님이 역사적 배경도 잘 설명해주셨어요.",
+          helpful: 12
+        },
+        {
+          id: 5,
+          name: "P*** J*-h***",
+          rating: 4,
+          date: "2025.05.22",
+          comment: "가이드의 설명이 매우 상세했고, 미켈란젤로의 작품을 직접 볼 수 있어서 감동적이었습니다.",
+          helpful: 12
+        }
+      ],
+      price: 0,
+      originalPrice: 0,
+      discountRate: 0,
+      currency: "EUR",
+      available_dates: [
+        "2024-09-01", "2024-09-02", "2024-09-03", "2024-09-04", "2024-09-05",
+        "2024-09-06", "2024-09-07", "2024-09-08", "2024-09-09", "2024-09-10",
+        "2024-09-11", "2024-09-12", "2024-09-13", "2024-09-14", "2024-09-15",
+        "2024-09-16", "2024-09-17", "2024-09-18", "2024-09-19", "2024-09-20",
+        "2024-09-21", "2024-09-22", "2024-09-23", "2024-09-24", "2024-09-25",
+        "2024-09-26", "2024-09-27", "2024-09-28", "2024-09-29", "2024-09-30"
+      ],
+      timeslots: [
+        {
+          id: "morning",
+          name: "오전 투어",
+          start_time: "09:00",
+          end_time: "13:00",
+          price: 0,
+          available: true
+        },
+        {
+          id: "afternoon",
+          name: "오후 투어",
+          start_time: "14:00",
+          end_time: "18:00",
+          price: 0,
+          available: true
+        }
+      ],
       working_date_type: "PROVIDER",
       latitude: "41.903111",
       longitude: "12.49576",
-      currency: "EUR",
       timezone: null,
       sort_order: 100,
       booking_type: "AUTO",
       areas: [
-        { code: "100104", name: "이탈리아" },
-        { code: "5418", name: "로마" }
+        {
+          code: "5418",
+          name: "로마"
+        },
+        {
+          code: "100104",
+          name: "이탈리아"
+        }
       ],
       categories: [
-        { code: "CG04", name: "역사문화명소" },
-        { code: "CG03", name: "박물관/미술관/전시" },
-        { code: "CG70", name: "일일투어" }
+        {
+          code: "CG04",
+          name: "역사문화명소"
+        },
+        {
+          code: "CG70",
+          name: "일일투어"
+        },
+        {
+          code: "CG28",
+          name: "워킹투어"
+        },
+        {
+          code: "CG03",
+          name: "박물관/미술관/전시"
+        },
+        {
+          code: "CG14",
+          name: "요트/유람선"
+        },
+        {
+          code: "CG37",
+          name: "문화체험"
+        },
+        {
+          code: "CG55",
+          name: "보트/페리"
+        }
       ]
-    },
-    summary: {
-      confirm_hour: "IN0H",
-      voucher_type: "M_VOUCHER",
-      customs: [],
-      product_policies: ["INSTANT_CONFIRMATION"]
-    },
-    filter: {
-      min_depart: null,
-      language: ["ENGLISH", "ETC"],
-      duration: "IN4H",
-      depart_hour: []
     },
     detail: {
       notice_title: null,
@@ -86,7 +1913,28 @@ export default function TourDetailPage() {
       highlight_title: "바티칸 박물관과 시스티나 성당을 우선입장하고 성 베드로 대성당 방문을 선택하실 수 있습니다. 원하는 체험을 선택하고 스트레스 없이 바티칸의 걸작을 둘러보세요.",
       highlight_detail: "<ul><li>바티칸 박물관의 주요 명소를 우선 입장할 수 있습니다.</li><li>바티칸의 지도 갤러리, 거대한 타피스트리, 고대 로툰다 조각상을 감상하세요.</li><li>시스티나 성당에서 미켈란젤로의 걸작들을 감상하세요.</li><li>피에타와 베르니니의 발다키니를 포함한 성 베드로 대성당을 탐험하기 위해 업그레이드하세요.</li><li>전문가 안내로 진행되는 스토리텔링을 통해 바티칸의 예술과 역사가 생생하게 살아납니다.</li></ul>",
       event: "",
-      description: "<p>바티칸 시티 가이드 워킹 투어를 통해 로마에서 가장 인기 있는 명소를 둘러보세요. 가이드와 함께 바티칸 박물관, 시스티나 성당, 성 베드로 대성당을 방문하고 화려한 인테리어와 유명한 예술품을 감상하세요.</p><p>바티칸 박물관 입구 근처에서 가이드를 만나 박물관 내에서 가장 흥미로운 갤러리를 둘러보세요. 원형 홀, 태피스트리 갤러리, 지도 갤러리 등을 둘러보세요. 각 방의 화려한 천장을 감상하고 벽을 장식한 고대 조각상, 프레스코화, 태피스트리를 감상하세요.</p><p>그런 다음 시스티나 성당에 들어가 천장과 벽 전체를 덮고 있는 정교한 프레스코화를 감상하세요. 미켈란젤로가 1508년에서 1512년 사이에 그린 시스티나 성당은 르네상스 예술의 초석이 되는 작품입니다.</p><p>아담의 창조부터 최후의 심판까지 미켈란젤로는 로마의 교황들을 만족시키기 위해 밤낮으로, 심지어 예배당에서 잠을 자면서까지 시스티나 성당을 위해 최고의 세월을 바쳤습니다. 예술가는 또한 작품에 숨겨진 의미를 통해 자신의 좌절감을 표현했는데, 이후 그 의미가 밝혀지고 해독되었습니다. 가이드가 들려주는 미켈란젤로의 사적인 농담을 들어보세요.</p><p>마지막으로 성 베드로 대성당으로 이동하여 가이드가 안내하는 도보 여행의 마지막을 즐겨보세요. 이 성당은 르네상스 건축의 가장 유명한 작품 중 하나이며 세계에서 가장 큰 교회라는 타이틀을 가지고 있습니다.</p><p>가이드와 함께 이 웅장한 건축물의 내부를 둘러보고 대성당을 가득 채운 르네상스와 바로크 예술의 걸작들을 감상하세요. 미켈란젤로의 유명한 피에타와 베르니니의 정교한 성 베드로의 발다친을 감상하세요.</p><p>성당 밖에서 투어가 끝납니다. 이곳에서 성 베드로 광장을 자유롭게 거닐거나 인근의 카스텔 산탄젤로를 혼자서 방문해 보세요.</p>",
+      description: "<p>바티칸은 매우 넓고, 솔직히 말해 혼자 탐험하기에는 압도적일 수 있습니다. 바로 이 때문에 저희 전문 가이드가 함께합니다. 주요 명소를 직접 안내해 드려 놓치는 것 없이 완벽한 경험을 선사합니다.<br><br>놀라운 바티칸 박물관에서 독점적인 우선입장 혜택을 누리며 세기의 예술, 역사, 숨막히는 천장 예술이 가득한 보물 창고를 탐험하세요. 함께 걸어갈 곳은:<br><br>벽걸이 갤러리: 거대한 복잡하게 엮인 걸작들이 놀라운 이야기를 전합니다.<br><br>다음으로 숨막히는 시스티나 성당으로 들어갑니다. 사진은 봤을지 몰라도, 미켈란젤로의 아이콘적인 프레스코화 아래 서 있는 것은 비교할 수 없습니다. \"아담의 창조\"와 \"최후의 심판\"을 올려다보며, 미켈란젤로가 모든 놀라운 세부 사항을 열심히 그렸을 모습을 상상해 보세요.<br><br>전체 체험을 선택하신 분들은 미켈란젤로의 감동적인 피에타와 베르니니의 화려한 청동 발다키노가 있는 위풍당당한 성 베드로 대성당으로 계속 진행하세요.<br><br>여행은 대성당 밖에서 마무리되며, 성 베드로 광장을 탐험하거나 근처의 카스텔 산탄젤로를 여유롭게 탐방할 수 있는 충분한 시간이 주어집니다.<p>",
+      highlights: [
+        "바티칸 박물관의 주요 명소를 우선 입장할 수 있습니다.",
+        "바티칸의 지도 갤러리, 거대한 타피스트리, 고대 로툰다 조각상을 감상하세요.",
+        "시스티나 성당에서 미켈란젤로의 걸작들을 감상하세요.",
+        "피에타와 베르니니의 발다키니를 포함한 성 베드로 대성당을 탐험하기 위해 업그레이드하세요.",
+        "전문가 안내로 진행되는 스토리텔링을 통해 바티칸의 예술과 역사가 생생하게 살아납니다."
+      ],
+      itinerary: [
+        {
+          day: 1,
+          title: "바티칸 박물관 투어",
+          description: "바티칸 박물관의 주요 전시실들을 순회하며 수많은 예술 작품을 감상합니다.",
+          duration: "4시간",
+          activities: [
+            "09:00 - 미팅 포인트에서 만남",
+            "09:30 - 바티칸 박물관 우선 입장",
+            "11:00 - 시스티나 성당 관람",
+            "12:30 - 투어 종료"
+          ]
+        }
+      ],
       preparations: "",
       how_to_use: "",
       warnings: "",
@@ -95,8 +1943,8 @@ export default function TourDetailPage() {
       meeting_latitude: "",
       meeting_longitude: "",
       meeting_info: "",
-      pickup_drop: "",
-      includes: "바티칸 박물관 및 시스티나 성당 우선입장 티켓으로 입장 가능\n성 베드로 대성당 우선입장 티켓 스킵 (일부 옵션으로 이용 가능)\n열정적이고 전문적인 라이센스 투어 가이드\n가이드의 설명을 명확하게 들을 수 있는 오디오 시스템",
+      pickup_drop: null,
+      includes: "바티칸 박물관 및 시스티나 성당 우선입장 티켓으로 입장 가능\n성 베드로 대성당 우선입장 티켓 스킵 (일부 옵션으로 이용 가능)\n열정적이고 전문적인 라이센스 투어 가이드\n가이드의 설명을 명확하게 들을 수 있는 오디오 시스템\n원활한 시작을위한 미팅 포인트에서의 지원\n미팅 포인트에서 무료 와이파이 제공\n크라운 투어 앱을 통한 독점 디지털 콘텐츠, 지도 및 팁 제공",
       meeting_image: null,
       excludes: "",
       qnas: [],
@@ -105,14 +1953,14 @@ export default function TourDetailPage() {
         file_url: "https://cdn.getyourguide.com/img/tour/a05866aaf07a1c1a7bd66074b53bebd7877ab261eefc1efd7b57e6b6b3c64714.jpg/145.jpg",
         file_size: 100
       },
-    images: [
+      images: [
         {
           display_name: "1",
           file_url: "https://cdn.getyourguide.com/img/tour/a05866aaf07a1c1a7bd66074b53bebd7877ab261eefc1efd7b57e6b6b3c64714.jpg/145.jpg",
           file_size: 100
         },
         {
-          display_name: "2", 
+          display_name: "2",
           file_url: "https://cdn.getyourguide.com/img/tour/675fa45a06605bb1c4dfe1096eee6b986062f520547e174837bde2a6e1d4b417.jpeg/145.jpg",
           file_size: 100
         },
@@ -130,13 +1978,43 @@ export default function TourDetailPage() {
           display_name: "5",
           file_url: "https://cdn.getyourguide.com/img/tour/feea8a72dc654be8bc092856bbfc79f576740dd313089cbb47546633ddda3934.jpg/145.jpg",
           file_size: 100
+        },
+        {
+          display_name: "6",
+          file_url: "https://cdn.getyourguide.com/img/tour/401305c94a90ce53a34dab2ef67d492acaa162506066ab78532ddd7245df1af1.jpg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "7",
+          file_url: "https://cdn.getyourguide.com/img/tour/22d934a42f97cbcd1f56357d541eee3eeaab0217ac4c83ccfd235223597f48e1.jpg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "8",
+          file_url: "https://cdn.getyourguide.com/img/tour/0a8ba01596768332caa0af4b3cd49b706207eba316530a77a23b13e1ce6cbcd7.jpg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "9",
+          file_url: "https://cdn.getyourguide.com/img/tour/f6989f6c5df2f64b0e44aa90adff7cf8cc08ce9c9912b9cec1822659e1925dcf.jpg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "10",
+          file_url: "https://cdn.getyourguide.com/img/tour/62465b897a49cd64.jpeg/145.jpg",
+          file_size: 100
+        },
+        {
+          display_name: "11",
+          file_url: "https://cdn.getyourguide.com/img/tour/55117b356dacbc34d60a5c9ccc10b0549b996bdf039ab084ea84a202e7859711.jpeg/145.jpg",
+          file_size: 100
         }
       ],
       additional_fields: [
         {
           key: "meetingPoint",
           title: "미팅포인트",
-          content: "<p><p>미팅 포인트는 예약한 옵션에 따라 다를 수 있습니다.</p><br><ul><li><b>영어 가이드 투어 2 곳 (바실리카 없음)</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>미팅 포인트의 정확한 주소는 로마의 Via Mocenigo, 15입니다.<br><br>사무실은 바티칸 박물관 입구에서 북서쪽으로 약 200미터 떨어진 곳에 있습니다. 계단을 내려가실 때 첫 번째 좌회전하여 비아 세바스티아노 베니에로를 따라가신 다음 길 끝까지 계속 직진하세요. 우회전하면 비아 모세니고에 도착합니다. 사무실은 쿠카라차 레스토랑 앞에 있습니다.</li></ul><p>"
+          content: "<p><p>미팅 포인트는 예약한 옵션에 따라 다를 수 있습니다.</p><br><ul><li><b>영어 가이드 투어 2 곳 (바실리카 없음)</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li><br><li><b>3개 사이트 모두의 영어 가이드 투어</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li><br><li><b>프랑스어 가이드 투어 2 곳 (바실리카 없음)</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li><br><li><b>스페인어 가이드 투어 2 곳 (바실리카 없음)</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li><br><li><b>세 곳 모두 스페인어 가이드 투어</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li><br><li><b>3곳 모두 프랑스어 가이드 투어</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li><br><li><b>독일 가이드 투어 2 곳 (바실리카 없음)</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li><br><li><b>세 곳 모두의 독일어 가이드 투어</b> <a href='https://maps.google.com/?q=41.9076077,12.4516077' target='_blank' >(구글맵 바로가기)</a></br><br>크라운 투어스 사무실은 바티칸 박물관에서 약 2분 거리에 위치한 비아 모체니고 15번지에 있습니다. 바티칸 박물관의 큰 흰색 대리석 출구 맞은편에 있는 계단을 내려가세요. 계단을 내려가면 첫 번째 왼쪽으로 비아 세바스티아노 베니에로로 들어가세요. 길을 따라 직진하여 길 끝까지 가신 후 오른쪽으로 돌면 비아 모체니고에 도착합니다. 사무실 밖에는 보라색 '크라운 투어스' 깃발이 있습니다.</li></ul><p>"
         },
         {
           key: "notSuitable",
@@ -146,14 +2024,26 @@ export default function TourDetailPage() {
         {
           key: "bringItem",
           title: "준비물",
-          content: "<li>여권 또는 신분증</li>\n<li>편한 신발</li>"
+          content: "<li>편한 신발</li>\n<li>여권 또는 신분증(사본 허용)</li>"
         },
         {
           key: "notAllowed",
           title: "허용되지 않아요",
-          content: "<li>반바지</li>\n<li>유모차</li>\n<li>짧은 치마</li>\n<li>민소매 셔츠</li>"
+          content: "<li>반바지</li>\n<li>짧은 치마</li>\n<li>민소매 셔츠</li>"
         }
       ]
+    },
+    summary: {
+      confirm_hour: "IN0H",
+      voucher_type: "M_VOUCHER",
+      customs: [],
+      product_policies: ["INSTANT_CONFIRMATION"]
+    },
+    filter: {
+      min_depart: null,
+      language: ["ENGLISH", "ETC"],
+      duration: "IN4H",
+      depart_hour: []
     },
     refund: {
       code: "REF3006749759",
@@ -176,18 +2066,18 @@ export default function TourDetailPage() {
     course_groups: [],
     priority_provider_title: false,
     option: {
-      per_min: 1,
+      per_min: 0,
       per_max: 5230,
       outer_id: null,
       booking_api_is: true,
       resell_is: null,
       options: [
         {
-          code: null,
-          title: "영어 가이드 투어 2 곳 (바실리카 없음)",
-          description: "영어 가이드 투어를 통해 바티칸 박물관과 시스티나 성당을 우선입장할 수 있는 혜택을 누리며 하루를 알차게 보내세요.",
+          code: "OPT3007903808",
+          title: "바티칸 박물관 & 시스티나 성당 영어 투어 (바실리카 없음)",
+          description: "활기찬 그룹과 영어를 구사하는 전문 가이드와 함께 바티칸을 탐험하세요. 우선입장 혜택을 누리며 바티칸 박물관, 시스티나 성당, 라파엘 방을 재미있고 사교적인 분위기에서 둘러보세요.",
           per_min: 1,
-          per_max: 25,
+          per_max: 5230,
           outer_id: "429439^1076178",
           sort_order: 0,
           sale_start_date: null,
@@ -198,31 +2088,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3007903809",
               title: "성인(나이 18-99)",
-              net_price_currency: 45,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007903810",
               title: "어린이(나이 7-17)",
-              net_price_currency: 35,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007903811",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -231,25 +2121,91 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "09:00", description: null, outer_id: "09:00", sort_order: 0 },
-            { code: null, title: "10:30", description: null, outer_id: "10:30", sort_order: 1 },
-            { code: null, title: "13:30", description: null, outer_id: "13:30", sort_order: 2 },
-            { code: null, title: "15:00", description: null, outer_id: "15:00", sort_order: 3 }
+            {
+              code: "TSL3007903812",
+              title: "08:30",
+              description: null,
+              outer_id: "08:30",
+              sort_order: 0
+            },
+            {
+              code: "TSL3008517138",
+              title: "09:00",
+              description: null,
+              outer_id: "09:00",
+              sort_order: 1
+            },
+            {
+              code: "TSL3007903813",
+              title: "10:00",
+              description: null,
+              outer_id: "10:00",
+              sort_order: 2
+            },
+            {
+              code: "TSL3007903814",
+              title: "11:00",
+              description: null,
+              outer_id: "11:00",
+              sort_order: 3
+            },
+            {
+              code: "TSL3008876912",
+              title: "12:30",
+              description: null,
+              outer_id: "12:30",
+              sort_order: 4
+            },
+            {
+              code: "TSL3007903815",
+              title: "13:30",
+              description: null,
+              outer_id: "13:30",
+              sort_order: 5
+            },
+            {
+              code: "TSL3008517141",
+              title: "14:00",
+              description: null,
+              outer_id: "14:00",
+              sort_order: 6
+            },
+            {
+              code: "TSL3007903816",
+              title: "14:30",
+              description: null,
+              outer_id: "14:30",
+              sort_order: 7
+            },
+            {
+              code: "TSL3007903817",
+              title: "15:30",
+              description: null,
+              outer_id: "15:30",
+              sort_order: 8
+            },
+            {
+              code: "TSL3007903818",
+              title: "16:00",
+              description: null,
+              outer_id: "16:00",
+              sort_order: 9
+            }
           ],
           dynamic_price: false,
           attrs: null,
           resell_is: false
         },
         {
-          code: null,
-          title: "3개 사이트 모두의 영어 가이드 투어",
-          description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당에 대한 우선입장권과 영어를 구사하는 전문 가이드가 있어 대기 시간을 줄이고 바로 관람에 들어가 보세요.",
+          code: "OPT3006933515",
+          title: "성 베드로 대성당 특별 액세스가 포함된 영어 투어",
+          description: "",
           per_min: 1,
-          per_max: 20,
+          per_max: 5230,
           outer_id: "429439^773702",
           sort_order: 1,
           sale_start_date: null,
@@ -260,31 +2216,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3006933516",
               title: "성인(나이 18-99)",
-              net_price_currency: 65,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007518793",
               title: "어린이(나이 7-17)",
-              net_price_currency: 50,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007518794",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -293,26 +2249,92 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "08:30", description: null, outer_id: "08:30", sort_order: 0 },
-            { code: null, title: "10:00", description: null, outer_id: "10:00", sort_order: 1 },
-            { code: null, title: "13:00", description: null, outer_id: "13:00", sort_order: 2 },
-            { code: null, title: "14:30", description: null, outer_id: "14:30", sort_order: 3 }
+            {
+              code: "TSL3007903819",
+              title: "08:30",
+              description: null,
+              outer_id: "08:30",
+              sort_order: 0
+            },
+            {
+              code: "TSL3008517143",
+              title: "09:00",
+              description: null,
+              outer_id: "09:00",
+              sort_order: 1
+            },
+            {
+              code: "TSL3007756354",
+              title: "10:00",
+              description: null,
+              outer_id: "10:00",
+              sort_order: 2
+            },
+            {
+              code: "TSL3007493536",
+              title: "11:00",
+              description: null,
+              outer_id: "11:00",
+              sort_order: 3
+            },
+            {
+              code: "TSL3008876913",
+              title: "12:30",
+              description: null,
+              outer_id: "12:30",
+              sort_order: 4
+            },
+            {
+              code: "TSL3006933531",
+              title: "13:30",
+              description: null,
+              outer_id: "13:30",
+              sort_order: 5
+            },
+            {
+              code: "TSL3008517146",
+              title: "14:00",
+              description: null,
+              outer_id: "14:00",
+              sort_order: 6
+            },
+            {
+              code: "TSL3007903820",
+              title: "14:30",
+              description: null,
+              outer_id: "14:30",
+              sort_order: 7
+            },
+            {
+              code: "TSL3007066331",
+              title: "15:30",
+              description: null,
+              outer_id: "15:30",
+              sort_order: 8
+            },
+            {
+              code: "TSL3007066332",
+              title: "16:00",
+              description: null,
+              outer_id: "16:00",
+              sort_order: 9
+            }
           ],
           dynamic_price: false,
           attrs: null,
           resell_is: false
         },
         {
-          code: null,
-          title: "프랑스어 가이드 투어 2 곳 (바실리카 없음)",
-          description: "프랑스어 가이드 투어로 바티칸 박물관과 시스티나 성당을 우선입장하여 하루를 알차게 보내세요.",
+          code: "OPT3006933535",
+          title: "성 베드로 대성당 특별 액세스가 포함된 스페인어 투어",
+          description: "",
           per_min: 1,
-          per_max: 25,
-          outer_id: "429439^1076320",
+          per_max: 5230,
+          outer_id: "429439^781127",
           sort_order: 2,
           sale_start_date: null,
           sale_end_date: null,
@@ -322,31 +2344,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3006933536",
               title: "성인(나이 18-99)",
-              net_price_currency: 45,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3006933537",
               title: "어린이(나이 7-17)",
-              net_price_currency: 35,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3006933538",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -355,24 +2377,36 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "09:00", description: null, outer_id: "09:00", sort_order: 0 },
-            { code: null, title: "13:30", description: null, outer_id: "13:30", sort_order: 1 }
+            {
+              code: "TSL3006933543",
+              title: "11:00",
+              description: null,
+              outer_id: "11:00",
+              sort_order: 0
+            },
+            {
+              code: "TSL3007483326",
+              title: "14:30",
+              description: null,
+              outer_id: "14:30",
+              sort_order: 1
+            }
           ],
           dynamic_price: false,
           attrs: null,
           resell_is: false
         },
         {
-          code: null,
-          title: "3곳 모두 프랑스어 가이드 투어",
-          description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당 우선입장권과 프랑스어 전문 가이드와 함께라면 대기 시간을 줄이고 바로 관람할 수 있어요.",
+          code: "OPT3007903821",
+          title: "바티칸 박물관 & 시스티나 성당 프랑스어 투어(바티칸 대성당 없음)",
+          description: "활기찬 그룹과 프랑스어 전문 가이드와 함께 바티칸을 탐험하세요. 우선입장 혜택을 누리며 바티칸 박물관, 시스티나 성당, 라파엘 방을 재미있고 사교적인 분위기에서 둘러보세요.",
           per_min: 1,
-          per_max: 20,
-          outer_id: "429439^780825",
+          per_max: 5230,
+          outer_id: "429439^1076320",
           sort_order: 3,
           sale_start_date: null,
           sale_end_date: null,
@@ -382,31 +2416,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3007903822",
               title: "성인(나이 18-99)",
-              net_price_currency: 65,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007903823",
               title: "어린이(나이 7-17)",
-              net_price_currency: 50,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007903824",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -415,24 +2449,43 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "09:00", description: null, outer_id: "09:00", sort_order: 0 },
-            { code: null, title: "13:30", description: null, outer_id: "13:30", sort_order: 1 }
+            {
+              code: "TSL3007903825",
+              title: "09:00",
+              description: null,
+              outer_id: "09:00",
+              sort_order: 0
+            },
+            {
+              code: "TSL3007903827",
+              title: "13:30",
+              description: null,
+              outer_id: "13:30",
+              sort_order: 1
+            },
+            {
+              code: "TSL3009046461",
+              title: "13:00",
+              description: null,
+              outer_id: "13:00",
+              sort_order: 2
+            }
           ],
           dynamic_price: false,
           attrs: null,
           resell_is: false
         },
         {
-          code: null,
-          title: "독일 가이드 투어 2 곳 (바실리카 없음)",
-          description: "독일어 가이드 투어로 바티칸 박물관과 시스티나 성당을 우선입장하여 하루를 알차게 보내세요.",
+          code: "OPT3006933557",
+          title: "성 베드로 대성당 특별 액세스가 포함된 프랑스어 투어",
+          description: "",
           per_min: 1,
-          per_max: 25,
-          outer_id: "429439^1076293",
+          per_max: 5230,
+          outer_id: "429439^780825",
           sort_order: 4,
           sale_start_date: null,
           sale_end_date: null,
@@ -442,31 +2495,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3006933558",
               title: "성인(나이 18-99)",
-              net_price_currency: 45,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007505310",
               title: "어린이(나이 7-17)",
-              net_price_currency: 35,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007505311",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -475,22 +2528,42 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "13:00", description: null, outer_id: "13:00", sort_order: 0 }
+            {
+              code: "TSL3007662911",
+              title: "09:00",
+              description: null,
+              outer_id: "09:00",
+              sort_order: 0
+            },
+            {
+              code: "TSL3007505312",
+              title: "13:30",
+              description: null,
+              outer_id: "13:30",
+              sort_order: 1
+            },
+            {
+              code: "TSL3009046462",
+              title: "13:00",
+              description: null,
+              outer_id: "13:00",
+              sort_order: 2
+            }
           ],
           dynamic_price: false,
           attrs: null,
           resell_is: false
         },
         {
-          code: null,
-          title: "스페인어 가이드 투어 2 곳 (바실리카 없음)",
-          description: "스페인어 가이드 투어로 바티칸 박물관과 시스티나 성당을 우선입장하여 하루를 알차게 보내세요.",
+          code: "OPT3007903828",
+          title: "바티칸 박물관 & 시스티나 성당 스페인어 투어(대성당 없음)",
+          description: "활기찬 그룹과 스페인어를 구사하는 전문 가이드와 함께 바티칸을 탐험하세요. 우선입장 혜택을 누리며 바티칸 박물관, 시스티나 성당, 라파엘 방을 재미있고 사교적인 분위기에서 둘러보세요.",
           per_min: 1,
-          per_max: 25,
+          per_max: 5230,
           outer_id: "429439^1076287",
           sort_order: 5,
           sale_start_date: null,
@@ -501,31 +2574,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3007903829",
               title: "성인(나이 18-99)",
-              net_price_currency: 45,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007903830",
               title: "어린이(나이 7-17)",
-              net_price_currency: 35,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3007903831",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -534,25 +2607,36 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 25
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "11:00", description: null, outer_id: "11:00", sort_order: 0 },
-            { code: null, title: "14:00", description: null, outer_id: "14:00", sort_order: 1 },
-            { code: null, title: "14:30", description: null, outer_id: "14:30", sort_order: 2 }
+            {
+              code: "TSL3007903832",
+              title: "11:00",
+              description: null,
+              outer_id: "11:00",
+              sort_order: 0
+            },
+            {
+              code: "TSL3007903834",
+              title: "14:30",
+              description: null,
+              outer_id: "14:30",
+              sort_order: 1
+            }
           ],
           dynamic_price: false,
           attrs: null,
           resell_is: false
         },
         {
-          code: null,
-          title: "세 곳 모두 스페인어 가이드 투어",
-          description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당에 대한 우선입장권과 스페인어 전문 가이드와 함께라면 대기 시간을 줄이고 바로 관람할 수 있어요.",
+          code: "OPT3009046463",
+          title: "독일 가이드 투어 2 곳 (바실리카 없음)",
+          description: "독일어 가이드 투어로 바티칸 박물관과 시스티나 성당을 우선입장하여 하루를 알차게 보내세요.",
           per_min: 1,
-          per_max: 20,
-          outer_id: "429439^781127",
+          per_max: 5230,
+          outer_id: "429439^1076293",
           sort_order: 6,
           sale_start_date: null,
           sale_end_date: null,
@@ -562,31 +2646,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3009046464",
               title: "성인(나이 18-99)",
-              net_price_currency: 65,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3009046465",
               title: "어린이(나이 7-17)",
-              net_price_currency: 50,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3009046466",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -595,24 +2679,28 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "11:00", description: null, outer_id: "11:00", sort_order: 0 },
-            { code: null, title: "14:00", description: null, outer_id: "14:00", sort_order: 1 },
-            { code: null, title: "14:30", description: null, outer_id: "14:30", sort_order: 2 }
+            {
+              code: "TSL3009046467",
+              title: "13:00",
+              description: null,
+              outer_id: "13:00",
+              sort_order: 0
+            }
           ],
           dynamic_price: false,
           attrs: null,
           resell_is: false
         },
         {
-          code: null,
+          code: "OPT3009046468",
           title: "세 곳 모두의 독일어 가이드 투어",
           description: "바티칸 시국이 제공하는 모든 것을 탐험해 보세요. 바티칸 박물관, 시스티나 성당, 성 베드로 대성당에 대한 우선입장권과 독일어 전문 가이드가 있어 대기 시간을 줄이고 바로 관람할 수 있습니다.",
           per_min: 1,
-          per_max: 20,
+          per_max: 5230,
           outer_id: "429439^781124",
           sort_order: 7,
           sale_start_date: null,
@@ -623,31 +2711,31 @@ export default function TourDetailPage() {
           stock_quantity: null,
           labels: [
             {
-              code: null,
+              code: "LAB3009046469",
               title: "성인(나이 18-99)",
-              net_price_currency: 65,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "ADULT;1;INDIVIDUALS",
               sort_order: 0,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3009046470",
               title: "어린이(나이 7-17)",
-              net_price_currency: 50,
+              net_price_currency: 0,
               sale_price_currency: null,
               normal_price_currency: null,
               required: false,
               outer_id: "CHILD;3;INDIVIDUALS",
               sort_order: 1,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             },
             {
-              code: null,
+              code: "LAB3009046471",
               title: "유아(나이 0-6)",
               net_price_currency: 0,
               sale_price_currency: null,
@@ -656,11 +2744,17 @@ export default function TourDetailPage() {
               outer_id: "INFANT;4;INDIVIDUALS",
               sort_order: 2,
               per_min: null,
-              per_max: 20
+              per_max: 5230
             }
           ],
           timeslots: [
-            { code: null, title: "13:00", description: null, outer_id: "13:00", sort_order: 0 }
+            {
+              code: "TSL3009046472",
+              title: "13:00",
+              description: null,
+              outer_id: "13:00",
+              sort_order: 0
+            }
           ],
           dynamic_price: false,
           attrs: null,
@@ -669,650 +2763,9 @@ export default function TourDetailPage() {
       ]
     }
   }
+}
 
-  // 추가 상품: 라스베가스 앤텔로프/호스슈 벤드 (사용자 제공 데이터)
-  const tourVegas: TourApiResponse = {
-    basic: {
-      code: null,
-      provider_code: "PRV3006455682",
-      name: "라스베가스: 앤털로프 캐년 & 호스슈 벤드(점심, 와이파이 포함)",
-      sub_name: "라스베가스: 앤털로프 캐년 & 호스슈 벤드(점",
-      calendar_type: "DATE",
-      price_scope: "DATE",
-      timeslot_is: true,
-      inventory_scope: "OPTION_TIMESLOT",
-      need_reservation: false,
-      min_book_days: 0,
-      working_date_type: "PROVIDER",
-      latitude: "36.171909",
-      longitude: "-115.139969",
-      currency: "EUR",
-      timezone: null,
-      sort_order: 100,
-      booking_type: "AUTO",
-      areas: [
-        { code: "100222", name: "미국" },
-        { code: "11578", name: "페이지 (AZ)" },
-        { code: "10916", name: "라스베가스 (NV)" },
-      ],
-      categories: [
-        { code: "CG28", name: "워킹투어" },
-        { code: "CG14", name: "요트/유람선" },
-        { code: "CG23", name: "등산/트래킹" },
-        { code: "CG19", name: "익스트림 액티비티" },
-        { code: "CG70", name: "일일투어" },
-        { code: "CG15", name: "해양 액티비티" },
-        { code: "CG39", name: "나이트라이프" },
-        { code: "CG55", name: "보트/페리" },
-        { code: "CG10", name: "공원/자연" },
-        { code: "CG29", name: "버스투어" },
-        { code: "CG05", name: "전망대/케이블카/관람차" },
-      ],
-    },
-    summary: {
-      confirm_hour: "IN0H",
-      voucher_type: "M_VOUCHER",
-      customs: [],
-      product_policies: ["INSTANT_CONFIRMATION"],
-    },
-    filter: {
-      min_depart: null,
-      language: ["ENGLISH"],
-      duration: "OV6H",
-      depart_hour: [],
-    },
-    detail: {
-      notice_title: null,
-      notice_detail: null,
-      highlight_title:
-        "라스베이거스에서 출발하는 당일 여행으로 그림 같은 앤털로프 캐년과 호스슈 벤드를 방문하세요. 입장료가 포함된 에어컨이 완비된 고급 코치 버스를 타고 편안하게 이동하세요.",
-      highlight_detail:
-        "<ul><li>나바호 가이드와 함께 앤털로프 캐년에서 경치 좋은 워킹 투어를 즐겨보세요.</li><li>호스슈 벤드 오버룩의 1000피트 높이 전망대 보기</li><li>라스베이거스 스트립에서 럭셔리 코치로 여행하기</li></ul>",
-      event: "",
-      description:
-        "<p>입장권이 포함된 라스베이거스 당일 여행으로 세계적으로 유명한 앤털로프 캐년과 호스슈 벤드를 탐험하세요. 애리조나의 풍경을 하이킹하며 아름다운 명소에서 사진을 찍으세요.<br><br>라스베이거스에서 가이드를 만나 에어컨이 완비된 럭셔리 코치 버스에 탑승하여 체험을 시작하세요. 페이지로 이동하는 동안 휴식을 취하고 에스칼란테/그랜드 스테어케이스 국립 기념물에서 버진 리버 협곡과 암석의 경치를 감상하세요.<br><br>유명한 조각된 사암 벽 사이를 걸으며 사진으로만 보던 만화경 같은 빛의 색과 패턴을 감상하세요.<br><br>나바호 가이드의 현지 역사와 문화에 대한 이야기를 들으며 나만의 사진을 찍어보세요. 도중에 배가 고프거나 목이 마르면 포함된 그래놀라 바와 물을 즐기세요.<br><br>다음으로 콜로라도 강이 말굽 모양의 유명한 굽이를 새겨 놓은 호스슈 벤드 오버룩으로 계속 이동하세요. 1.5마일(2.4킬로미터)의 짧은 왕복 하이킹을 통해 전망대에 도착한 후 글렌 캐년을 흐르는 강을 감상하세요.<br><br>다시 버스로 돌아와 원래 출발 지점에서 하차하여 라스베이거스로 돌아오세요.<p>",
-      preparations: "",
-      how_to_use: "",
-      warnings: "",
-      additional_info:
-        "<ul><li>기본 픽업 서비스는 트레저 아일랜드 호텔이며 점심 식사는 터키 샌드위치입니다<br>기본 옵션을 다른 옵션으로 변경하려면 예약 후 당사에 문의하시기 바랍니다.</li><li>모든 게스트는 도움 없이 걸을 수 있어야 합니다.</li><li>호스슈 벤드 오버룩에 도착하려면 약간의 경사가 있는 모래와 평평한 바위 위를 왕복 1.5마일 또는 2.4킬로미터 걸어가야 합니다.</li><li>앤털로프 캐년은 허용하지 않습니다: 하이킹 스틱, 지팡이, 보행기 또는 휠체어.</li><li>악천후 등 현지 파트너가 통제할 수 없는 요인으로 인해 목적지가 폐쇄될 수 있습니다.</li><li>전문 카메라, 비디오 녹화 및 가방(배낭, 쌍안경 케이스, 카메라 가방, 착색 비닐봉지, 힙색, 지갑, 대형 토트백, 메쉬백)은 앤털로프 캐년 가이드 투어 중에는 반입이 허용되지 않지만 호스슈 벤드 오버룩에서는 반입이 허용됩니다.</li><li>투어는 최소 인원수에 제한이 있으며, 인원이 충족되지 않을 경우 일정을 변경하거나 다른 체험으로 변경하거나 전액 환불해 드립니다.</li></ul>",
-      meeting_address: "",
-      meeting_latitude: "",
-      meeting_longitude: "",
-      meeting_info: "",
-      pickup_drop: null,
-      includes:
-        "앤털로프 캐년 입장\n호스슈 벤드 입장료\n나바호족 국가 허가 수수료\nWiFi가 포함 된 왕복 고급 버스 교통편\n도시락\n그래놀라 바\n생수",
-      meeting_image: null,
-      excludes: "팁",
-      qnas: [],
-      primary_image: {
-        display_name: "1",
-        file_url: "https://cdn.getyourguide.com/img/tour/60ddfbb556044.jpeg/145.jpg",
-        file_size: 100,
-      },
-      images: [
-        { display_name: "1", file_url: "https://cdn.getyourguide.com/img/tour/60ddfbb556044.jpeg/145.jpg", file_size: 100 },
-        { display_name: "2", file_url: "https://cdn.getyourguide.com/img/tour/5dd10c5949747c34.jpeg/145.jpg", file_size: 100 },
-        { display_name: "3", file_url: "https://cdn.getyourguide.com/img/tour/89f7f123dee53df10b6f468262d9f3e0bbc7aacd618e7e8f775b25511c1a6267.jpg/145.jpg", file_size: 100 },
-        { display_name: "4", file_url: "https://cdn.getyourguide.com/img/tour/433d4798fd24b72a.jpeg/145.jpg", file_size: 100 },
-        { display_name: "5", file_url: "https://cdn.getyourguide.com/img/tour/c458d3369677b7ee.jpeg/145.jpg", file_size: 100 },
-        { display_name: "6", file_url: "https://cdn.getyourguide.com/img/tour/1862ac0a98a493d5.jpeg/145.jpg", file_size: 100 },
-        { display_name: "7", file_url: "https://cdn.getyourguide.com/img/tour/5a84c6181d1cc641.jpeg/145.jpg", file_size: 100 },
-        { display_name: "8", file_url: "https://cdn.getyourguide.com/img/tour/b486ec60b41cf25d.jpeg/145.jpg", file_size: 100 },
-        { display_name: "9", file_url: "https://cdn.getyourguide.com/img/tour/60d04113a027f.jpeg/145.jpg", file_size: 100 },
-        { display_name: "10", file_url: "https://cdn.getyourguide.com/img/tour/af142a55960570aa.jpeg/145.jpg", file_size: 100 },
-        { display_name: "11", file_url: "https://cdn.getyourguide.com/img/tour/60d0411744dbe.jpeg/145.jpg", file_size: 100 },
-        { display_name: "12", file_url: "https://cdn.getyourguide.com/img/tour/444515b63a210df9.jpeg/145.jpg", file_size: 100 },
-        { display_name: "13", file_url: "https://cdn.getyourguide.com/img/tour/84ac2880789063a8.jpeg/145.jpg", file_size: 100 },
-        { display_name: "14", file_url: "https://cdn.getyourguide.com/img/tour/3f63af11139066c471a9b728bd1d1b67b0d75d6de27e3c2f051c4135956af361.jpg/145.jpg", file_size: 100 },
-        { display_name: "15", file_url: "https://cdn.getyourguide.com/img/tour/c8387df94a738a23.jpeg/145.jpg", file_size: 100 },
-        { display_name: "16", file_url: "https://cdn.getyourguide.com/img/tour/4ba0b183a2c094db.jpeg/145.jpg", file_size: 100 },
-        { display_name: "17", file_url: "https://cdn.getyourguide.com/img/tour/a7c5ecf9bfe86def.jpeg/145.jpg", file_size: 100 },
-        { display_name: "18", file_url: "https://cdn.getyourguide.com/img/tour/6429c13d9765c3da.jpeg/145.jpg", file_size: 100 },
-        { display_name: "19", file_url: "https://cdn.getyourguide.com/img/tour/f052400a7372f6b4.jpeg/145.jpg", file_size: 100 },
-        { display_name: "20", file_url: "https://cdn.getyourguide.com/img/tour/801837f239d1032c.jpeg/145.jpg", file_size: 100 },
-        { display_name: "21", file_url: "https://cdn.getyourguide.com/img/tour/cd9455778f0b9613.jpeg/145.jpg", file_size: 100 },
-        { display_name: "22", file_url: "https://cdn.getyourguide.com/img/tour/e17bb7b682ea9c54.jpeg/145.jpg", file_size: 100 },
-        { display_name: "23", file_url: "https://cdn.getyourguide.com/img/tour/38dc571251e273a6.jpeg/145.jpg", file_size: 100 },
-        { display_name: "24", file_url: "https://cdn.getyourguide.com/img/tour/7e606aaa23d8da1fce84e9e493a4624a90fac534c0bed7b4dd86ae7cc5c48595.jpg/145.jpg", file_size: 100 },
-      ],
-      additional_fields: [
-        { key: "meetingPoint", title: "미팅포인트", content: "<p><p>미팅 포인트는 예약한 옵션에 따라 다를 수 있습니다.</p><br><ul><li><b>호스슈 벤드 및 점심 식사, 와이파이가 포함된 앤털로프 캐년 X 투어</b> </br><br>픽업 장소는 트레저 아일랜드 호텔 투어 버스 픽업 구역입니다. 이 픽업 장소는 실제로 프런트 데스크에서 오른쪽으로 바로 바깥쪽, 미스테어 드림스 애비뉴(구 사이렌스 코브 대로)에 있습니다. 무료 주차가 가능한 주차장과 가깝습니다. 다른 픽업 장소를 이용하려면 내셔널 파크 익스프레스에 연락하여 대체 장소를 요청하세요.</li><br><li><b>로어 앤털로프 캐년, 프라임 타임 입장, 점심 식사 포함</b> </br><br>픽업 장소는 트레저 아일랜드 호텔 투어 버스 픽업 구역입니다. 이 픽업 장소는 실제로 프런트 데스크에서 오른쪽으로 바로 바깥쪽, 미스테어 드림스 애비뉴(구 사이렌스 코브 대로)에 있습니다. 무료 주차가 가능한 주차장과 가깝습니다. 다른 픽업 장소를 이용하려면 내셔널 파크 익스프레스에 연락하여 대체 장소를 요청하세요.</li><br><li><b>호스슈 벤드와 점심식사가 포함된 어퍼 앤털로프 투어</b> </br><br>픽업 장소는 트레저 아일랜드 호텔 투어 버스 픽업 구역입니다. 이 픽업 장소는 실제로 프런트 데스크에서 오른쪽으로 바로 바깥쪽, 미스테어 드림스 애비뉴(구 사이렌스 코브 대로)에 있습니다. 무료 주차가 가능한 주차장과 가깝습니다. 다른 픽업 장소를 이용하려면 내셔널 파크 익스프레스에 연락하여 대체 장소를 요청하세요.</li></ul><p>" },
-        { key: "notSuitable", title: "참가가 어려워요", content: "<li>거동이 불편하신 분</li>" },
-        { key: "bringItem", title: "준비물", content: "<li>여권 또는 신분증</li>\n<li>편한 신발</li>" },
-        { key: "notAllowed", title: "허용되지 않아요", content: "<li>반려동물</li>\n<li>음주한 상태</li>\n<li>지팡이</li>\n<li>알코올 및 약물</li>\n<li>차량 내 주류 반입</li>" },
-      ],
-    },
-    refund: {
-      code: "REF3006883077",
-      refund_type: "CONDITIONAL",
-      cancel_type: "AUTO",
-      cancel_time: "PROVIDER",
-      cancel_info: "",
-      provider_cancel_days: null,
-      partial_cancel_is: null,
-    },
-    memo: null,
-    seo: null,
-    voucher_info: { contact_point: "/", remark: "", delivery_type: "ATTACH", details: [] },
-    attrs: null,
-    course_groups: [],
-    priority_provider_title: false,
-    option: {
-      per_min: 1,
-      per_max: 999,
-      outer_id: null,
-      booking_api_is: true,
-      resell_is: null,
-      options: [
-        {
-          code: null,
-          title: "호스슈 벤드 및 점심 식사, 와이파이가 포함된 앤털로프 캐년 X 투어",
-          description:
-            "캐년 엑스는 어퍼 앤털로프 캐년과 로어 앤털로프 캐년의 특징이 잘 어우러진 곳으로, 애리조나 주 페이지의 관문 마을 남동쪽에 위치해 있습니다. 캐년 X가 제공하는 것에 놀랄 준비를 하세요. 이 옵션에는 점심 식사가 포함되어 있습니다.",
-          per_min: 1,
-          per_max: 999,
-          outer_id: "173577^759946",
-          sort_order: 0,
-          sale_start_date: null,
-          sale_end_date: null,
-          use_start_date: null,
-          use_end_date: null,
-          use_period: null,
-          stock_quantity: null,
-          labels: [
-            { code: null, title: "성인(나이 0-99)", net_price_currency: 0, sale_price_currency: null, normal_price_currency: null, required: false, outer_id: "ADULT;1;INDIVIDUALS", sort_order: 0, per_min: null, per_max: 999 },
-          ],
-          timeslots: [ { code: null, title: "05:30", description: null, outer_id: "05:30", sort_order: 0 } ],
-          dynamic_price: false,
-          attrs: null,
-          resell_is: false,
-        },
-        {
-          code: null,
-          title: "로어 앤털로프 캐년, 프라임 타임 입장, 점심 식사 포함",
-          description:
-            "로어 앤털로프 캐년의 나바호 가이드 투어, 호스슈 벤드 방문, 델리 스타일의 점심 식사가 포함되어 있습니다. 오전 11시 30분에서 오후 1시 사이가 정오 정시 입장 시간으로, 이 시간이 가장 멋진 조명을 감상할 수 있는 시간대입니다. 15개 주요 호텔에서 픽업 서비스를 제공합니다.",
-          per_min: 1,
-          per_max: 999,
-          outer_id: "173577^759947",
-          sort_order: 1,
-          sale_start_date: null,
-          sale_end_date: null,
-          use_start_date: null,
-          use_end_date: null,
-          use_period: null,
-          stock_quantity: null,
-          labels: [
-            { code: null, title: "성인(나이 0-99)", net_price_currency: 0, sale_price_currency: null, normal_price_currency: null, required: false, outer_id: "ADULT;1;INDIVIDUALS", sort_order: 0, per_min: null, per_max: 999 },
-          ],
-          timeslots: [ { code: null, title: "05:30", description: null, outer_id: "05:30", sort_order: 0 } ],
-          dynamic_price: false,
-          attrs: null,
-          resell_is: false,
-        },
-        {
-          code: null,
-          title: "호스슈 벤드와 점심식사가 포함된 어퍼 앤털로프 투어",
-          description: "어퍼 앤털로프는 협곡 바닥에 있는 걷기 좋은 복도를 통해 조각된 사암 벽의 멋진 사진을 찍을 수 있는 기회를 제공합니다.\n\n점심 포함",
-          per_min: 1,
-          per_max: 999,
-          outer_id: "173577^759948",
-          sort_order: 2,
-          sale_start_date: null,
-          sale_end_date: null,
-          use_start_date: null,
-          use_end_date: null,
-          use_period: null,
-          stock_quantity: null,
-          labels: [
-            { code: null, title: "성인(나이 0-99)", net_price_currency: 0, sale_price_currency: null, normal_price_currency: null, required: false, outer_id: "ADULT;1;INDIVIDUALS", sort_order: 0, per_min: null, per_max: 999 },
-          ],
-          timeslots: [ { code: null, title: "05:30", description: null, outer_id: "05:30", sort_order: 0 } ],
-          dynamic_price: false,
-          attrs: null,
-          resell_is: false,
-        },
-      ],
-    },
-  }
-
-  // id에 따라 투어 선택 (예: /tour/PRD2001371482, /tour/rome)
-  const tourData: TourApiResponse = params.id === 'PRD2001371482' ? tourVegas : baseTourRome
-
-  // 기존 데이터 구조에 맞게 변환
-  const itineraryData = params.id === 'PRD2001371482'
-    ? []
-    : [
-      { time: '09:00', activity: '미팅 포인트에서 만남' },
-      { time: '09:30', activity: '바티칸 박물관 우선 입장' },
-      { time: '11:00', activity: '시스티나 성당 관람' },
-      { time: '12:30', activity: '투어 종료' },
-    ]
-
-  const tour = {
-    id: params.id,
-    title: tourData.basic.name,
-    subtitle: tourData.basic.sub_name,
-    description: tourData.detail.description.replace(/<[^>]*>/g, ''),
-    longDescription: tourData.detail.highlight_title,
-    images: tourData.detail.images.map(img => img.file_url),
-    price: tourData.option.options[0]?.labels[0]?.net_price_currency || 45,
-    originalPrice: null,
-    discountRate: null,
-    duration: tourData.filter.duration.replace('IN', '').replace('OV', 'Over ').replace('H', ' hours').replace('D', ' days'),
-    rating: 4.7,
-    reviewCount: 587,
-    location: tourData.basic.areas.map(area => area.name).join(', '),
-    category: tourData.basic.categories[0]?.name || '',
-    minAge: 7,
-    maxGroup: 25,
-    language: tourData.filter.language.join(', '),
-    meetingPoint: 'Via Mocenigo, 15, Roma',
-    highlights: tourData.detail.highlight_detail
-      .replace(/<ul><li>/g, '')
-      .replace(/<\/li><li>/g, '|')
-      .replace(/<\/li><\/ul>/g, '')
-      .split('|'),
-    included: tourData.detail.includes.split('\n').filter(item => item.trim()),
-    notIncluded: ['개인 비용', '팁 (선택사항)', '식사'],
-    itinerary: itineraryData,
-    reviews: [
-      { name: 'Kim Min-su', rating: 5, date: '2025.06.09', comment: "정말 좋은 경험이었습니다. 가이드가 친절하고 시스티나 성당이 너무 아름다웠어요!", helpful: 31, tags: ['합리적인 가격'] },
-      { name: 'Lee Seo-yeon', rating: 5, date: '2025.06.16', comment: '바티칸 박물관의 예술 작품들이 정말 인상적이었습니다. 우선입장으로 대기시간 없이 관람할 수 있어서 좋았어요.', helpful: 15, tags: ['상세한 상품 설명'] },
-      { name: 'Park Ji-hoon', rating: 4, date: '2025.05.22', comment: '가이드의 설명이 매우 상세했고, 미켈란젤로의 작품을 직접 볼 수 있어서 감동적이었습니다.', helpful: 12 },
-      { name: 'Choi Min-jung', rating: 5, date: '2025.04.10', comment: '성 베드로 대성당까지 포함된 투어로 정말 알찬 하루였습니다. 추천합니다!', helpful: 8 },
-      { name: 'Jung Ho-seok', rating: 5, date: '2025.03.18', comment: '소그룹으로 진행되어 더욱 집중해서 관람할 수 있었습니다. 가이드님이 역사적 배경도 잘 설명해주셨어요.', helpful: 19 },
-    ],
-  }
-
-  const sections = [
-    { id: 'options', label: 'Option Selection', ref: optionsRef },
-    { id: 'description', label: 'Product Description', ref: descriptionRef },
-    { id: 'guide', label: 'Usage Guide', ref: guideRef },
-    { id: 'reviews', label: 'Reviews', ref: reviewsRef },
-    { id: 'cancellation', label: 'Cancellation & Refund', ref: cancellationRef },
-  ]
-
-  const scrollToSection = (sectionId: string) => {
-    const section = sections.find((s) => s.id === sectionId)
-    if (section?.ref.current) {
-      const y = section.ref.current.getBoundingClientRect().top + window.scrollY - 72
-      window.scrollTo({ top: y, behavior: 'smooth' })
-      setActiveSection(sectionId)
-    }
-  }
-
-  useEffect(() => {
-    const observers: IntersectionObserver[] = []
-    sections.forEach(({ id, ref }) => {
-      const el = ref.current
-      if (!el) return
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setActiveSection(id)
-            }
-          })
-        },
-        {
-          root: null,
-          rootMargin: '-72px 0px -60% 0px',
-          threshold: [0, 0.25, 0.5, 1],
-        }
-      )
-      observer.observe(el)
-      observers.push(observer)
-    })
-    return () => observers.forEach((o) => o.disconnect())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // 스티키 헤더 표시 여부 감지
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY
-      // 매우 낮은 트리거 포인트로 설정하여 빨리 나타나도록 함
-      const triggerPoint = 50
-      const shouldShow = scrollY > triggerPoint
-      setShowStickyHeader(shouldShow)
-      console.log('Scroll Y:', scrollY, 'Trigger:', triggerPoint, 'Show sticky:', shouldShow, 'State:', showStickyHeader)
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll() // 초기 상태 설정
-    
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [showStickyHeader])
-
-  const handleBooking = () => {
-    if (quantity < 1) {
-      toast({ title: 'Quantity Required', description: 'Please select at least 1 participant to continue.', variant: 'destructive' })
-      return
-    }
-    router.push(`/booking-info?tour=${params.id}&date=${selectedDate?.toISOString()}&quantity=${quantity}`)
-  }
-
-  const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 0 && newQuantity <= tour.maxGroup) {
-      setQuantity(newQuantity)
-    }
-  }
-
-  const STAR_COLOR = '#ff00cc'
-
-  const maskName = (fullName: string): string => {
-    if (!fullName || typeof fullName !== 'string') return ''
-    const maskPart = (part: string) => (part.length <= 1 ? part : part[0] + '*'.repeat(Math.max(1, part.length - 1)))
-    return fullName
-      .split(' ')
-      .map((segment) => segment.split('-').map(maskPart).join('-'))
-      .join(' ')
-  }
-
-  const totalPrice = quantity * tour.price
-  const canBook = Boolean(selectedDate) && quantity >= 1
-
-  const toBulletedList = (html: string): string => {
-    if (!html || typeof html !== 'string') return ''
-    if (html.includes('<ul')) {
-      return html.replace('<ul', '<ul class="list-disc pl-5 space-y-1"')
-    }
-    return `<ul class="list-disc pl-5 space-y-1">${html}</ul>`
-  }
-
-  return (
-    <div className="min-h-screen bg-white overflow-visible">
-      <AppHeader active="tours" mobileTitle={tour.title} />
-      
-      {/* 스티키 헤더 - sticky로 설정하고 z-index 50으로 높임 */}
-      {showStickyHeader && (
-        <div className="sticky top-0 z-50 bg-white border-b shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between mb-3">
-              <h1 className="text-lg font-semibold text-gray-900 truncate">{tour.title}</h1>
-            </div>
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => scrollToSection(section.id)}
-                  className={`relative px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                    activeSection === section.id ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
-                  }`}
-                >
-                  {section.label}
-                  <span className={`absolute left-0 right-0 -bottom-px h-0.5 transition-all ${
-                    activeSection === section.id ? 'bg-blue-600' : 'bg-transparent'
-                  }`}></span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-      
-
-
-      {/* New Hero Section */}
-      <TourHeroSection 
-        tourData={tourData} 
-        tour={{...tour, reviews: tour.reviews}} 
-        starColor={STAR_COLOR}
-        onScrollToReviews={() => scrollToSection('reviews')}
-        maskName={maskName}
-      />
-
-
-
-      <div className="max-w-7xl mx-auto px-4 pb-24">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 min-w-0 lg:items-start booking-container">
-          <div className="flex-1 min-w-0">
-            <div className="mb-6">
-              <TourHighlights highlights={tour.highlights} />
-              <TourSectionTabs sections={sections.map(({ id, label }) => ({ id, label }))} activeSection={activeSection} onClick={scrollToSection} />
-            </div>
-
-            <div ref={optionsRef} className="mb-14">
-              <h3 className="text-[22px] font-semibold mb-6">Option Selection</h3>
-              <div className="space-y-6">
-                <TourDatePicker selectedDate={selectedDate} onSelect={setSelectedDate} />
-                {selectedDate && (
-                  <TourOptions selectedDate={selectedDate} options={tourData.option.options} quantity={quantity} onQuantityChange={handleQuantityChange} />
-                )}
-              </div>
-            </div>
-
-            <div ref={descriptionRef} className="mb-14">
-              <TourDescription
-                description={tour.description}
-                longDescription={tour.longDescription}
-                images={[tour.images[0], tour.images[1]]}
-              />
-            </div>
-
-            <div ref={guideRef} className="mb-14">
-              <h3 className="text-[22px] font-semibold mb-6">Usage Guide</h3>
-              <div className="space-y-6">
-                {Array.isArray(tour.itinerary) && tour.itinerary.length > 0 && (
-                <div>
-                  <h4 className="text-lg font-semibold mb-4">Itinerary</h4>
-                  <div className="space-y-3">
-                    {tour.itinerary.map((item, index) => (
-                      <div key={index} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-16 text-sm font-semibold text-blue-600 flex-shrink-0">{item.time}</div>
-                        <div className="text-gray-700">{item.activity}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                )}
-
-                <div className="space-y-8">
-                  {/* Meeting Point */}
-                  {tourData.detail.additional_fields.find(field => field.key === 'meetingPoint') && (
-                    <div className="border-l-4 border-blue-500 pl-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <MapPin className="w-5 h-5 text-gray-600" />
-                        <h4 className="text-lg font-semibold text-gray-900">Meeting Point</h4>
-                      </div>
-                      <div 
-                        className="text-gray-600 text-sm leading-relaxed prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ 
-                          __html: tourData.detail.additional_fields.find(field => field.key === 'meetingPoint')?.content || '' 
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  
-
-                  {/* What's Included / Not Included */}
-                  <div className="grid gap-8 md:grid-cols-2 pt-4 border-t border-gray-200">
-                    <div className="border-l-4 border-green-500 pl-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Check className="w-5 h-5 text-green-600" />
-                        <h4 className="text-lg font-semibold text-gray-900">What's Included</h4>
-                      </div>
-                    <div className="space-y-2">
-                      {tour.included.map((item, index) => (
-                          <div key={index} className="flex items-start gap-3">
-                            <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-600 text-sm leading-relaxed">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                    <div className="border-l-4 border-red-500 pl-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <X className="w-5 h-5 text-red-600" />
-                        <h4 className="text-lg font-semibold text-gray-900">What's Not Included</h4>
-                      </div>
-                    <div className="space-y-2">
-                      {tour.notIncluded.map((item, index) => (
-                          <div key={index} className="flex items-start gap-3">
-                            <X className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-600 text-sm leading-relaxed">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                  {/* Important information (titles only, open modal on click) */}
-                  <div className="mt-2 rounded-xl border border-purple-200 bg-purple-50/50 p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Info className="w-4 h-4 text-purple-600" />
-              </div>
-                      <h4 className="text-[18px] font-semibold text-purple-900">Important information</h4>
-            </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {tourData.detail.additional_fields.find(f => f.key === 'bringItem') && (
-                        <button
-                          type="button"
-                          onClick={() => setInfoModal({
-                            title: 'What to Bring',
-                            content: toBulletedList(tourData.detail.additional_fields.find(f => f.key === 'bringItem')?.content || '')
-                          })}
-                          className="group flex items-center justify-between rounded-lg border border-purple-200 bg-white px-4 py-3 hover:bg-purple-50/60 transition-colors"
-                        >
-                          <span className="flex items-center gap-2 text-sm text-gray-800">
-                            <Package className="w-4 h-4 text-orange-500" /> What to Bring
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-purple-400 group-hover:text-purple-600" />
-                        </button>
-                      )}
-
-                      {tourData.detail.additional_fields.find(f => f.key === 'notAllowed') && (
-                        <button
-                          type="button"
-                          onClick={() => setInfoModal({
-                            title: 'Not Allowed',
-                            content: toBulletedList(tourData.detail.additional_fields.find(f => f.key === 'notAllowed')?.content || '')
-                          })}
-                          className="group flex items-center justify-between rounded-lg border border-purple-200 bg-white px-4 py-3 hover:bg-purple-50/60 transition-colors"
-                        >
-                          <span className="flex items-center gap-2 text-sm text-gray-800">
-                            <XCircle className="w-4 h-4 text-red-500" /> Not Allowed
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-purple-400 group-hover:text-purple-600" />
-                        </button>
-                      )}
-
-                      {tourData.detail.additional_fields.find(f => f.key === 'notSuitable') && (
-                        <button
-                          type="button"
-                          onClick={() => setInfoModal({
-                            title: 'Not Suitable For',
-                            content: toBulletedList(tourData.detail.additional_fields.find(f => f.key === 'notSuitable')?.content || '')
-                          })}
-                          className="group flex items-center justify-between rounded-lg border border-purple-200 bg-white px-4 py-3 hover:bg-purple-50/60 transition-colors"
-                        >
-                          <span className="flex items-center gap-2 text-sm text-gray-800">
-                            <AlertTriangle className="w-4 h-4 text-yellow-500" /> Not Suitable For
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-purple-400 group-hover:text-purple-600" />
-                        </button>
-                      )}
-
-                      {tourData.detail.additional_info && (
-                        <button
-                          type="button"
-                          onClick={() => setInfoModal({
-                            title: 'Before you travel',
-                            content: toBulletedList(tourData.detail.additional_info)
-                          })}
-                          className="group flex items-center justify-between rounded-lg border border-purple-200 bg-white px-4 py-3 hover:bg-purple-50/60 transition-colors"
-                        >
-                          <span className="flex items-center gap-2 text-sm text-gray-800">
-                            <Check className="w-4 h-4 text-purple-600" /> Before you travel
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-purple-400 group-hover:text-purple-600" />
-                        </button>
-                      )}
-                </div>
-                </div>
-              </div>
-                        </div>
-                      </div>
-
-            <div ref={reviewsRef} className="mb-14">
-              <TourReviews
-                rating={tour.rating}
-                reviews={tour.reviews as any}
-                showAll={showAllReviews}
-                onShowAll={() => setShowAllReviews(true)}
-                onShowLess={() => setShowAllReviews(false)}
-                maskName={maskName}
-                starColor={STAR_COLOR}
-              />
-                    </div>
-                    </div>
-
-          <div className="lg:w-80 lg:flex-shrink-0">
-            <div className="relative lg:sticky lg:top-20 lg:self-start lg:z-10">
-              <TourBookingCard
-                discountRate={tour.discountRate}
-                originalPrice={tour.originalPrice}
-                price={tour.price}
-                selectedDate={selectedDate}
-                quantity={quantity}
-                onBook={handleBooking}
-              />
-            </div>
-            <div className="fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-200 p-3 lg:hidden shadow-lg">
-              <div className="max-w-7xl mx-auto px-2">
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-500">Total</div>
-                    <div className="text-lg font-semibold text-blue-600">${totalPrice}</div>
-                  </div>
-                  <button
-                    onClick={handleBooking}
-                    disabled={!canBook}
-                    className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-40 disabled:pointer-events-none hover:bg-blue-700 transition-colors"
-                  >
-                    {canBook ? 'Book now' : 'Select date & qty'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  </div>
-              </div>
-            </div>
-      {/* Info Modal */}
-      {infoModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full">
-            <div className="flex items-center justify-between p-4 border-b">
-              <div className="flex items-center gap-2">
-                {infoModal.title === 'What to Bring' && <Package className="w-4 h-4 text-orange-500" />}
-                {infoModal.title === 'Not Allowed' && <XCircle className="w-4 h-4 text-red-500" />}
-                {infoModal.title === 'Not Suitable For' && <AlertTriangle className="w-4 h-4 text-yellow-500" />}
-                {infoModal.title === 'Before you travel' && <Check className="w-4 h-4 text-purple-600" />}
-                <h4 className="text-base font-semibold text-gray-900">{infoModal.title}</h4>
-          </div>
-              <button
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
-                onClick={() => setInfoModal(null)}
-                aria-label="Close"
-              >
-                <X className="w-5 h-5 text-gray-600" />
-                        </button>
-                    </div>
-            <div className="p-4 text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: infoModal.content }} />
-            <div className="p-4 pt-0 flex justify-end">
-              <button className="px-4 py-2 text-sm rounded-md bg-gray-900 text-white hover:bg-black" onClick={() => setInfoModal(null)}>
-                Close
-                        </button>
-                  </div>
-                    </div>
-                    </div>
-                  )}
-    </div>
-  )
+  const mockTourData = getMockTourData(params.id)
+  
+  return <TourDetailClient tourData={mockTourData} tourId={params.id} />
 }
