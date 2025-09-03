@@ -1,5 +1,5 @@
 import { TourApiResponse } from '@/types/tour'
-import TourDetailClient from './TourDetailClient.tsx'
+import TourDetailClient from './TourDetailClient'
 
 interface TourDetailPageProps {
   params: { id: string }
