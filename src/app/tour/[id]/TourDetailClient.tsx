@@ -2,7 +2,8 @@
 
 import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { useRouter } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import { useTourDetailState } from '@/features/tour/hooks/useTourDetailState'
 import { TourOption } from '@/types/tour'
 import { useToast } from '@/hooks/use-toast'
@@ -24,6 +25,7 @@ import { TourUsageGuide } from '@/features/tour/components/TourUsageGuide'
 import { ImportantInformation } from '@/features/tour/components/ImportantInformation'
 import { IncludedExcluded } from '@/features/tour/components/IncludedExcluded'
 import { TourApiResponse } from '@/types/tour'
+// 옵션/가격 조회는 클라이언트→Next API 프록시를 통해 서버에서 토큰으로 호출
 
 interface TourDetailClientProps {
   tourData: TourApiResponse
@@ -31,6 +33,7 @@ interface TourDetailClientProps {
 }
 
 export default function TourDetailClient({ tourData, tourId }: TourDetailClientProps) {
+  const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '/en'
   const router = useRouter()
   const { toast } = useToast()
 
@@ -39,8 +42,11 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const usageGuideRef = useRef<HTMLDivElement>(null)
   const reviewsRef = useRef<HTMLDivElement>(null)
   const cancellationRef = useRef<HTMLDivElement>(null)
+  const informationRef = useRef<HTMLDivElement>(null)
+  const includedRef = useRef<HTMLDivElement>(null)
   
   const [isMeetingPointExpanded, setIsMeetingPointExpanded] = useState(false)
+  const [initialItineraryList, setInitialItineraryList] = useState<Array<{ day: number; title: string; description: string; duration: string; activities: string[] }>>([])
 
   // Meeting Point 내용을 간결하게 요약하는 함수
   const getMeetingPointSummary = (content: string) => {
@@ -63,9 +69,10 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     rating: 4.8,
     reviewCount: 1247,
     images: tourData.basic.images,
-    price: tourData.basic.price,
-    originalPrice: tourData.basic.originalPrice,
-    discountRate: tourData.basic.discountRate,
+    // 대표 가격: display_price 우선
+    price: tourData.basic.display_price?.price2 ?? tourData.basic.price,
+    originalPrice: tourData.basic.display_price?.price1 ?? tourData.basic.originalPrice,
+    discountRate: tourData.basic.display_price?.dc_rate ?? tourData.basic.discountRate,
     currency: tourData.basic.currency,
     duration: `${tourData.basic.duration}분`,
     durationUnit: tourData.basic.duration_unit,
@@ -99,15 +106,15 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   }
 
   // Section refs for navigation
-  const sections = [
-    { id: 'options', label: 'Options', ref: optionsRef },
-    { id: 'description', label: 'Description', ref: descriptionRef },
-    { id: 'usage-guide', label: 'Itinerary', ref: usageGuideRef },
-    { id: 'reviews', label: 'Reviews', ref: reviewsRef },
-    { id: 'cancellation', label: 'Cancellation', ref: cancellationRef }
-  ]
 
-  // Use custom hook for state management
+  // sections and visibility lists are defined after helper fns
+
+
+
+  // Build sections after lists are available
+  const hasDescription = Boolean(tourData.detail.description)
+
+  // Use custom hook for state management (initialize with empty; will update via effect)
   const {
     selectedDate,
     quantity,
@@ -118,9 +125,68 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     scrollToSection,
     handleQuantityChange,
     setSelectedDate,
-  } = useTourDetailState(sections)
+  } = useTourDetailState([])
 
+  // Reviews state (batch fetch 100, paginate 10 per page locally)
+  const [allReviews, setAllReviews] = useState<any[]>([])
+  const [reviewTotalCount, setReviewTotalCount] = useState<number>(0)
+  const [reviewPage, setReviewPage] = useState(1)
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false)
+  const [hasMoreReviews, setHasMoreReviews] = useState(true)
+  const [loadedBatchCount, setLoadedBatchCount] = useState(0) // how many 100-sized batches loaded
 
+  // Fetch all reviews up to count, then paginate locally by 10
+  const fetchAllReviews = async () => {
+    try {
+      setIsLoadingReviews(true)
+      // 1) fetch count
+      const cntRes = await fetch(`${BASE_PATH}/api/review/reviewCnt`, {
+        method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ brand: 'TOURVIS', prodCat: 'TNT', prodCd: tourId })
+      })
+      const cntJson = await cntRes.json().catch(() => null)
+      const totalCount = Number(cntJson?.data?.count ?? 0) || 0
+      setReviewTotalCount(totalCount)
+      // 2) fetch list with limit = totalCount (fallback to 100 if zero)
+      const limit = totalCount > 0 ? totalCount : 100
+      const res = await fetch(`${BASE_PATH}/api/review/reviewList`, {
+        method: 'POST',
+        cache: 'no-store',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ brand: 'TOURVIS', prodCat: 'TNT', prodCd: tourId, limit })
+      })
+      const json = await res.json()
+      if (json?.success) {
+        const items = Array.isArray(json?.data?.items) ? json.data.items : []
+        setAllReviews(items)
+        setHasMoreReviews(false)
+      } else {
+        setHasMoreReviews(false)
+      }
+    } catch (_e) {
+      setHasMoreReviews(false)
+    } finally {
+      setIsLoadingReviews(false)
+    }
+  }
+
+  useEffect(() => {
+    setReviewPage(1)
+    setAllReviews([])
+    setHasMoreReviews(true)
+    setLoadedBatchCount(0)
+    // 신규 로직: count 조회 후 전체 리뷰 한 번에 로드
+    fetchAllReviews()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tourId])
+
+  const pagesLoaded = Math.ceil(allReviews.length / 10)
+  const pagedReviews = allReviews.slice((reviewPage - 1) * 10, (reviewPage - 1) * 10 + 10)
+
+  const goToReviewPage = async (p: number) => {
+    if (p < 1) return
+    setReviewPage(p)
+  }
 
   const handleBooking = () => {
     if (quantity < 1) {
@@ -141,8 +207,372 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       .join(' ')
   }
 
-  const totalPrice = quantity * tour.price
-  const canBook = Boolean(selectedDate) && quantity >= 1
+  // Helpers to derive UI-friendly data from API response
+  const splitToList = (raw: unknown): string[] => {
+    const s = typeof raw === 'string' ? raw : ''
+    if (!s) return []
+    return s
+      .split(/<li[^>]*>|<br\s*\/?|\n|\r/gi)
+      .map((t) => t.replace(/<[^>]*>/g, '').trim())
+      .filter(Boolean)
+  }
+
+  const deriveIncluded = (): string[] => {
+    if (Array.isArray(tourData.basic.included) && tourData.basic.included.length > 0) return tourData.basic.included
+    const fromDetail = (tourData as any)?.detail?.includes
+    return splitToList(fromDetail)
+  }
+
+  const deriveExcluded = (): string[] => {
+    if (Array.isArray(tourData.basic.excluded) && tourData.basic.excluded.length > 0) return tourData.basic.excluded
+    const fromDetail = (tourData as any)?.detail?.excludes
+    return splitToList(fromDetail)
+  }
+
+  const deriveBeforeTravel = (): string[] => {
+    const fields: any[] = Array.isArray(tourData.detail.additional_fields) ? tourData.detail.additional_fields : []
+    const candidates: string[] = []
+    for (const f of fields) {
+      const key = String(f?.key || '').toLowerCase()
+      const title = String(f?.title || '').toLowerCase()
+      if (/(before|travel|주의|안내|important|note)/i.test(key) || /(before|travel|주의|안내|important|note)/i.test(title)) {
+        candidates.push(...splitToList(f?.content))
+      }
+    }
+    const extra = splitToList(tourData.detail.additional_info)
+    return [...candidates, ...extra]
+  }
+
+  const deriveItineraryFromCourses = (): Array<{ day: number; title: string; description: string; duration: string; activities: string[] }> => {
+    const groups: any[] = Array.isArray((tourData as any)?.course_groups) ? (tourData as any).course_groups : []
+    const list: Array<{ day: number; title: string; description: string; duration: string; activities: string[] }> = []
+    if (groups.length > 0) {
+      let day = 1
+      for (const g of groups) {
+        const itemsRaw: any[] = Array.isArray(g?.courses) ? g.courses : (Array.isArray(g?.items) ? g.items : [])
+        const items: any[] = (Array.isArray(itemsRaw) && itemsRaw.length > 0 && Array.isArray(itemsRaw[0]))
+          ? (itemsRaw as any[]).flat()
+          : itemsRaw
+        for (const it of items) {
+          const title = String(it?.title || it?.name || `Course ${day}`)
+          const description = String(it?.description || it?.content || it?.desc || '')
+          const duration = String(it?.duration || it?.time || '')
+          const activities = Array.isArray(it?.activities) ? it.activities.map((a: any) => String(a)) : []
+          list.push({ day, title, description, duration, activities })
+          day += 1
+        }
+      }
+      return list
+    }
+    // Fallback to detail.itinerary if no course_groups
+    const fallback: any[] = Array.isArray(tourData.detail.itinerary) ? tourData.detail.itinerary : []
+    return fallback as any
+  }
+
+  // initialize itinerary list after helper is available
+  useEffect(() => {
+    setInitialItineraryList(deriveItineraryFromCourses())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tourData])
+
+  // 옵션 및 가격 로딩 상태
+  const [range, setRange] = useState<{ from?: Date; to?: Date }>({})
+  const [optionData, setOptionData] = useState<any | null>(null)
+  const [optionPriceMap, setOptionPriceMap] = useState<Record<string, number>>({})
+  const [labelPriceMap, setLabelPriceMap] = useState<Record<string, Record<string, number>>>({})
+  const [selectedOptionCode, setSelectedOptionCode] = useState<string>('')
+  const [selectedLabelId, setSelectedLabelId] = useState<string | undefined>(undefined)
+  const [selectedTimeslotId, setSelectedTimeslotId] = useState<string | undefined>(undefined)
+  // label quantities per option: { [optionCode]: { [labelCode]: qty } }
+  const [selectedLabelQtyByOption, setSelectedLabelQtyByOption] = useState<Record<string, Record<string, number>>>({})
+  const isDateType = useMemo(() => String(tourData.basic.calendar_type).toUpperCase() === 'DATE', [tourData.basic.calendar_type])
+
+  // 날짜형: 날짜 선택 시 옵션 조회 (Next API 프록시) - 번들 API 사용 가능
+  useEffect(() => {
+    const run = async () => {
+      if (!isDateType) return
+      if (!selectedDate) { setOptionData(null); return }
+      const dateStr = format(selectedDate, 'yyyy-MM-dd')
+      try {
+        const url1 = `${BASE_PATH}/api/tna/bundle`
+        const res = await fetch(url1, { cache: 'no-store', method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product_id: tourId, date: dateStr, option_codes: [] }) })
+        if (res.ok) {
+          const json = await res.json()
+          if (json?.success) { setOptionData(json.data?.options); return }
+        } else {
+          console.error('[bundle options] HTTP', res.status, url1)
+        }
+        // fallback: 기존 옵션 라우트
+        const url2 = `${BASE_PATH}/api/tna/options?product_id=${encodeURIComponent(tourId)}&date=${encodeURIComponent(dateStr)}`
+        const res2 = await fetch(url2, { cache: 'no-store' })
+        if (!res2.ok) {
+          console.error('[options fallback] HTTP', res2.status, url2)
+        }
+        const json2 = await res2.json().catch(() => null)
+        setOptionData(json2?.success ? json2.data : null)
+      } catch (e) { 
+        console.error('[options load error]', e)
+        setOptionData(null) 
+      }
+    }
+    run()
+  }, [isDateType, selectedDate, tourId])
+
+  // 기간형: 초기 로드 시 옵션 조회 (Next API 프록시)
+  useEffect(() => {
+    const run = async () => {
+      if (isDateType) return
+      try {
+        const url = `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/options`
+        const res = await fetch(url, { cache: 'no-store' })
+        if (!res.ok) {
+          console.error('[options period-type] HTTP', res.status, url)
+        }
+        const json = await res.json().catch(() => null)
+        if (json?.success) setOptionData(json.data)
+        else setOptionData(null)
+      } catch (e) {
+        console.error('[options period-type error]', e)
+        setOptionData(null)
+      }
+    }
+    run()
+  }, [isDateType, tourId])
+
+  // 옵션 가격 일괄 조회 (dynamic_price 이거나 라벨에 price가 없을 때만)
+  useEffect(() => {
+    const run = async () => {
+      const optsSource = optionData as any
+      const opts: any[] = Array.isArray(optsSource?.options)
+        ? optsSource.options
+        : Array.isArray(optsSource)
+          ? optsSource
+          : (Array.isArray(optsSource?.list) ? optsSource.list : [])
+      if (opts.length === 0) return
+      const start = isDateType ? (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined) : (range.from ? format(range.from, 'yyyy-MM-dd') : undefined)
+      const end = isDateType ? (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined) : (range.to ? format(range.to, 'yyyy-MM-dd') : start)
+      if (!start || !end) return
+      // bulk 가격 조회: 라벨 가격 사전 확보 목적 (회차 필요 없는 엔드포인트 대응)
+      const url = isDateType
+        ? `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/data-type`
+        : `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/period-type`
+      try {
+        const needPricing = opts.filter((o) => {
+          const hasLabelPrices = Array.isArray(o.labels) && o.labels.some((l: any) => typeof l?.price === 'number' && l.price > 0)
+          return o.dynamic_price === true || !hasLabelPrices
+        })
+        const entries = await Promise.all(
+          needPricing.map(async (o) => {
+            const code = String(o.code || o.product_option_code || o.option_code || o.id || '')
+            if (!code) return [code, 0] as const
+            const payload: any = { product_option_code: code, start_date: start, end_date: end }
+            const res = await fetch(url, { method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+            if (!res.ok) {
+              console.error('[price bulk] HTTP', res.status, url, { code, start, end })
+            }
+            const json = await res.json().catch(() => null)
+            // update label prices if present
+            try {
+              const pricesArray: any[] = Array.isArray(json?.data?.prices) ? json.data.prices :
+                (Array.isArray(json?.data?.dates) ? (json.data.dates[0]?.prices ?? []) : (Array.isArray((json as any)?.dates) ? ((json as any).dates?.[0]?.prices ?? []) : []))
+              if (Array.isArray(pricesArray) && pricesArray.length > 0) {
+                setLabelPriceMap(prev => ({
+                  ...prev,
+                  [code]: pricesArray.reduce((acc: Record<string, number>, p: any) => {
+                    const k = String(p?.label_code || p?.labelId || p?.label || '').toUpperCase()
+                    const v = Number(p?.price ?? 0) || 0
+                    if (k) acc[k] = v
+                    return acc
+                  }, { ...(prev[code] || {}) })
+                }))
+              }
+            } catch {}
+            const price = json?.success ? Number(json?.data?.price ?? json?.data?.sale_price ?? json?.data?.amount ?? 0) : 0
+            return [code, price] as const
+          })
+        )
+        const map: Record<string, number> = {}
+        entries.forEach(([k, v]) => { if (k) map[k] = v })
+        setOptionPriceMap(map)
+      } catch (e) {
+        console.error('[price bulk error]', e)
+      }
+    }
+    run()
+  }, [optionData, isDateType, selectedDate, range, tourId])
+
+  // 옵션 클릭 시 단건 가격 조회 및 반영
+  useEffect(() => {
+    const run = async () => {
+      if (!selectedOptionCode) return
+      // 선택 완료 가드: 인벤토리 스코프에 따라 필요한 선택(라벨/회차)이 완료된 뒤에만 가격 조회
+      const needTimeslot = /TIMESLOT/i.test(String(tourData.basic.inventory_scope)) || tourData.basic.timeslot_is === true
+      const needLabel = /LABEL/i.test(String(tourData.basic.inventory_scope))
+      if (needTimeslot && !selectedTimeslotId) return
+      if (needLabel && !selectedLabelId) return
+      const start = isDateType ? (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined) : (range.from ? format(range.from, 'yyyy-MM-dd') : undefined)
+      const end = isDateType ? (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined) : (range.to ? format(range.to, 'yyyy-MM-dd') : start)
+      if (!start || !end) return
+      const url = isDateType
+        ? `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/data-type`
+        : `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/period-type`
+      try {
+        const payload: any = { product_option_code: selectedOptionCode, start_date: start, end_date: end }
+        // 회차/라벨은 날짜형 엔드포인트에서는 불필요할 수 있으므로 제외하여 404 회피
+        const res = await fetch(url, { method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+        if (!res.ok) {
+          console.error('[price single] HTTP', res.status, url, { selectedOptionCode, start, end, selectedLabelId, selectedTimeslotId })
+        }
+        const json = await res.json().catch(() => null)
+        // update label prices from single response if available
+        try {
+          const pricesArray: any[] = Array.isArray(json?.data?.prices) ? json.data.prices :
+            (Array.isArray(json?.data?.dates) ? (json.data.dates[0]?.prices ?? []) : (Array.isArray((json as any)?.dates) ? ((json as any).dates?.[0]?.prices ?? []) : []))
+          if (Array.isArray(pricesArray) && pricesArray.length > 0) {
+            setLabelPriceMap(prev => ({
+              ...prev,
+              [selectedOptionCode]: pricesArray.reduce((acc: Record<string, number>, p: any) => {
+                const k = String(p?.label_code || p?.labelId || p?.label || '').toUpperCase()
+                const v = Number(p?.price ?? 0) || 0
+                if (k) acc[k] = v
+                return acc
+              }, { ...(prev[selectedOptionCode] || {}) })
+            }))
+          }
+        } catch {}
+        const price = json?.success ? Number(json?.data?.price ?? json?.data?.sale_price ?? json?.data?.amount ?? 0) : 0
+        setOptionPriceMap(prev => ({ ...prev, [selectedOptionCode]: price }))
+      } catch (e) {
+        console.error('[price single error]', e)
+      }
+    }
+    run()
+  }, [selectedOptionCode, selectedLabelId, selectedTimeslotId, isDateType, selectedDate, range, tourId])
+
+  // 선택된 옵션/라벨/회차 객체 및 가격/제목 도출
+  const currentOptionList: any[] = useMemo(() => {
+    const src: any = optionData
+    if (Array.isArray(src?.options)) return src.options
+    if (Array.isArray(src)) return src
+    if (Array.isArray(src?.list)) return src.list
+    return []
+  }, [optionData])
+
+  const selectedOptionObj: any | undefined = useMemo(() => {
+    if (!selectedOptionCode) return undefined
+    return currentOptionList.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '') === selectedOptionCode)
+  }, [currentOptionList, selectedOptionCode])
+
+  const selectedLabelObj: any | undefined = useMemo(() => {
+    if (!selectedOptionObj || !selectedLabelId) return undefined
+    const labels = Array.isArray(selectedOptionObj.labels) ? selectedOptionObj.labels : []
+    return labels.find((l: any) => String(l.code || l.id || '') === String(selectedLabelId))
+  }, [selectedOptionObj, selectedLabelId])
+
+  const selectedTimeslotObj: any | undefined = useMemo(() => {
+    if (!selectedOptionObj || !selectedTimeslotId) return undefined
+    const times = Array.isArray(selectedOptionObj.timeslots) ? selectedOptionObj.timeslots : []
+    return times.find((t: any) => String(t.id || t.code || '') === String(selectedTimeslotId))
+  }, [selectedOptionObj, selectedTimeslotId])
+
+  const selectedUnitPrice = useMemo(() => 0, [])
+
+  // 시간/라벨/옵션 선택 시 기본 수량 1로 설정 (처음 선택 시)
+  useEffect(() => {
+    if ((selectedTimeslotId || selectedLabelId || selectedOptionCode) && quantity < 1) {
+      handleQuantityChange(1)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTimeslotId, selectedLabelId, selectedOptionCode])
+
+  // 옵션 변경 시 이전 선택(라벨/회차) 초기화
+  useEffect(() => {
+    setSelectedLabelId(undefined)
+    setSelectedTimeslotId(undefined)
+  }, [selectedOptionCode])
+
+  // total price: sum across all selected options (label quantities × label price)
+  const totalPrice = useMemo(() => {
+    let total = 0
+    const getLabelUnitPrice = (optCode: string, labelCode: string): number => {
+      const upper = String(labelCode).toUpperCase()
+      const fromMap = Number(labelPriceMap[optCode]?.[upper] ?? 0)
+      if (fromMap > 0) return fromMap
+      // fallback to optionData labels price/net_price_currency
+      try {
+        const src: any = optionData
+        const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
+        const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
+        const labels: any[] = Array.isArray(opt?.labels) ? opt.labels : []
+        const lab = labels.find((lb: any) => String(lb?.code || lb?.id || '').toUpperCase() === upper)
+        if (lab) {
+          if (typeof lab?.price === 'number') return Number(lab.price)
+          if (typeof lab?.net_price_currency === 'number') return Number(lab.net_price_currency)
+        }
+      } catch {}
+      return 0
+    }
+    Object.entries(selectedLabelQtyByOption).forEach(([optCode, qtyMap]) => {
+      Object.entries(qtyMap || {}).forEach(([lCode, qty]) => {
+        const unit = getLabelUnitPrice(optCode, lCode)
+        total += Number(qty || 0) * unit
+      })
+    })
+    return total
+  }, [selectedLabelQtyByOption, labelPriceMap])
+
+  const bookingSelections = useMemo(() => {
+    const selections: Array<{ optionTitle: string; lines: Array<{ label: string; qty: number; unit: number }>; subtotal: number }> = []
+    const getLabelUnitPrice = (optCode: string, labelCode: string): number => {
+      const upper = String(labelCode).toUpperCase()
+      const fromMap = Number(labelPriceMap[optCode]?.[upper] ?? 0)
+      if (fromMap > 0) return fromMap
+      try {
+        const src: any = optionData
+        const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
+        const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
+        const labels: any[] = Array.isArray(opt?.labels) ? opt.labels : []
+        const lab = labels.find((lb: any) => String(lb?.code || lb?.id || '').toUpperCase() === upper)
+        if (lab) {
+          if (typeof lab?.price === 'number') return Number(lab.price)
+          if (typeof lab?.net_price_currency === 'number') return Number(lab.net_price_currency)
+        }
+      } catch {}
+      return 0
+    }
+    Object.entries(selectedLabelQtyByOption).forEach(([optCode, qtyMap]) => {
+      let subtotal = 0
+      const lines: Array<{ label: string; qty: number; unit: number }> = []
+      Object.entries(qtyMap || {}).forEach(([lCode, qty]) => {
+        const unit = getLabelUnitPrice(optCode, lCode)
+        const qtyNum = Number(qty || 0)
+        if (qtyNum > 0) {
+          const src: any = optionData
+          const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
+          const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
+          const labels: any[] = Array.isArray(opt?.labels) ? opt.labels : []
+          const lab = labels.find((lb: any) => String(lb?.code || lb?.id || '').toUpperCase() === String(lCode).toUpperCase())
+          const labelName = String(lab?.title || lab?.name || 'Participant')
+          lines.push({ label: labelName, qty: qtyNum, unit })
+          subtotal += qtyNum * unit
+        }
+      })
+      if (lines.length > 0) {
+        const src: any = optionData
+        const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
+        const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
+        const optionTitle = String(opt?.title || opt?.name || optCode)
+        selections.push({ optionTitle, lines, subtotal })
+      }
+    })
+    return selections
+  }, [selectedLabelQtyByOption, labelPriceMap, optionData])
+  // 예약 가능 조건: 날짜 선택 + 수량 1이상 + 옵션 선택(필요 시 라벨/회차 포함)
+  const canBook = Boolean(selectedDate) && totalPrice > 0
+  // Reset booking state if quantities return to 0
+  useEffect(() => {
+    // keep option/time selection; booking is disabled when total is 0
+  }, [totalPrice])
 
   const toBulletedList = (html: string): string => {
     if (!html || typeof html !== 'string') return ''
@@ -151,6 +581,31 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     }
     return `<ul class="list-disc pl-5 space-y-1">${html}</ul>`
   }
+
+  // Derived lists and visibility guards
+  const itineraryList = deriveItineraryFromCourses()
+  const includedList = deriveIncluded()
+  const excludedList = deriveExcluded()
+  const beforeTravelList = deriveBeforeTravel()
+  const hasImportantInfo = (Array.isArray(tour.bringItems) && tour.bringItems.length > 0)
+    || (Array.isArray(tour.notAllowed) && tour.notAllowed.length > 0)
+    || (Array.isArray(tour.notSuitable) && tour.notSuitable.length > 0)
+    || (beforeTravelList.length > 0)
+  const hasMeetingPoint = Boolean((tourData.detail.additional_fields?.find(field => field.key === 'meetingPoint')?.content) || tourData.basic.meeting_point)
+
+  const showItineraryTab = initialItineraryList.length > 0 || itineraryList.length > 0
+  const hasReviews = (Array.isArray(allReviews) && allReviews.length > 0) || (Array.isArray(tour.reviews) && tour.reviews.length > 0)
+  const hasCancellation = Boolean(tourData.basic.cancellation_description)
+
+  const sections = useMemo(() => ([
+    { id: 'options', label: 'Options', ref: optionsRef },
+    ...(hasDescription ? [{ id: 'description', label: 'Description', ref: descriptionRef }] : []),
+    ...(showItineraryTab ? [{ id: 'usage-guide', label: 'Itinerary', ref: usageGuideRef }] : []),
+    ...(hasImportantInfo ? [{ id: 'information', label: 'Information', ref: informationRef }] : []),
+    ...((includedList.length > 0 || excludedList.length > 0) ? [{ id: 'included', label: 'Included', ref: includedRef }] : []),
+    ...(hasReviews ? [{ id: 'reviews', label: 'Reviews', ref: reviewsRef }] : []),
+    ...(hasCancellation ? [{ id: 'cancellation', label: 'Cancellation', ref: cancellationRef }] : []),
+  ]), [hasDescription, showItineraryTab, hasImportantInfo, includedList.length, excludedList.length, hasReviews, hasCancellation])
 
   return (
     <LayoutProvider
@@ -166,11 +621,23 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
         starColor={STAR_COLOR}
         onScrollToReviews={() => scrollToSection('reviews')}
         maskName={maskName}
+        reviewsOverride={allReviews.slice(0, 100).map((r: any) => ({
+          name: r?.writer ?? r?.name ?? 'Guest',
+          rating: Number(r?.score ?? r?.rating ?? 0),
+          date: String(r?.regDate ?? r?.writeDate ?? r?.date ?? ''),
+          comment: String(r?.reviewCont ?? r?.content ?? r?.comment ?? ''),
+        }))}
+        ratingOverride={Number(tour.rating) || 0}
+        reviewCountOverride={reviewTotalCount}
       />
 
       {/* Tour Highlights */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <TourHighlights highlights={tour.highlights} />
+        <TourHighlights
+          highlights={tour.highlights || []}
+          title={tourData.detail.highlight_title}
+          detail={tourData.detail.highlight_detail}
+        />
       </div>
 
 
@@ -189,18 +656,128 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       />
               
               <div className="mt-6 space-y-6">
-                <TourDatePicker
-                  selectedDate={selectedDate}
-                  onSelect={setSelectedDate}
-                />
-                
-                {selectedDate && (
-                                  <TourOptions
-                  selectedDate={selectedDate}
-                  options={tourData.option?.options || []}
-                  quantity={quantity}
-                  onQuantityChange={handleQuantityChange}
-                />
+                {isDateType ? (
+                  <>
+                    <TourDatePicker selectedDate={selectedDate} onSelect={setSelectedDate} availableDates={tourData.basic.available_dates} dateStates={tourData.basic.available_date_states} />
+                    {selectedDate && optionData && (
+                      <TourOptions
+                        selectedDate={selectedDate}
+                        options={((): any[] => {
+                          const src: any = optionData
+                          const list: any[] = Array.isArray(src?.options)
+                            ? src.options
+                            : Array.isArray(src)
+                              ? src
+                              : (Array.isArray(src?.list) ? src.list : [])
+                          // 재고 계산: inventory.quantity > 0 이거나 timeslots 내 quantity 합이 > 0
+                          const filtered = list.filter((o: any) => {
+                            const globalQ = Number(o?.inventory?.quantity ?? 0) || 0
+                            const tsList = Array.isArray(o?.inventory?.timeslots) ? o.inventory.timeslots : []
+                            let sum = 0
+                            for (const t of tsList) {
+                              const q = Number((t as any)?.quantity ?? 0) || 0
+                              sum += q
+                            }
+                            const total = globalQ + sum
+                            return total > 0
+                          })
+                          return filtered.map((o: any) => {
+                            const code = String(o.code || o.product_option_code || o.option_code || o.id || '')
+                            const labels = Array.isArray(o.labels) && o.labels.length > 0
+                              ? o.labels.map((l: any) => ({
+                                  code: String(l.code || l.id || ''),
+                                  title: String(l.title || l.name || ''),
+                                  net_price_currency: typeof l.price === 'number' ? l.price : (optionPriceMap[code] ?? 0),
+                                  sale_price_currency: null,
+                                  normal_price_currency: null,
+                                  required: Boolean(l.required),
+                                  outer_id: String(l.outer_id || ''),
+                                  sort_order: Number(l.sort_order ?? 0),
+                                  per_min: l.per_min ?? null,
+                                  per_max: typeof l.per_max === 'number' ? l.per_max : (l.per_max == null ? 0 : Number(l.per_max)),
+                                }))
+                              : [{ title: 'Adult', code: code ? `${code}-ADULT` : 'ADULT', net_price_currency: optionPriceMap[code] ?? 0, sale_price_currency: null, normal_price_currency: null, required: true, outer_id: '', sort_order: 0, per_min: 1, per_max: 10 }]
+                            const timeslots = Array.isArray(o.timeslots) ? o.timeslots.map((t: any) => ({ code: String(t.id || t.code || ''), title: String(t.title || t.name || '') })) : []
+                            const timeslotTitleMap: Record<string, string> = {}
+                            for (const ts of timeslots) {
+                              timeslotTitleMap[String(ts.code)] = String(ts.title || '')
+                            }
+                            const globalQ = Number(o?.inventory?.quantity ?? 0) || 0
+                            const tsList = Array.isArray(o?.inventory?.timeslots) ? o.inventory.timeslots : []
+                            let sumQ = 0
+                            for (const t of tsList) sumQ += Number((t as any)?.quantity ?? 0) || 0
+                            const stockQ = globalQ + sumQ
+                            return {
+                              code,
+                              title: String(o.title || o.name || ''),
+                              description: String(o.description || ''),
+                              per_min: Number(o.per_min ?? 1),
+                              per_max: Number(o.per_max ?? 10),
+                              outer_id: String(o.outer_id || ''),
+                              sort_order: Number(o.sort_order ?? 0),
+                              sale_start_date: null,
+                              sale_end_date: null,
+                              use_start_date: o.item?.start_date || null,
+                              use_end_date: o.item?.end_date || null,
+                              use_period: o.item?.use_period || null,
+                              stock_quantity: stockQ,
+                              labels,
+                              timeslots,
+                              dynamic_price: Boolean(o.dynamic_price),
+                              attrs: o.attrs || {},
+                              resell_is: false,
+                              inventory_timeslots: tsList.map((t: any) => {
+                                const id = String(t.id || t.code || '')
+                                const title = String(timeslotTitleMap[id] || t.title || id)
+                                return { id, label_id: t.label_id ? String(t.label_id) : undefined, quantity: Number(t.quantity ?? 0) || 0, title }
+                              }),
+                            }
+                          })
+                        })()}
+                        quantity={quantity}
+                        onQuantityChange={handleQuantityChange}
+                        inventoryScope={tourData.basic.inventory_scope}
+                        onSelectOption={(c) => setSelectedOptionCode(c)}
+                        onSelectTimeslot={(code, tsId, labelId) => { setSelectedOptionCode(code); setSelectedTimeslotId(tsId); setSelectedLabelId(labelId) }}
+                        onChangeLabelQuantities={(code, map) => { setSelectedLabelQtyByOption(prev => ({ ...prev, [code]: map })) }}
+                        getLabelPrice={(code, label) => {
+                          const v = labelPriceMap[code]?.[label]
+                          if (typeof v === 'number') return v
+                          return 0
+                        }}
+                        // availableDates/dateStates are handled by top-level date picker; not needed here
+                      />
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <TourDatePicker
+                      mode="range"
+                      selectedRange={range}
+                      onRangeSelect={setRange}
+                      onSelect={() => {}}
+                    />
+                    {range.from && optionData && (
+                      <TourOptions
+                        selectedDate={range.from}
+                        options={(optionData?.options ?? []).map((o: any) => ({
+                          ...o,
+                          labels: (o.labels ?? []).map((l: any) => ({ ...l, net_price_currency: optionPriceMap[o.code] ?? 0 }))
+                        }))}
+                        quantity={quantity}
+                        onQuantityChange={handleQuantityChange}
+                        inventoryScope={tourData.basic.inventory_scope}
+                        onSelectOption={(c) => setSelectedOptionCode(c)}
+                        onSelectTimeslot={(code, tsId, labelId) => { setSelectedOptionCode(code); setSelectedTimeslotId(tsId); setSelectedLabelId(labelId) }}
+                        onChangeLabelQuantities={(code, map) => { setSelectedLabelQtyByOption(prev => ({ ...prev, [code]: map })) }}
+                        getLabelPrice={(code, label) => {
+                          const v = labelPriceMap[code]?.[label]
+                          if (typeof v === 'number') return v
+                          return 0
+                        }}
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -208,14 +785,15 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
             {/* Description Section */}
             <div ref={descriptionRef} id="description" className="scroll-mt-20">
               <TourDescription
-                description={tour.description}
+                description={tourData.detail.description || tour.description}
                 longDescription=""
                 images={tour.images}
               />
             </div>
 
-            {/* Itinerary Section */}
-            <div className="scroll-mt-20">
+            {/* Itinerary Section (hide if empty) */}
+            {itineraryList.length > 0 && (
+            <div ref={usageGuideRef} id="usage-guide" className="scroll-mt-20">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-8 h-8 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center">
@@ -228,7 +806,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                   <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300"></div>
                   
                   <div className="space-y-6">
-                    {tour.itinerary.map((item, index) => (
+                    {itineraryList.map((item, index) => (
                       <div key={index} className="relative flex items-start">
                         {/* Timeline dot */}
                         <div className="relative z-10 flex-shrink-0 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
@@ -239,7 +817,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                         <div className="ml-4 flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h4 className="font-semibold text-gray-900 text-lg">{item.title}</h4>
-                            <span className="text-sm font-medium text-gray-600">{item.duration}</span>
+                            {!!item.duration && <span className="text-sm font-medium text-gray-600">{item.duration}</span>}
                           </div>
                           <p className="text-gray-700 mb-3 text-base leading-relaxed">{item.description}</p>
                           
@@ -255,10 +833,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                             </div>
                           )}
                           
-                          {/* Cost info */}
-                          <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
-                            <span>Admission Ticket Free</span>
-                          </div>
+                          {/* (removed static cost info) */}
                         </div>
                       </div>
                     ))}
@@ -266,8 +841,9 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Pickup & Drop Section */}
+            {/* Pickup & Drop Section (hide if empty) */}
             {tourData.detail.pickup_drop && (
               <div className="scroll-mt-20">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -293,7 +869,8 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
               </div>
             )}
 
-            {/* Meeting Point Section */}
+            {/* Meeting Point Section (hide if empty) */}
+            {hasMeetingPoint && (
             <div className="scroll-mt-20">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center gap-3 mb-6">
@@ -342,39 +919,117 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Important Information Section */}
-            <div className="scroll-mt-20">
+            {/* Important Information Section (hide if empty) */}
+            {hasImportantInfo && (
+            <div ref={informationRef} id="information" className="scroll-mt-20">
               <ImportantInformation
                 bringItems={tour.bringItems}
                 notAllowed={tour.notAllowed}
                 notSuitable={tour.notSuitable}
-                beforeTravel={tourData.detail.additional_info ? [tourData.detail.additional_info] : []}
+                beforeTravel={beforeTravelList}
               />
             </div>
+            )}
 
-            {/* What's Included & Not Included Section */}
-            <div className="scroll-mt-20">
+            {/* What's Included & Not Included Section (hide if empty) */}
+            {(includedList.length > 0 || excludedList.length > 0) && (
+            <div ref={includedRef} id="included" className="scroll-mt-20">
               <IncludedExcluded
-                included={tour.included}
-                excluded={tour.excluded}
+                included={includedList}
+                excluded={excludedList}
               />
             </div>
+            )}
 
             {/* Reviews Section */}
             <div ref={reviewsRef} id="reviews" className="scroll-mt-20">
-              <TourReviews
-                rating={tour.rating}
-                reviews={tour.reviews}
-                showAll={showAllReviews}
-                onShowAll={() => {
-                  // Mock toggle
-                }}
-                onShowLess={() => {
-                  // Mock toggle
-                }}
-                starColor={STAR_COLOR}
-              />
+              <div className="mb-4">
+                <TourReviews
+                  rating={tour.rating}
+                  reviews={pagedReviews.map((r: any) => ({
+                    name: r?.writer ?? r?.name ?? 'Guest',
+                    rating: Number(r?.score ?? r?.rating ?? 0),
+                    date: String(r?.regDate ?? r?.writeDate ?? r?.date ?? ''),
+                    comment: String(r?.reviewCont ?? r?.content ?? r?.comment ?? ''),
+                    helpful: Number(r?.likeCnt ?? 0),
+                  }))}
+                  statsReviews={allReviews.map((r: any) => ({
+                    name: r?.writer ?? r?.name ?? 'Guest',
+                    rating: Number(r?.score ?? r?.rating ?? 0),
+                    date: String(r?.regDate ?? r?.writeDate ?? r?.date ?? ''),
+                    comment: String(r?.reviewCont ?? r?.content ?? r?.comment ?? ''),
+                    helpful: Number(r?.likeCnt ?? 0),
+                  }))}
+                  showAll={true}
+                  onShowAll={() => {}}
+                  onShowLess={() => {}}
+                  starColor={STAR_COLOR}
+                  totalCount={reviewTotalCount}
+                />
+              </div>
+              {allReviews.length > 0 && (
+                <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
+                  {(() => {
+                    const totalPages = Math.max(1, Math.ceil((reviewTotalCount || allReviews.length) / 10))
+                    const blockIndex = Math.floor((reviewPage - 1) / 10)
+                    const blockStart = blockIndex * 10 + 1
+                    const blockEnd = Math.min(totalPages, blockStart + 9)
+                    return (
+                      <>
+                        {/* First Page */}
+                        <button
+                          aria-label="first page"
+                          disabled={isLoadingReviews || reviewPage === 1}
+                          onClick={() => goToReviewPage(1)}
+                          className="px-2 py-1 rounded-full border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40"
+                        >
+                          «
+                        </button>
+                        {/* Prev Page */}
+                        <button
+                          aria-label="previous page"
+                          disabled={isLoadingReviews || reviewPage === 1}
+                          onClick={() => goToReviewPage(Math.max(1, reviewPage - 1))}
+                          className="px-2 py-1 rounded-full border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40"
+                        >
+                          ‹
+                        </button>
+                        {/* Page Numbers (block of 10) */}
+                        {Array.from({ length: blockEnd - blockStart + 1 }, (_, i) => blockStart + i).map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => goToReviewPage(p)}
+                            className={`w-8 h-8 rounded-full text-sm font-semibold flex items-center justify-center ${reviewPage === p ? 'bg-black text-white' : 'text-gray-900 hover:bg-gray-100'}`}
+                            aria-current={reviewPage === p ? 'page' : undefined}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                        {/* Next Page */}
+                        <button
+                          aria-label="next page"
+                          disabled={isLoadingReviews || reviewPage === totalPages}
+                          onClick={() => goToReviewPage(Math.min(totalPages, reviewPage + 1))}
+                          className="px-2 py-1 rounded-full border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40"
+                        >
+                          ›
+                        </button>
+                        {/* Last Page */}
+                        <button
+                          aria-label="last page"
+                          disabled={isLoadingReviews || reviewPage === totalPages}
+                          onClick={() => goToReviewPage(totalPages)}
+                          className="px-2 py-1 rounded-full border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-40"
+                        >
+                          »
+                        </button>
+                      </>
+                    )
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* Cancellation Section */}
@@ -412,9 +1067,16 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
               <TourBookingCard
                 discountRate={tour.discountRate}
                 originalPrice={tour.originalPrice}
-                price={tour.price}
+                price={selectedUnitPrice}
                 selectedDate={selectedDate}
-                quantity={quantity}
+                quantity={Object.values(selectedLabelQtyByOption).reduce((t, m) => t + Object.values(m || {}).reduce((s, n) => s + Number(n || 0), 0), 0)}
+                canBook={canBook}
+                selectedOptionTitle={String((selectedOptionObj as any)?.title || (selectedOptionObj as any)?.name || '')}
+                selectedLabelTitle={String((selectedLabelObj as any)?.title || (selectedLabelObj as any)?.name || '')}
+                selectedTimeslotTitle={String((selectedTimeslotObj as any)?.title || (selectedTimeslotObj as any)?.name || '')}
+                currencyCode={'USD'}
+                selections={bookingSelections}
+                totalAmount={totalPrice}
                 onBook={handleBooking}
               />
             </div>
@@ -428,7 +1090,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <div className="text-xs text-gray-500">Total</div>
-              <div className="text-lg font-semibold text-blue-600">${totalPrice}</div>
+              <div className="text-lg font-semibold text-blue-600">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalPrice || 0)}</div>
             </div>
             <button
               onClick={handleBooking}

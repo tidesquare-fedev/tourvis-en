@@ -19,45 +19,46 @@ export default function SearchPageClient({ items }: { items: ProductItem[] }) {
     return items.filter((it) => {
       const locationMatch = filters.locations.length === 0 || filters.locations.includes(it.location || '')
       const categoryMatch = !filters.category || (it.category || '') === filters.category
-      const price = typeof it.price === 'number' ? it.price : Number.MAX_SAFE_INTEGER
-      const priceMatch = price >= filters.priceRange[0] && price <= filters.priceRange[1]
+      const priceValue = typeof it.price === 'number' ? it.price : null
+      const priceMatch = priceValue !== null && priceValue >= filters.priceRange[0] && priceValue <= filters.priceRange[1]
       return locationMatch && categoryMatch && priceMatch
     })
   }, [items, filters])
 
   return (
     <LayoutProvider>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <SectionHeader title="All Tours" subtitle="Explore Tours, Tickets & Activities" />
+        <SectionHeader title="All Tours" subtitle="Explore Tours, Tickets & Activities" />
 
-        <div className="md:hidden mb-6">
-          <ProductFilters filters={filters} onFiltersChange={handleFiltersChange} dynamicCategories={dynamicCategories} dynamicLocations={dynamicLocations} priceMin={priceBounds.min} priceMax={priceBounds.max} />
+        {/* 필터를 상품 목록 위쪽으로 배치 */}
+        <div className="mb-6">
+          <ProductFilters 
+            filters={filters} 
+            onFiltersChange={handleFiltersChange} 
+            dynamicCategories={dynamicCategories} 
+            dynamicLocations={dynamicLocations} 
+            priceMin={priceBounds.min} 
+            priceMax={priceBounds.max} 
+          />
         </div>
 
-        <div className="grid grid-cols-12 gap-6">
-          <aside className="hidden md:block md:col-span-3">
-            <div className="md:sticky md:top-24">
-              <ProductFilters filters={filters} onFiltersChange={handleFiltersChange} dynamicCategories={dynamicCategories} dynamicLocations={dynamicLocations} priceMin={priceBounds.min} priceMax={priceBounds.max} />
-            </div>
-          </aside>
+        {/* 상품 개수 표시 */}
+        <div className="mb-6">
+          <p className="text-gray-600">{filtered.length} tours found</p>
+        </div>
 
-          <div className="col-span-12 md:col-span-9">
-            <div className="mb-6"><p className="text-gray-600">{filtered.length} tours found</p></div>
+        {/* 상품을 4개씩 배열 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {filtered.map((it) => (
+            <ActivityCard key={it.id} item={it as any} />
+          ))}
+        </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-6">
-              {filtered.map((it) => (
-                <ActivityCard key={it.id} item={it as any} />
-              ))}
-            </div>
-
-            {filtered.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No tours match your current filters.</p>
-              </div>
-            )}
+        {filtered.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No tours match your current filters.</p>
           </div>
-        </div>
+        )}
       </div>
     </LayoutProvider>
   )

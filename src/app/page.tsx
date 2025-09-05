@@ -44,6 +44,14 @@ export default async function HomePage() {
         const detail = p?.productDetail || {}
         // PRODUCT 이미지 규칙: imageUrl 우선 사용 (없을 때 최소한의 폴백)
         const imageCandidate = detail.imageUrl || detail.imageUrlWide || ''
+        
+        // 이미지 배열 생성
+        const images: string[] = []
+        if (detail.imageUrl) images.push(normalizeImage(detail.imageUrl))
+        if (detail.imageUrlWide && detail.imageUrlWide !== detail.imageUrl) images.push(normalizeImage(detail.imageUrlWide))
+        if (detail.imageCommon && detail.imageCommon !== detail.imageUrl && detail.imageCommon !== detail.imageUrlWide) images.push(normalizeImage(detail.imageCommon))
+        if (detail.imageCover && detail.imageCover !== detail.imageUrl && detail.imageCover !== detail.imageUrlWide && detail.imageCover !== detail.imageCommon) images.push(normalizeImage(detail.imageCover))
+        
         const price = detail.discountPrice ?? detail.price ?? ''
         const discountRate = detail.discountRate ?? ''
         const location = String(
@@ -60,6 +68,7 @@ export default async function HomePage() {
           id: String(p.productId ?? detail.id ?? ''),
           title: String(p.productName ?? detail.name ?? ''),
           image: normalizeImage(imageCandidate),
+          images: images.length > 0 ? images : undefined,
           category: detail.category ?? null,
           location: location || null,
           href: absolutize(p?.productLink ?? detail?.productLink ?? detail?.linkUrl ?? p?.linkUrl ?? ''),

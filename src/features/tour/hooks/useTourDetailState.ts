@@ -52,13 +52,17 @@ export function useTourDetailState(sections: Section[]): TourDetailState & TourD
       observers.push(observer)
     })
     return () => observers.forEach((o) => o.disconnect())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [sections])
 
   const scrollToSection = (sectionId: string) => {
     const section = sections.find(s => s.id === sectionId)
     if (section?.ref.current) {
       section.ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    if (typeof document !== 'undefined') {
+      const el = document.getElementById(sectionId)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
 

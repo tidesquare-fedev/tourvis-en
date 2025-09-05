@@ -65,7 +65,7 @@ export function TourDetailLayout({
   return (
     <div className={className}>
       {/* GNB - fixed로 설정 */}
-      <AppHeader active="tours" mobileTitle={title} />
+      <AppHeader active={undefined} mobileTitle={title} />
       
       {/* 스크롤 시 나타나는 메뉴탭 네비게이션 */}
       {showStickyHeader && (

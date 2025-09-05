@@ -9,9 +9,14 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 type TourDatePickerProps = {
   selectedDate?: Date
   onSelect: (date?: Date) => void
+  mode?: 'single' | 'range'
+  selectedRange?: { from?: Date; to?: Date }
+  onRangeSelect?: (range?: { from?: Date; to?: Date }) => void
+  availableDates?: string[]
+  dateStates?: Record<string, string>
 }
 
-export function TourDatePicker({ selectedDate, onSelect }: TourDatePickerProps) {
+export function TourDatePicker({ selectedDate, onSelect, mode = 'single', selectedRange, onRangeSelect, availableDates, dateStates }: TourDatePickerProps) {
   const [baseMonth, setBaseMonth] = useState<Date>(new Date())
   const currentMonth = baseMonth
   const nextMonth = addMonths(baseMonth, 1)
@@ -23,6 +28,21 @@ export function TourDatePicker({ selectedDate, onSelect }: TourDatePickerProps) 
   today.setHours(0, 0, 0, 0)
   const minMonth = startOfMonth(today)
   const canGoPrev = !isBefore(startOfMonth(baseMonth), minMonth)
+  const availableSet = new Set((availableDates || []).map((s) => s.trim()))
+  const isAllowedDate = (date: Date) => {
+    // Past dates disabled
+    if (date < today) return false
+    // If availableDates provided (DATE type), only allow those
+    if (availableSet.size > 0) {
+      const key = format(date, 'yyyy-MM-dd')
+      if (!availableSet.has(key)) return false
+      const state = dateStates?.[key]
+      // 상태가 CLOSED/UNAVAILABLE 등일 때 비활성화
+      if (state && /close|sold|full|unavail/i.test(state)) return false
+      return true
+    }
+    return true
+  }
 
   const clampMonth = (m: Date) => (isBefore(startOfMonth(m), minMonth) ? minMonth : m)
 
@@ -55,14 +75,13 @@ export function TourDatePicker({ selectedDate, onSelect }: TourDatePickerProps) 
             <h5 className="text-base md:text-[22px] font-semibold text-center mb-2">{format(currentMonth, 'MMMM yyyy')}</h5>
             <div className="flex justify-center">
               <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={onSelect}
+                mode={mode}
+                selected={mode === 'single' ? selectedDate : (selectedRange as any)}
+                onSelect={mode === 'single' ? (onSelect as any) : (onRangeSelect as any)}
                 month={currentMonth}
                 onMonthChange={setBaseMonth}
                 locale={enUS}
-                showOutsideDays
-                fixedWeeks
+                showOutsideDays={false}
                 className="border-0 shadow-none"
                 formatters={formatters as any}
                 classNames={{
@@ -74,7 +93,7 @@ export function TourDatePicker({ selectedDate, onSelect }: TourDatePickerProps) 
                   day_outside: 'text-gray-300',
                   day_disabled: 'text-gray-300 opacity-50 pointer-events-none',
                 }}
-                disabled={(date: Date) => date < today}
+                disabled={(date: Date) => !isAllowedDate(date)}
               />
             </div>
           </div>
@@ -84,14 +103,13 @@ export function TourDatePicker({ selectedDate, onSelect }: TourDatePickerProps) 
             <h5 className="text-[22px] font-semibold text-center mb-2">{format(nextMonth, 'MMMM yyyy')}</h5>
             <div className="flex justify-center">
               <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={onSelect}
+                mode={mode}
+                selected={mode === 'single' ? selectedDate : (selectedRange as any)}
+                onSelect={mode === 'single' ? (onSelect as any) : (onRangeSelect as any)}
                 month={nextMonth}
                 onMonthChange={(m) => setBaseMonth(addMonths(m, -1))}
                 locale={enUS}
-                showOutsideDays
-                fixedWeeks
+                showOutsideDays={false}
                 className="border-0 shadow-none"
                 formatters={formatters as any}
                 classNames={{
@@ -103,7 +121,7 @@ export function TourDatePicker({ selectedDate, onSelect }: TourDatePickerProps) 
                   day_outside: 'text-gray-300',
                   day_disabled: 'text-gray-300 opacity-50 pointer-events-none',
                 }}
-                disabled={(date: Date) => date < today}
+                disabled={(date: Date) => !isAllowedDate(date)}
               />
             </div>
           </div>

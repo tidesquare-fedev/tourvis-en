@@ -12,44 +12,73 @@ type TourBookingCardProps = {
   quantity: number
   onBook: () => void
   onValidateMsg?: string
+  canBook?: boolean
+  selectedOptionTitle?: string
+  selectedLabelTitle?: string
+  selectedTimeslotTitle?: string
+  currencyCode?: string
+  totalAmount?: number
+  selections?: Array<{
+    optionTitle: string
+    lines: Array<{ label: string; qty: number; unit: number }>
+    subtotal: number
+  }>
 }
 
-export function TourBookingCard({ discountRate, originalPrice, price, selectedDate, quantity, onBook, onValidateMsg }: TourBookingCardProps) {
-  const total = quantity > 0 ? quantity * price : undefined
+export function TourBookingCard({ discountRate, originalPrice, price, selectedDate, quantity, onBook, onValidateMsg, canBook, selectedOptionTitle, selectedLabelTitle, selectedTimeslotTitle, currencyCode = 'USD', totalAmount, selections = [] }: TourBookingCardProps) {
+  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.max(0, Number(value) || 0))
+  const unitPrice = Math.max(0, Number(price) || 0)
+  const total = typeof totalAmount === 'number' && totalAmount > 0 ? totalAmount : (quantity > 0 ? quantity * unitPrice : 0)
   return (
     <Card className="shadow-lg">
         <CardHeader className="pb-4">
           <div className="text-center">
-            {typeof discountRate === 'number' && discountRate > 0 && (
-              <div className="text-lg text-gray-500 line-through mb-1">${originalPrice}</div>
-            )}
-            <div className="flex items-center justify-center gap-3 mb-2">
-              {typeof discountRate === 'number' && discountRate > 0 && (
-                <span className="text-xl font-bold text-red-500">{discountRate}%</span>
-              )}
-              <span className="text-3xl font-bold text-blue-600">${price}</span>
-            </div>
-            <div className="text-sm text-gray-600">per person</div>
+            {/* Unit price hidden per requirement */}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {selectedDate && (
             <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-sm text-gray-600">Selected Date</div>
+              <div className="text-sm text-gray-600">Selected date</div>
               <div className="font-semibold">{format(selectedDate, 'PPP')}</div>
+            </div>
+          )}
+          {selections.length > 0 && (
+            <div className="space-y-2">
+              {selections.map((sel, idx) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded-lg border">
+                  <div className="text-sm font-semibold text-gray-900">{sel.optionTitle}</div>
+                  <div className="mt-1 space-y-1">
+                    {sel.lines.map((ln, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-700">{ln.label} × {ln.qty}</span>
+                        <span className="text-gray-900 font-medium">{formatCurrency(ln.qty * ln.unit)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-sm font-semibold">
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(sel.subtotal)}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           {typeof total === 'number' && (
             <div className="text-center p-3 bg-green-50 rounded-lg">
               <div className="text-sm text-gray-600">Participants: {quantity}</div>
-              <div className="text-xl font-bold text-green-600">Total: ${total}</div>
+              <div className="text-xl font-bold text-green-600">Total: {formatCurrency(total)}</div>
             </div>
           )}
-          <Button onClick={onBook} className="w-full" size="lg" disabled={!selectedDate || quantity < 1}>
-            {!selectedDate ? 'Select Date' : quantity < 1 ? 'Select Quantity' : 'Book Now'}
+          <div className="border-t pt-3 space-y-2">
+            <div className="flex items-center justify-between text-base font-semibold">
+              <span>Total</span>
+              <span>{formatCurrency(total)}</span>
+            </div>
+          </div>
+          <Button onClick={onBook} className="w-full" size="lg" disabled={!canBook}>
+            {canBook ? 'Confirm & pay' : 'Complete selections'}
           </Button>
-          {!selectedDate && <p className="text-xs text-gray-500 text-center">Please select a date to continue</p>}
-          {selectedDate && quantity < 1 && <p className="text-xs text-gray-500 text-center">Please select at least 1 participant</p>}
           {onValidateMsg && <p className="text-xs text-gray-500 text-center">{onValidateMsg}</p>}
         </CardContent>
       </Card>

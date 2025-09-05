@@ -1,12 +1,13 @@
 import { TourApiResponse } from '@/types/tour'
 import TourDetailClient from './TourDetailClient'
+import { getProductDetailV2Cached, getProductDatesV2 } from '@/lib/api/tna-v2'
 
 interface TourDetailPageProps {
   params: { id: string }
 }
 
-export default function TourDetailPage({ params }: TourDetailPageProps) {
-  // 상품 ID에 따라 다른 데이터 반환
+export default async function TourDetailPage({ params }: TourDetailPageProps) {
+  // 상품 ID에 따라 다른 데이터 반환 (모의 데이터 사용 금지)
   const getMockTourData = (id: string): TourApiResponse => {
     if (id === 'PRD2001371482') {
       // 아우슈비츠 투어 데이터
@@ -2765,7 +2766,262 @@ export default function TourDetailPage({ params }: TourDetailPageProps) {
   }
 }
 
-  const mockTourData = getMockTourData(params.id)
-  
-  return <TourDetailClient tourData={mockTourData} tourId={params.id} />
+  // 라우트 파라미터로 전달된 상품 ID 사용
+  const productId = decodeURIComponent(params.id)
+  // mock 데이터 사용 중지: API 결과만으로 구성하기 위한 기본 스켈레톤
+  let base: TourApiResponse = {
+    basic: {
+      code: null,
+      provider_code: '',
+      name: '',
+      sub_name: '',
+      calendar_type: '',
+      price_scope: '',
+      timeslot_is: false,
+      inventory_scope: '',
+      need_reservation: false,
+      min_book_days: 0,
+      max_book_days: 0,
+      min_participants: 1,
+      max_participants: 10,
+      duration: 0,
+      duration_unit: 'MINUTE',
+      meeting_point: '',
+      meeting_point_address: '',
+      meeting_point_latitude: 0,
+      meeting_point_longitude: 0,
+      meeting_point_description: '',
+      meeting_point_image: null,
+      cancellation_policy: '',
+      cancellation_hours: 0,
+      cancellation_description: '',
+      instant_confirmation: false,
+      mobile_voucher: false,
+      print_voucher: false,
+      languages: [],
+      included: [],
+      excluded: [],
+      bring_items: [],
+      not_allowed: [],
+      not_suitable: [],
+      additional_info: '',
+      images: [],
+      reviews: [],
+      price: 0,
+      originalPrice: 0,
+      discountRate: 0,
+      currency: 'EUR',
+      available_dates: [],
+      available_date_states: {},
+      timeslots: [],
+      working_date_type: '',
+      latitude: '',
+      longitude: '',
+      timezone: null,
+      sort_order: 0,
+      booking_type: '',
+      areas: [],
+      categories: [],
+    },
+    summary: { confirm_hour: '', voucher_type: '', customs: [], product_policies: [] },
+    filter: { min_depart: null as any, language: [], duration: '', depart_hour: [] },
+    detail: {
+      notice_title: null,
+      notice_detail: null,
+      highlight_title: 'Tour Highlights',
+      highlight_detail: '',
+      event: '',
+      description: '',
+      highlights: [],
+      itinerary: [],
+      preparations: '',
+      how_to_use: '',
+      warnings: '',
+      additional_info: '',
+      meeting_address: '',
+      meeting_latitude: '',
+      meeting_longitude: '',
+      meeting_info: '',
+      pickup_drop: '',
+      includes: '',
+      meeting_image: null,
+      excludes: '',
+      qnas: [],
+      primary_image: { display_name: '', file_url: '', file_size: 0 },
+      images: [],
+      additional_fields: [],
+    },
+    refund: { code: '', refund_type: '', cancel_type: '', cancel_time: '', cancel_info: '', provider_cancel_days: null, partial_cancel_is: null },
+    memo: null,
+    seo: {},
+    voucher_info: { contact_point: '', remark: '', delivery_type: '', details: [] },
+    attrs: {},
+    course_groups: [],
+    priority_provider_title: false,
+    option: { per_min: 1, per_max: 10, outer_id: null, booking_api_is: false, resell_is: null, options: [] },
+  }
+  let tourData: TourApiResponse
+  try {
+    const [raw] = await Promise.all([
+      getProductDetailV2Cached(productId, 300),
+    ])
+    // NOTE: 서버 API 스키마와 현 UI 스키마가 다를 수 있으므로 최소 매핑만 수행 (API 데이터만 사용)
+    // 최소/확장 매핑 (안전 가드 포함)
+    base.basic.code = raw?.code ?? base.basic.code ?? null
+    base.basic.provider_code = String(raw?.provider_code ?? raw?.provider?.code ?? base.basic.provider_code ?? '')
+    base.basic.name = String(raw?.name ?? base.basic.name)
+    base.basic.sub_name = String(raw?.summaries?.display_name ?? raw?.sub_name ?? base.basic.sub_name)
+    if (raw?.display_price) base.basic.display_price = {
+      price1: raw.display_price.price1 ?? null,
+      price2: raw.display_price.price2 ?? null,
+      price3: raw.display_price.price3 ?? null,
+      dc_rate: raw.display_price.dc_rate ?? null,
+      dc_coupon: Boolean(raw.display_price.dc_coupon)
+    }
+    if (raw?.calendar_type) base.basic.calendar_type = String(raw.calendar_type)
+    base.basic.price_scope = String(raw?.price_scope ?? base.basic.price_scope ?? '')
+    base.basic.timeslot_is = Boolean(raw?.timeslot_is ?? base.basic.timeslot_is)
+    base.basic.inventory_scope = String(raw?.inventory_scope ?? base.basic.inventory_scope ?? '')
+    base.basic.need_reservation = Boolean(raw?.need_reservation ?? base.basic.need_reservation)
+    base.basic.min_book_days = Number(raw?.min_book_days ?? base.basic.min_book_days ?? 0)
+    base.basic.max_book_days = Number(raw?.max_book_days ?? base.basic.max_book_days ?? 0)
+    base.basic.min_participants = Number(raw?.min_participants ?? base.basic.min_participants ?? 1)
+    base.basic.max_participants = Number(raw?.max_participants ?? base.basic.max_participants ?? 10)
+    base.basic.duration = Number(raw?.duration ?? base.basic.duration ?? 0)
+    base.basic.duration_unit = String(raw?.duration_unit ?? base.basic.duration_unit ?? 'MINUTE')
+    base.basic.meeting_point = String(raw?.meeting_point ?? base.basic.meeting_point ?? '')
+    base.basic.meeting_point_address = String(raw?.meeting_point_address ?? base.basic.meeting_point_address ?? '')
+    base.basic.meeting_point_latitude = Number(raw?.meeting_point_latitude ?? base.basic.meeting_point_latitude ?? 0)
+    base.basic.meeting_point_longitude = Number(raw?.meeting_point_longitude ?? base.basic.meeting_point_longitude ?? 0)
+    base.basic.meeting_point_description = String(raw?.meeting_point_description ?? base.basic.meeting_point_description ?? '')
+    base.basic.meeting_point_image = raw?.meeting_point_image ?? base.basic.meeting_point_image ?? null
+    base.basic.cancellation_policy = String(raw?.cancellation_policy ?? base.basic.cancellation_policy ?? '')
+    base.basic.cancellation_hours = Number(raw?.cancellation_hours ?? base.basic.cancellation_hours ?? 0)
+    base.basic.cancellation_description = String(raw?.cancellation_description ?? base.basic.cancellation_description ?? '')
+    base.basic.instant_confirmation = Boolean(raw?.instant_confirmation ?? base.basic.instant_confirmation)
+    base.basic.mobile_voucher = Boolean(raw?.mobile_voucher ?? base.basic.mobile_voucher)
+    base.basic.print_voucher = Boolean(raw?.print_voucher ?? base.basic.print_voucher)
+    base.basic.languages = Array.isArray(raw?.languages) ? raw.languages.map((x: any) => String(x)) : (base.basic.languages ?? [])
+    base.basic.included = Array.isArray(raw?.included) ? raw.included.map((x: any) => String(x)) : (base.basic.included ?? [])
+    base.basic.excluded = Array.isArray(raw?.excluded) ? raw.excluded.map((x: any) => String(x)) : (base.basic.excluded ?? [])
+    base.basic.bring_items = Array.isArray(raw?.bring_items) ? raw.bring_items.map((x: any) => String(x)) : (base.basic.bring_items ?? [])
+    base.basic.not_allowed = Array.isArray(raw?.not_allowed) ? raw.not_allowed.map((x: any) => String(x)) : (base.basic.not_allowed ?? [])
+    base.basic.not_suitable = Array.isArray(raw?.not_suitable) ? raw.not_suitable.map((x: any) => String(x)) : (base.basic.not_suitable ?? [])
+    base.basic.additional_info = String(raw?.additional_info ?? base.basic.additional_info ?? '')
+    base.basic.currency = String(raw?.currency ?? base.basic.currency ?? 'EUR')
+    base.basic.working_date_type = String(raw?.working_date_type ?? base.basic.working_date_type ?? '')
+    base.basic.latitude = String(raw?.latitude ?? base.basic.latitude ?? '')
+    base.basic.longitude = String(raw?.longitude ?? base.basic.longitude ?? '')
+    base.basic.timezone = String(raw?.timezone ?? base.basic.timezone ?? '')
+    base.basic.sort_order = Number(raw?.sort_order ?? base.basic.sort_order ?? 0)
+    base.basic.booking_type = String(raw?.booking_type ?? base.basic.booking_type ?? '')
+    // 가격 필드 동기화 (대표 가격이 우선)
+    if (base.basic.display_price?.price2 != null) base.basic.price = Number(base.basic.display_price.price2)
+    if (base.basic.display_price?.price1 != null) base.basic.originalPrice = Number(base.basic.display_price.price1)
+    if (base.basic.display_price?.dc_rate != null) base.basic.discountRate = Number(base.basic.display_price.dc_rate)
+    // 이미지 (가능 시 대체)
+    const imgList: string[] = Array.isArray(raw?.images)
+      ? raw.images.map((it: any) => String(it?.url || it?.file_url || it?.wide || it?.square || it?.origin || '')).filter(Boolean)
+      : []
+    if (imgList.length > 0) base.basic.images = imgList
+    // 지역/카테고리
+    const areas = Array.isArray(raw?.areas) ? raw.areas : (Array.isArray(raw?.region_list) ? raw.region_list : [])
+    base.basic.areas = areas.map((a: any) => ({ code: String(a?.code ?? a?.id ?? ''), name: String(a?.name ?? '') }))
+    const categories = Array.isArray(raw?.categories) ? raw.categories : (Array.isArray(raw?.category_list) ? raw.category_list : [])
+    base.basic.categories = categories.map((c: any) => ({ code: String(c?.code ?? c?.id ?? ''), name: String(c?.name ?? '') }))
+    // 리뷰 (있을 경우)
+    const reviews = Array.isArray(raw?.reviews) ? raw.reviews : []
+    if (reviews.length > 0) {
+      base.basic.reviews = reviews.map((r: any, idx: number) => ({
+        id: Number(r?.id ?? idx + 1),
+        name: String(r?.name ?? 'User'),
+        rating: Number(r?.rating ?? r?.score ?? 0),
+        date: String(r?.date ?? ''),
+        comment: String(r?.comment ?? r?.content ?? ''),
+        helpful: Number(r?.helpful ?? 0)
+      }))
+    }
+    // 상세 본문
+    const rawDetail = raw?.detail || raw?.details || raw
+    base.detail.description = String(rawDetail?.description ?? raw?.description ?? base.detail.description ?? '')
+    base.detail.highlight_title = String(rawDetail?.highlight_title ?? raw?.highlight_title ?? base.detail.highlight_title ?? 'Tour Highlights')
+    base.detail.highlight_detail = String(rawDetail?.highlight_detail ?? raw?.highlight_detail ?? base.detail.highlight_detail ?? '')
+    if (Array.isArray(rawDetail?.highlights)) base.detail.highlights = rawDetail.highlights.map((x: any) => String(x))
+    if (Array.isArray(rawDetail?.itinerary)) base.detail.itinerary = rawDetail.itinerary.map((it: any) => ({
+      day: Number(it?.day ?? 0),
+      title: String(it?.title ?? ''),
+      description: String(it?.description ?? ''),
+      duration: String(it?.duration ?? ''),
+      activities: Array.isArray(it?.activities) ? it.activities.map((x: any) => String(x)) : []
+    }))
+    // includes/excludes 문자열 매핑 (UI에서 파싱하여 노출)
+    base.detail.includes = String(rawDetail?.includes ?? (raw as any)?.includes ?? base.detail.includes ?? '')
+    base.detail.excludes = String(rawDetail?.excludes ?? (raw as any)?.excludes ?? base.detail.excludes ?? '')
+
+    // summaries 매핑 (confirm_hour, voucher_types, product_policies, languages, duration 등)
+    const sumRaw = (raw as any)?.summary || (raw as any)?.summaries || {}
+    base.summary.confirm_hour = String(sumRaw?.confirm_hour ?? base.summary.confirm_hour ?? '')
+    const vTypes = Array.isArray(sumRaw?.voucher_types) ? sumRaw.voucher_types.map((s: any) => String(s)) : []
+    ;(base.summary as any).voucher_types = vTypes
+    if (typeof sumRaw?.voucher_type === 'string') base.summary.voucher_type = String(sumRaw.voucher_type)
+    if (Array.isArray(sumRaw?.product_policies)) base.summary.product_policies = sumRaw.product_policies.map((s: any) => String(s))
+    if (Array.isArray(sumRaw?.languages)) base.summary.languages = sumRaw.languages.map((s: any) => String(s)) as any
+    base.summary.duration = String(sumRaw?.duration ?? base.summary.duration ?? '')
+    if (Array.isArray(sumRaw?.depart_hours)) (base.summary as any).depart_hours = sumRaw.depart_hours
+    if (typeof sumRaw?.min_depart !== 'undefined') (base.summary as any).min_depart = sumRaw.min_depart
+    base.detail.pickup_drop = String(rawDetail?.pickup_drop ?? base.detail.pickup_drop ?? '')
+    base.detail.additional_info = String(rawDetail?.additional_info ?? base.detail.additional_info ?? '')
+    // 추가 필드 예: 미팅포인트 상세
+    const additionalFields: any[] = Array.isArray(base.detail.additional_fields) ? base.detail.additional_fields.slice() : []
+    const mpContent = base.basic.meeting_point_description || base.basic.meeting_point
+    if (mpContent) {
+      const exists = additionalFields.find((f) => f?.key === 'meetingPoint')
+      if (!exists) additionalFields.push({ key: 'meetingPoint', title: 'Meeting Point', content: mpContent })
+    }
+    base.detail.additional_fields = additionalFields
+    // 예약 가능일 주입
+    // 예약 가능일: today 기준 조회 + 상태 매핑
+    try {
+      const today = new Date().toISOString().slice(0, 10)
+      const datesRes: any = await getProductDatesV2(productId, today)
+      // 응답이 배열 or 객체일 수 있으므로 유연 처리
+      if (Array.isArray(datesRes)) {
+        if (datesRes.length > 0 && typeof datesRes[0] === 'object') {
+          const list = datesRes as any[]
+          const stateMap: Record<string, string> = {}
+          base.basic.available_dates = list
+            .map((it) => String(it?.start_date || it?.date || ''))
+            .filter(Boolean)
+          base.basic.available_dates.forEach((d) => { stateMap[d] = 'OPEN' })
+          base.basic.available_date_states = stateMap
+        } else {
+          base.basic.available_dates = datesRes.map((d) => String(d))
+        }
+      } else if (datesRes && typeof datesRes === 'object') {
+        // 예: { dates: [{ date: 'YYYY-MM-DD', state: 'OPEN' }, ...] }
+        const list = Array.isArray(datesRes.dates) ? datesRes.dates : []
+        base.basic.available_dates = list.map((it: any) => String(it?.date ?? '')).filter(Boolean)
+        const stateMap: Record<string, string> = {}
+        list.forEach((it: any) => {
+          if (it?.date) stateMap[String(it.date)] = String(it.state ?? it.status ?? 'OPEN')
+        })
+        base.basic.available_date_states = stateMap
+      } else {
+        base.basic.available_dates = [today]
+      }
+    } catch {
+      base.basic.available_dates = [new Date().toISOString().slice(0, 10)]
+    }
+    // courses / course_groups 매핑 (UI에서 Itinerary로 사용)
+    const courseGroupsRaw: any[] = Array.isArray((raw as any)?.course_groups)
+      ? (raw as any).course_groups
+      : (Array.isArray((raw as any)?.courses) ? [{ courses: (raw as any).courses }] : [])
+    ;(base as any).course_groups = courseGroupsRaw
+    tourData = base
+  } catch {
+    // API 실패 시 간단한 에러 상태로 최소 필드만 채워서 렌더
+    tourData = base
+  }
+
+  return <TourDetailClient tourData={tourData} tourId={productId} />
 }

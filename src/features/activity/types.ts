@@ -2,6 +2,7 @@ export type ProductItem = {
   id: string
   title: string
   image?: string | null
+  images?: string[]
   price?: number | null
   originalPrice?: number | null
   discountRate?: number | null

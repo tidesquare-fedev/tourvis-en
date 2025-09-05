@@ -27,48 +27,35 @@ export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dy
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6">
-      {/* Mobile one-line categories (pills) */}
-      <div className="md:hidden mb-4">
+    <div className="bg-white rounded-lg shadow-sm border p-3">
+      {/* 카테고리는 그대로, 가격과 위치는 모달팝업으로 */}
+      <div className="space-y-4">
+        {/* 카테고리 필터 - 전체 너비 */}
         <CategoryFilter
           value={filters.category}
           onChange={(value) => updateFilter('category', value)}
           options={dynamicCategories}
           variant="pills"
         />
-      </div>
-      {/* Desktop stacked */}
-      <div className="hidden md:block space-y-5">
-        <CategoryFilter
-          value={filters.category}
-          onChange={(value) => updateFilter('category', value)}
-          options={dynamicCategories}
-        />
-        <LocationFilter
-          value={filters.locations}
-          onChange={(value) => updateFilter('locations', value)}
-          options={dynamicLocations}
-        />
-        <PriceFilter
-          value={filters.priceRange}
-          onChange={(value) => updateFilter('priceRange', value)}
-          min={priceMin}
-          max={priceMax}
-        />
-      </div>
-      {/* Mobile stacked: price then location */}
-      <div className="md:hidden space-y-4">
-        <PriceFilter
-          value={filters.priceRange}
-          onChange={(value) => updateFilter('priceRange', value)}
-          min={priceMin}
-          max={priceMax}
-        />
-        <LocationFilter
-          value={filters.locations}
-          onChange={(value) => updateFilter('locations', value)}
-          options={dynamicLocations}
-        />
+        
+        {/* 가격과 위치 필터 - 한 줄로 배치 */}
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <PriceFilter
+              value={filters.priceRange}
+              onChange={(value) => updateFilter('priceRange', value)}
+              min={priceMin}
+              max={priceMax}
+            />
+          </div>
+          <div className="flex-1">
+            <LocationFilter
+              value={filters.locations}
+              onChange={(value) => updateFilter('locations', value)}
+              options={dynamicLocations}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

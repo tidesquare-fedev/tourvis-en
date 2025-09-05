@@ -2,19 +2,23 @@
 
 import { ThumbsUp, Star, Check, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { maskName } from '@/lib/mask'
+import { useState } from 'react'
 
 type Review = { name?: string; rating: number; date: string; comment: string; helpful: number; tags?: string[] }
 
 type TourReviewsProps = {
   rating: number
   reviews: Review[]
+  statsReviews?: Review[]
   showAll: boolean
   onShowAll: () => void
   onShowLess?: () => void
   starColor?: string
+  totalCount?: number
 }
 
-export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, starColor = '#ff00cc' }: TourReviewsProps) {
+export function TourReviews({ rating, reviews, statsReviews, showAll, onShowAll, onShowLess, starColor = '#ff00cc', totalCount }: TourReviewsProps) {
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({})
   const renderStars = (value: number) => {
     const safe = Math.max(0, Math.min(5, Math.floor(Number(value) || 0)))
     return (
@@ -26,20 +30,49 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, s
     )
   }
 
-  // Calculate star distribution
+  // Calculate star distribution (use full stats if provided)
+  const source = (Array.isArray(statsReviews) && statsReviews.length > 0) ? statsReviews : reviews
   const starCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-  reviews.forEach(review => {
+  source.forEach(review => {
     const stars = Math.floor(review.rating)
     if (stars >= 1 && stars <= 5) {
       starCounts[stars as keyof typeof starCounts]++
     }
   })
 
-  const totalReviews = reviews.length
+  const totalReviewsStats = source.length
+  const displayedTotalCount = typeof totalCount === 'number' ? totalCount : totalReviewsStats
+
+  const formatDateYYMMDD = (s: string): string => {
+    const str = String(s || '')
+    // Case: 20250817 (YYYYMMDD)
+    const yyyymmdd = str.match(/^(\d{4})(\d{2})(\d{2})$/)
+    if (yyyymmdd) {
+      const yy = yyyymmdd[1].slice(-2)
+      const mm = yyyymmdd[2]
+      const dd = yyyymmdd[3]
+      return `${yy}.${mm}.${dd}`
+    }
+    const m = str.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/)
+    if (m) {
+      const yy = m[1].slice(-2)
+      const mm = m[2].padStart(2, '0')
+      const dd = m[3].padStart(2, '0')
+      return `${yy}.${mm}.${dd}`
+    }
+    const d = new Date(str)
+    if (!isNaN(d.getTime())) {
+      const yyyy = d.getFullYear().toString().slice(-2)
+      const mm = String(d.getMonth() + 1).padStart(2, '0')
+      const dd = String(d.getDate()).padStart(2, '0')
+      return `${yyyy}.${mm}.${dd}`
+    }
+    return str
+  }
   const starDistribution = [5, 4, 3, 2, 1].map(stars => ({
     stars,
     count: starCounts[stars as keyof typeof starCounts],
-    percentage: totalReviews > 0 ? (starCounts[stars as keyof typeof starCounts] / totalReviews) * 100 : 0
+    percentage: totalReviewsStats > 0 ? (starCounts[stars as keyof typeof starCounts] / totalReviewsStats) * 100 : 0
   }))
 
   return (
@@ -51,7 +84,7 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, s
           <div className="flex flex-col items-center lg:flex-1">
             <div className="text-4xl md:text-6xl font-bold mb-2">{rating}</div>
             <div className="mb-2">{renderStars(rating)}</div>
-            <div className="text-sm text-gray-600">based on {totalReviews.toLocaleString()} reviews</div>
+            <div className="text-sm text-gray-600">based on {displayedTotalCount.toLocaleString()} reviews</div>
           </div>
           
           {/* Right side - Star distribution */}
@@ -78,7 +111,10 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, s
         </div>
       </div>
       <div className="space-y-4">
-        {(showAll ? reviews : reviews.slice(0, 3)).map((review, index) => (
+        {reviews.map((review, index) => {
+          const needsMore = (review?.comment?.length || 0) > 160
+          const isExpanded = Boolean(expanded[index])
+          return (
           <div key={index} className="border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -87,39 +123,27 @@ export function TourReviews({ rating, reviews, showAll, onShowAll, onShowLess, s
                   <span className="font-semibold text-lg">{review.rating}.0</span>
                 </div>
                 <span className="text-sm text-gray-500">{maskName(review.name)}</span>
-                <span className="text-sm text-gray-500">{review.date}</span>
+                <span className="text-sm text-gray-500">{formatDateYYMMDD(review.date)}</span>
               </div>
             </div>
-            <div className="mb-3">
-              <span className="text-sm text-gray-600">Tour date: {review.date}</span>
-            </div>
-            <p className={`text-gray-700 mb-3 whitespace-pre-line ${showAll ? '' : 'line-clamp-3'}`}>{review.comment}</p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center gap-4">
-                <button className="flex items-center gap-1 hover:text-blue-600">
-                  <span>Was this review helpful?</span>
-                </button>
-                <button className="flex items-center gap-1 hover:text-blue-600">
-                  <ThumbsUp className="w-4 h-4" />
-                  <span>{review.helpful}</span>
+            <p className={`text-gray-700 mb-3 whitespace-pre-line ${isExpanded ? '' : 'line-clamp-2'}`}>{review.comment}</p>
+            {needsMore && (
+              <div className="-mt-2 mb-2">
+                <button className="text-sm text-gray-900 hover:underline inline-flex items-center" onClick={() => setExpanded(prev => ({ ...prev, [index]: !isExpanded }))}>
+                  {isExpanded ? (
+                    <>
+                      Show Less <ChevronUp className="w-4 h-4 ml-1" />
+                    </>
+                  ) : (
+                    <>
+                      Show More <ChevronDown className="w-4 h-4 ml-1" />
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-          </div>
-        ))}
-        {reviews.length >= 3 && (
-          <div className="mt-2 flex justify-start">
-            {!showAll ? (
-              <button className="text-sm text-gray-900 hover:underline inline-flex items-center" onClick={onShowAll}>
-                Show More <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-            ) : (
-              <button className="text-sm text-gray-900 hover:underline inline-flex items-center" onClick={onShowLess || onShowAll}>
-                Show Less <ChevronUp className="w-4 h-4 ml-1" />
-              </button>
             )}
           </div>
-        )}
+        )})}
       </div>
     </div>
   )

@@ -23,6 +23,7 @@ export const ProductItemSchema = z.object({
   id: z.string().or(z.number()).transform(String),
   title: z.string().default(''),
   image: z.string().default(''),
+  images: z.array(z.string()).optional(),
   category: z.string().optional().nullable(),
   location: z.string().optional().nullable(),
   href: z.string().optional().nullable(),

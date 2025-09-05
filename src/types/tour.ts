@@ -20,6 +20,14 @@ export interface TourBasic {
   name: string
   sub_name: string
   calendar_type: string
+  // Optional representative display price block from API
+  display_price?: {
+    price1: number | null
+    price2: number | null
+    price3: number | null
+    dc_rate: number | null
+    dc_coupon: boolean
+  }
   price_scope: string
   timeslot_is: boolean
   inventory_scope: string
@@ -63,6 +71,7 @@ export interface TourBasic {
   discountRate: number
   currency: string
   available_dates: string[]
+  available_date_states?: Record<string, string>
   timeslots: Array<{
     id: string
     name: string
@@ -84,8 +93,13 @@ export interface TourBasic {
 export interface TourSummary {
   confirm_hour: string
   voucher_type: string
+  voucher_types?: string[]
   customs: any[]
   product_policies: string[]
+  min_depart?: number | null
+  languages?: string[]
+  duration?: string
+  depart_hours?: any[]
 }
 
 export interface TourFilter {
@@ -182,6 +196,7 @@ export interface TourOption {
   dynamic_price: boolean
   attrs: any
   resell_is: boolean
+  inventory_timeslots?: Array<{ id: string; label_id?: string; quantity: number }>
 }
 
 export interface TourOptionData {

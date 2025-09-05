@@ -7,6 +7,27 @@ const normalizeImage = (p: any): string => {
   return String(candidate || '')
 }
 
+const normalizeImages = (p: any): string[] => {
+  const primary = p?.primary_image || {}
+  const displayImages = Array.isArray(p?.display_images) ? p.display_images : []
+  const images: string[] = []
+  
+  // Primary image 추가
+  if (primary?.wide) images.push(String(primary.wide))
+  else if (primary?.square) images.push(String(primary.square))
+  else if (primary?.origin) images.push(String(primary.origin))
+  
+  // Display images 추가 (중복 제거)
+  displayImages.forEach((img: any) => {
+    const imgUrl = img?.wide || img?.square || img?.origin
+    if (imgUrl && !images.includes(String(imgUrl))) {
+      images.push(String(imgUrl))
+    }
+  })
+  
+  return images
+}
+
 export const mapToProductItems = (data: unknown): ProductItem[] => {
   const root = data as any
   if (!Array.isArray(root?.list)) return []
@@ -25,6 +46,7 @@ export const mapToProductItems = (data: unknown): ProductItem[] => {
       id: String(p?.product_id ?? p?.id ?? ''),
       title: String(p?.name ?? p?.summaries?.display_name ?? ''),
       image: normalizeImage(p),
+      images: normalizeImages(p),
       price: Number(displayPrice?.price2 ?? priceObj?.repr ?? priceObj?.disp ?? 0) || undefined,
       originalPrice: Number(displayPrice?.price1 ?? priceObj?.disp ?? 0) || undefined,
       discountRate: Number(displayPrice?.dc_rate ?? priceObj?.dc_value ?? 0) || undefined,
@@ -59,6 +81,9 @@ export async function fetchProducts(providerIds: string): Promise<{ ok: boolean;
   const apiBase = process.env.TNA_API_BASE || process.env.NEXT_PUBLIC_TNA_API_BASE || buildApiBase(process.env.TNA_API_TOKEN)
   const url = new URL(`${apiBase}/tna-api-v2/rest/product/_search`)
   url.searchParams.set('provider_ids', providerIds)
+  // 기본 페이지 크기 확장: 필요한 전체 수량 노출(예: 156개) 보장을 위해 여유 있게 요청
+  url.searchParams.set('count', '200')
+  url.searchParams.set('offset', '0')
 
   const headers: Record<string, string> = { accept: 'application/json' }
   if (process.env.TNA_API_TOKEN) {

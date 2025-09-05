@@ -65,8 +65,14 @@ function ReviewCard({ review, starColor, maskName }: { review: Review; starColor
 }
 
 export function TopReviewsCarousel({ reviews, starColor = '#ff00cc', rating, reviewCount, onScrollToReviews, maskName }: TopReviewsCarouselProps) {
+  const parseDate = (s: string): number => {
+    const d = new Date(String(s || ''))
+    const t = d.getTime()
+    return isNaN(t) ? 0 : t
+  }
   const topReviews = [...(reviews || [])]
-    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    .filter((r) => Number(r?.rating ?? 0) >= 5)
+    .sort((a, b) => parseDate(b.date) - parseDate(a.date))
     .slice(0, 10)
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false })

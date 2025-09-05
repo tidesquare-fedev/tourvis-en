@@ -31,9 +31,12 @@ type TourHeroSectionProps = {
   starColor: string
   onScrollToReviews: () => void
   maskName: (name: string) => string
+  reviewsOverride?: Array<{ name: string; rating: number; date: string; comment: string }>
+  ratingOverride?: number
+  reviewCountOverride?: number
 }
 
-export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, maskName }: TourHeroSectionProps) {
+export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, maskName, reviewsOverride, ratingOverride, reviewCountOverride }: TourHeroSectionProps) {
   // tour.images가 문자열 배열이므로 이를 우선으로 사용
   const allImages = tour.images && tour.images.length > 0 ? tour.images : 
     (tourData.detail.images?.map(img => img.file_url) || [])
@@ -220,47 +223,57 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              {/* Duration */}
+              {/* Duration (from summaries.duration like IN4H) */}
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Clock className="w-5 h-5 text-blue-500" />
                 <div>
                   <div className="font-semibold text-gray-900">{(() => {
-                    const durationCode = tourData.filter?.duration
-                    if (durationCode === 'OV6H') return 'Over 6 hours'
-                    if (durationCode === 'OV8H') return 'Over 8 hours'
+                    const code = tourData.summary?.duration
+                    if (typeof code === 'string' && code.startsWith('IN')) {
+                      const num = code.replace(/[^0-9]/g, '')
+                      if (code.endsWith('H') && num) return `${num} hours`
+                      if (code.endsWith('D') && num) return `${num} days`
+                    }
+                    if (typeof code === 'string' && code.startsWith('OV')) {
+                      const num = code.replace(/[^0-9]/g, '')
+                      if (code.endsWith('H') && num) return `Over ${num} hours`
+                      if (code.endsWith('D') && num) return `Over ${num} days`
+                    }
                     return tour.duration
                   })()}</div>
                   <div className="text-xs text-gray-500">Duration</div>
                 </div>
               </div>
 
-              {/* Language */}
+              {/* Language (from summaries.languages) */}
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <Globe className="w-5 h-5 text-green-500" />
                 <div>
                   <div className="font-semibold text-gray-900">{(() => {
-                    const languages = tourData.filter?.language || []
-                    const languageMap: Record<string, string> = {
-                      'ENGLISH': 'English',
-                      'KOREAN': 'Korean',
-                      'JAPANESE': 'Japanese',
-                      'CHINESE': 'Chinese',
-                      'SPANISH': 'Spanish',
-                      'FRENCH': 'French',
-                      'GERMAN': 'German',
-                      'ITALIAN': 'Italian',
-                      'PORTUGUESE': 'Portuguese',
-                      'RUSSIAN': 'Russian',
-                      'ETC': 'Korean'
+                    const mapLang = (s: string): string => {
+                      const raw = String(s || '').trim()
+                      const upper = raw.toUpperCase()
+                      const korMap: Record<string, string> = {
+                        '영어': 'English', '한국어': 'Korean', '일본어': 'Japanese', '중국어': 'Chinese', '스페인어': 'Spanish', '프랑스어': 'French', '독일어': 'German', '이탈리아어': 'Italian', '포르투갈어': 'Portuguese', '러시아어': 'Russian',
+                      }
+                      if (korMap[raw as keyof typeof korMap]) return korMap[raw as keyof typeof korMap]
+                      const codeMap: Record<string, string> = {
+                        'ENGLISH': 'English', 'KOREAN': 'Korean', 'JAPANESE': 'Japanese', 'CHINESE': 'Chinese', 'SPANISH': 'Spanish', 'FRENCH': 'French', 'GERMAN': 'German', 'ITALIAN': 'Italian', 'PORTUGUESE': 'Portuguese', 'RUSSIAN': 'Russian', 'ETC': 'Korean',
+                        'EN': 'English', 'KO': 'Korean', 'JA': 'Japanese', 'ZH': 'Chinese', 'ES': 'Spanish', 'FR': 'French', 'DE': 'German', 'IT': 'Italian', 'PT': 'Portuguese', 'RU': 'Russian'
+                      }
+                      return codeMap[upper] || raw
                     }
-                    const friendlyLanguages = languages.map(lang => languageMap[lang] || lang)
-                    return friendlyLanguages.join(', ') || tour.language
+                    const pref = Array.isArray(tourData.summary?.languages) && tourData.summary!.languages!.length > 0
+                      ? tourData.summary!.languages!
+                      : (Array.isArray(tourData.basic.languages) ? tourData.basic.languages : [])
+                    const mapped = (pref as string[]).map(mapLang).filter(Boolean)
+                    return mapped.join(', ')
                   })()}</div>
                   <div className="text-xs text-gray-500">Language</div>
                 </div>
               </div>
 
-              {/* Confirm */}
+              {/* Confirm (from summaries.confirm_hour / product_policies) */}
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <div className="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -274,14 +287,14 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                 </div>
               </div>
 
-              {/* Voucher */}
+              {/* Voucher (from summaries.voucher_types) */}
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                 <div className="w-5 h-5 rounded-full border-2 border-purple-500 flex items-center justify-center">
                   <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900">{(() => {
-                    const voucherType = tourData.summary?.voucher_type
+                    const voucherType = Array.isArray(tourData.summary?.voucher_types) ? tourData.summary?.voucher_types[0] : (tourData.summary as any)?.voucher_type
                     if (voucherType === 'M_VOUCHER') return 'Mobile voucher'
                     if (voucherType === 'P_VOUCHER') return 'Printed voucher'
                     return 'Mobile voucher'
@@ -294,10 +307,10 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
             {/* Real Traveler Reviews */}
             <div className="mt-6">
               <TopReviewsCarousel 
-                reviews={tour.reviews as any} 
+                reviews={(reviewsOverride && reviewsOverride.length > 0 ? reviewsOverride : (tour.reviews as any))} 
                 starColor={starColor} 
-                rating={tour.rating}
-                reviewCount={tour.reviewCount}
+                rating={typeof ratingOverride === 'number' ? ratingOverride : tour.rating}
+                reviewCount={typeof reviewCountOverride === 'number' ? reviewCountOverride : tour.reviewCount}
                 onScrollToReviews={onScrollToReviews}
                 maskName={maskName}
               />

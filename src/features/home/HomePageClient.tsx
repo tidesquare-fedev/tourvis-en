@@ -9,7 +9,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Star, MapPin, Calendar, Users, Search } from 'lucide-react'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel'
+import { ActivityCard } from '@/features/activity/components/ActivityCard'
 import type { Banner, Category, Region, Section } from './types'
+import type { ProductItem } from '@/features/activity/types'
 
 export interface HomePageClientProps {
   banners: Banner[]
@@ -121,38 +123,28 @@ export default function HomePageClient({ banners, regions, categories, sections 
   const renderCarousel = (items: any[], opts?: { showArrows?: boolean }) => (
     <Carousel className="w-full" opts={{ align: 'start', slidesToScroll: 1 }}>
       <CarouselContent className="-ml-2 md:-ml-4">
-        {items.slice(0, 4).map((p) => (
-          <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-            <Link href={p.href || `/activity/product/${p.id}`}>
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
-                <div className="relative h-44 sm:h-52 overflow-hidden">
-                  <img src={p.image} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                </div>
-                <CardContent className="p-3 sm:p-4">
-                  <div className="text-sm text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
-                  <h3 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 leading-tight">{p.title}</h3>
-                  {typeof p.rating === 'number' && p.rating > 0 && typeof p.reviewCount === 'number' && p.reviewCount > 0 && (
-                    <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">
-                      <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
-                      {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
-                    </div>
-                  )}
-                  <div className="space-y-1">
-                    {typeof p.discountRate === 'number' && p.discountRate > 0 && (
-                      <div className="text-xs sm:text-sm text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      {typeof p.discountRate === 'number' && p.discountRate > 0 && (
-                        <span className="text-xs sm:text-sm font-bold text-red-500">{p.discountRate}% OFF</span>
-                      )}
-                      <div className="text-lg sm:text-xl font-bold text-blue-600">{typeof p.price === 'number' ? `$${p.price.toLocaleString()}` : p.price}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          </CarouselItem>
-        ))}
+        {items.slice(0, 4).map((p) => {
+          // 기존 데이터를 ProductItem 형태로 변환
+          const productItem: ProductItem = {
+            id: p.id,
+            title: p.title,
+            image: p.image,
+            images: p.images || (p.image ? [p.image] : []),
+            price: typeof p.price === 'string' ? Number(p.price) : p.price,
+            originalPrice: typeof p.originalPrice === 'string' ? Number(p.originalPrice) : p.originalPrice,
+            discountRate: typeof p.discountRate === 'string' ? Number(p.discountRate) : p.discountRate,
+            rating: p.rating,
+            reviewCount: p.reviewCount,
+            location: p.location,
+            category: p.category,
+          }
+          
+          return (
+            <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+              <ActivityCard item={productItem} />
+            </CarouselItem>
+          )
+        })}
       </CarouselContent>
       {(opts?.showArrows ?? true) && (
         <div className="flex justify-center mt-3 space-x-4">
@@ -269,38 +261,27 @@ export default function HomePageClient({ banners, regions, categories, sections 
               </div>
               <Carousel className="w-full relative" opts={{ align: 'start' }}>
                 <CarouselContent className="-ml-2 md:-ml-4">
-                  {cat.items.slice(0, 4).map((p) => (
-                    <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                      <Link href={p.href || `/activity/product/${p.id}`}>
-                        <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer h-full">
-                          <div className="relative h-40 sm:h-48 overflow-hidden">
-                            <img src={p.image} alt={p.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                          </div>
-                          <CardContent className="p-3 sm:p-4">
-                            <div className="text-sm text-gray-500 mb-1">{p.category || 'Category'} · {p.location || 'Location'}</div>
-                            <h4 className="font-semibold text-sm sm:text-base mb-2 line-clamp-2 leading-tight">{p.title}</h4>
-                            {typeof p.rating === 'number' && p.rating > 0 && typeof p.reviewCount === 'number' && p.reviewCount > 0 && (
-                              <div className="flex items-center text-xs sm:text-sm text-yellow-600 mb-2">
-                                <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 fill-current" />
-                                {p.rating?.toFixed ? p.rating.toFixed(1) : p.rating} ({p.reviewCount})
-                              </div>
-                            )}
-                            <div className="space-y-1">
-                              {typeof p.discountRate === 'number' && p.discountRate > 0 && (
-                                <div className="text-xs sm:text-sm text-gray-500 line-through">{typeof p.originalPrice === 'number' ? `$${p.originalPrice.toLocaleString()}` : p.originalPrice}</div>
-                              )}
-                              <div className="flex items-center gap-2">
-                                {typeof p.discountRate === 'number' && p.discountRate > 0 && (
-                                  <span className="text-xs sm:text-sm font-bold text-red-500">{p.discountRate}% OFF</span>
-                                )}
-                                <div className="text-lg sm:text-xl font-bold text-blue-600">{typeof p.price === 'number' ? `$${p.price.toLocaleString()}` : p.price}</div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    </CarouselItem>
-                  ))}
+                  {cat.items.slice(0, 4).map((p) => {
+                    const productItem: ProductItem = {
+                      id: p.id,
+                      title: p.title,
+                      image: p.image,
+                      images: p.images || (p.image ? [p.image] : []),
+                      price: typeof p.price === 'string' ? Number(p.price) : p.price,
+                      originalPrice: typeof p.originalPrice === 'string' ? Number(p.originalPrice) : p.originalPrice,
+                      discountRate: typeof p.discountRate === 'string' ? Number(p.discountRate) : p.discountRate,
+                      rating: p.rating,
+                      reviewCount: p.reviewCount,
+                      location: p.location,
+                      category: p.category,
+                    }
+                    
+                    return (
+                      <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                        <ActivityCard item={productItem} />
+                      </CarouselItem>
+                    )
+                  })}
                 </CarouselContent>
               </Carousel>
             </div>

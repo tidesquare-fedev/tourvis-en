@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Package, X, AlertTriangle, Check, ChevronRight, Info } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 type ImportantInfoItem = {
   id: string
   title: string
-  icon: React.ReactNode
+  icon: ReactNode
   content: string[]
   color: string
 }
@@ -28,46 +28,51 @@ export function ImportantInformation({
   const [selectedItem, setSelectedItem] = useState<ImportantInfoItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  const cleanList = (arr?: string[]) => (Array.isArray(arr) ? arr.map((s) => String(s).trim()).filter(Boolean) : [])
+  const bringItemsClean = cleanList(bringItems)
+  const notAllowedClean = cleanList(notAllowed)
+  const notSuitableClean = cleanList(notSuitable)
+  const beforeTravelClean = cleanList(beforeTravel)
+
   const infoItems: ImportantInfoItem[] = [
     {
       id: 'bring',
       title: 'What to Bring',
       icon: <Package className="w-5 h-5" />,
-      content: bringItems,
+      content: bringItemsClean,
       color: 'text-blue-600'
     },
     {
       id: 'not-allowed',
       title: 'Not Allowed',
       icon: <X className="w-5 h-5" />,
-      content: notAllowed,
+      content: notAllowedClean,
       color: 'text-purple-600'
     },
     {
       id: 'not-suitable',
       title: 'Not Suitable For',
       icon: <AlertTriangle className="w-5 h-5" />,
-      content: notSuitable,
+      content: notSuitableClean,
       color: 'text-blue-600'
     },
     {
       id: 'before-travel',
       title: 'Before you travel',
       icon: <Check className="w-5 h-5" />,
-      content: beforeTravel.length > 0 ? beforeTravel : [
-        'Valid ID required for entry',
-        'Arrive 15 minutes before tour time',
-        'Dress code applies (shoulders and knees covered)',
-        'No large bags or backpacks allowed'
-      ],
+      content: beforeTravelClean,
       color: 'text-purple-600'
     }
   ]
+
+  const visibleItems = infoItems.filter((it) => Array.isArray(it.content) && it.content.length > 0)
 
   const handleItemClick = (item: ImportantInfoItem) => {
     setSelectedItem(item)
     setIsModalOpen(true)
   }
+
+  if (visibleItems.length === 0) return null
 
   return (
     <>
@@ -80,7 +85,7 @@ export function ImportantInformation({
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          {infoItems.map((item) => (
+          {visibleItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleItemClick(item)}
@@ -102,7 +107,7 @@ export function ImportantInformation({
 
       {/* Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="w-[calc(100vw-32px)] sm:w-[500px] md:w-[600px] lg:w-[700px] max-w-[90vw] max-h-[80vh] overflow-y-auto mx-auto my-4">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader className="pb-2">
             <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl">
               <div className={`${selectedItem?.color} flex-shrink-0`}>

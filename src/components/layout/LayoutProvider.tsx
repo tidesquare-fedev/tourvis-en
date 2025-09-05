@@ -38,7 +38,8 @@ export function LayoutProvider({
     if (pathname.startsWith('/reservation')) {
       return 'reservation'
     }
-    return 'tours' // default
+    // 메인 페이지와 상품 상세 페이지에서는 비활성화
+    return undefined
   }
   
   // Determine background class based on pathname
