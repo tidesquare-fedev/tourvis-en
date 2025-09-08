@@ -1,14 +1,13 @@
 "use client"
 
-import { useMemo, useState, useCallback, useEffect } from 'react'
+import { memo, useMemo, useState, useCallback, useEffect } from 'react'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import { Star, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import useEmblaCarousel from 'embla-carousel-react'
-
-type Review = { name: string; rating: number; date: string; comment: string }
+import type { ReviewItem } from '@/types/review'
 
 type TopReviewsCarouselProps = {
-  reviews: Review[]
+  reviews: ReviewItem[]
   starColor?: string
   rating?: number
   reviewCount?: number
@@ -16,7 +15,7 @@ type TopReviewsCarouselProps = {
   maskName?: (name: string) => string
 }
 
-function ReviewCard({ review, starColor, maskName }: { review: Review; starColor: string; maskName?: (name: string) => string }) {
+const ReviewCard = memo(function ReviewCard({ review, starColor, maskName }: { review: ReviewItem; starColor: string; maskName?: (name: string) => string }) {
   const [expanded, setExpanded] = useState(false)
   const needsMore = (review?.comment?.length || 0) > 160
 
@@ -62,18 +61,20 @@ function ReviewCard({ review, starColor, maskName }: { review: Review; starColor
       </div>
     </div>
   )
-}
+})
 
-export function TopReviewsCarousel({ reviews, starColor = '#ff00cc', rating, reviewCount, onScrollToReviews, maskName }: TopReviewsCarouselProps) {
+export const TopReviewsCarousel = memo(function TopReviewsCarousel({ reviews, starColor = '#ff00cc', rating, reviewCount, onScrollToReviews, maskName }: TopReviewsCarouselProps) {
   const parseDate = (s: string): number => {
     const d = new Date(String(s || ''))
     const t = d.getTime()
     return isNaN(t) ? 0 : t
   }
-  const topReviews = [...(reviews || [])]
-    .filter((r) => Number(r?.rating ?? 0) >= 5)
-    .sort((a, b) => parseDate(b.date) - parseDate(a.date))
-    .slice(0, 10)
+  const topReviews = useMemo(() => (
+    [...(reviews || [])]
+      .filter((r) => Number(r?.rating ?? 0) >= 5)
+      .sort((a, b) => parseDate(b.date) - parseDate(a.date))
+      .slice(0, 10)
+  ), [reviews])
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false })
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
@@ -163,6 +164,6 @@ export function TopReviewsCarousel({ reviews, starColor = '#ff00cc', rating, rev
       </div>
     </div>
   )
-}
+})
 
 

@@ -2,14 +2,13 @@
 
 import { ThumbsUp, Star, Check, X, ChevronDown, ChevronUp } from 'lucide-react'
 import { maskName } from '@/lib/mask'
-import { useState } from 'react'
-
-type Review = { name?: string; rating: number; date: string; comment: string; helpful: number; tags?: string[] }
+import { memo, useMemo, useState } from 'react'
+import type { ReviewItem } from '@/types/review'
 
 type TourReviewsProps = {
   rating: number
-  reviews: Review[]
-  statsReviews?: Review[]
+  reviews: ReviewItem[]
+  statsReviews?: ReviewItem[]
   showAll: boolean
   onShowAll: () => void
   onShowLess?: () => void
@@ -17,7 +16,7 @@ type TourReviewsProps = {
   totalCount?: number
 }
 
-export function TourReviews({ rating, reviews, statsReviews, showAll, onShowAll, onShowLess, starColor = '#ff00cc', totalCount }: TourReviewsProps) {
+export const TourReviews = memo(function TourReviews({ rating, reviews, statsReviews, showAll, onShowAll, onShowLess, starColor = '#ff00cc', totalCount }: TourReviewsProps) {
   const [expanded, setExpanded] = useState<Record<number, boolean>>({})
   const renderStars = (value: number) => {
     const safe = Math.max(0, Math.min(5, Math.floor(Number(value) || 0)))
@@ -31,17 +30,23 @@ export function TourReviews({ rating, reviews, statsReviews, showAll, onShowAll,
   }
 
   // Calculate star distribution (use full stats if provided)
-  const source = (Array.isArray(statsReviews) && statsReviews.length > 0) ? statsReviews : reviews
-  const starCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-  source.forEach(review => {
-    const stars = Math.floor(review.rating)
-    if (stars >= 1 && stars <= 5) {
-      starCounts[stars as keyof typeof starCounts]++
-    }
-  })
-
-  const totalReviewsStats = source.length
-  const displayedTotalCount = typeof totalCount === 'number' ? totalCount : totalReviewsStats
+  const { starDistribution, displayedTotalCount } = useMemo(() => {
+    const src = (Array.isArray(statsReviews) && statsReviews.length > 0) ? statsReviews : reviews
+    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+    src.forEach(review => {
+      const stars = Math.floor(Number(review.rating) || 0)
+      if (stars >= 1 && stars <= 5) {
+        counts[stars as keyof typeof counts]++
+      }
+    })
+    const totalStats = src.length
+    const dist = [5, 4, 3, 2, 1].map(stars => ({
+      stars,
+      count: counts[stars as keyof typeof counts],
+      percentage: totalStats > 0 ? (counts[stars as keyof typeof counts] / totalStats) * 100 : 0
+    }))
+    return { starDistribution: dist, displayedTotalCount: typeof totalCount === 'number' ? totalCount : totalStats }
+  }, [statsReviews, reviews, totalCount])
 
   const formatDateYYMMDD = (s: string): string => {
     const str = String(s || '')
@@ -69,12 +74,6 @@ export function TourReviews({ rating, reviews, statsReviews, showAll, onShowAll,
     }
     return str
   }
-  const starDistribution = [5, 4, 3, 2, 1].map(stars => ({
-    stars,
-    count: starCounts[stars as keyof typeof starCounts],
-    percentage: totalReviewsStats > 0 ? (starCounts[stars as keyof typeof starCounts] / totalReviewsStats) * 100 : 0
-  }))
-
   return (
     <div className="mb-10 md:mb-12 min-w-0">
       <h3 className="text-[20px] md:text-[22px] font-semibold mb-4 md:mb-6">Reviews</h3>
@@ -147,6 +146,6 @@ export function TourReviews({ rating, reviews, statsReviews, showAll, onShowAll,
       </div>
     </div>
   )
-}
+})
 
 

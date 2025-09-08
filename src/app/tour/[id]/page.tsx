@@ -2971,14 +2971,51 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
     if (typeof sumRaw?.min_depart !== 'undefined') (base.summary as any).min_depart = sumRaw.min_depart
     base.detail.pickup_drop = String(rawDetail?.pickup_drop ?? base.detail.pickup_drop ?? '')
     base.detail.additional_info = String(rawDetail?.additional_info ?? base.detail.additional_info ?? '')
-    // 추가 필드 예: 미팅포인트 상세
-    const additionalFields: any[] = Array.isArray(base.detail.additional_fields) ? base.detail.additional_fields.slice() : []
+    // 추가 필드: API의 additional_fields를 우선 흡수하고 미팅포인트를 보강
+    const rf: any[] = Array.isArray((rawDetail as any)?.additional_fields)
+      ? (rawDetail as any).additional_fields
+      : (Array.isArray((raw as any)?.additional_fields) ? (raw as any).additional_fields : [])
+    const additionalFields: any[] = Array.isArray(rf)
+      ? rf.map((f: any) => ({ key: String(f?.key ?? ''), title: String(f?.title ?? ''), content: String(f?.content ?? '') }))
+      : []
     const mpContent = base.basic.meeting_point_description || base.basic.meeting_point
     if (mpContent) {
       const exists = additionalFields.find((f) => f?.key === 'meetingPoint')
       if (!exists) additionalFields.push({ key: 'meetingPoint', title: 'Meeting Point', content: mpContent })
     }
     base.detail.additional_fields = additionalFields
+    // 환불/취소 정책 매핑 (refund_detail → base.refund)
+    const refundDetail = (raw as any)?.refund_detail || (rawDetail as any)?.refund_detail
+    if (refundDetail && typeof refundDetail === 'object') {
+      base.refund.refund_type = String(refundDetail?.refund_type ?? base.refund.refund_type ?? '')
+      base.refund.cancel_type = String(refundDetail?.cancel_type ?? base.refund.cancel_type ?? '')
+      base.refund.cancel_time = String(refundDetail?.cancel_time ?? base.refund.cancel_time ?? '')
+      base.refund.cancel_info = String(refundDetail?.cancel_info ?? base.refund.cancel_info ?? '')
+      ;(base.refund as any).partial_cancel_is = typeof refundDetail?.partial_cancelable === 'boolean' ? Boolean(refundDetail.partial_cancelable) : base.refund.partial_cancel_is
+      ;(base.refund as any).provider_cancel_days = (refundDetail?.working_time?.days ?? null)
+      ;(base.refund as any).working_days = String(refundDetail?.working_time?.days ?? '') || null
+      ;(base.refund as any).work_on_korean_holiday = typeof refundDetail?.working_time?.work_on_korean_holiday === 'boolean' ? refundDetail.working_time.work_on_korean_holiday : null
+      ;(base.refund as any).working_hour = String(refundDetail?.working_time?.hour ?? '') || null
+      ;(base.refund as any).working_timezone = String(refundDetail?.working_time?.timezone ?? '') || null
+      ;(base.refund as any).fee_rates = Array.isArray(refundDetail?.fee_rates)
+        ? refundDetail.fee_rates.map((r: any) => ({ start: r?.start ?? null, end: r?.end ?? null, rate: Number(r?.rate ?? 0) }))
+        : []
+      ;(base.refund as any).free_cancel_due_date = String(refundDetail?.free_cancel_due_date ?? '') || null
+      // base.basic.cancellation_description을 사람이 읽을 수 있는 규칙으로 구성
+      try {
+        const rates: any[] = Array.isArray(refundDetail?.fee_rates) ? refundDetail.fee_rates : []
+        if (rates.length > 0) {
+          const lines = rates.map((r) => {
+            const start = r?.start == null ? 'N+∞' : `N-${Number(r.start)}`
+            const end = r?.end == null ? 'N-0' : `N-${Number(r.end)}`
+            const rate = `${Number(r?.rate ?? 0)}%`
+            return `${start} ~ ${end}: ${rate}`
+          })
+          base.basic.cancellation_description = lines.join('\n')
+        }
+      } catch {}
+    }
+
     // 예약 가능일 주입
     // 예약 가능일: today 기준 조회 + 상태 매핑
     try {

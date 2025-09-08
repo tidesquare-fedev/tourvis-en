@@ -17,13 +17,15 @@ type ImportantInformationProps = {
   notAllowed: string[]
   notSuitable: string[]
   beforeTravel?: string[]
+  beforeTravelHtml?: string
 }
 
 export function ImportantInformation({ 
   bringItems, 
   notAllowed, 
   notSuitable, 
-  beforeTravel = [] 
+  beforeTravel = [],
+  beforeTravelHtml = ''
 }: ImportantInformationProps) {
   const [selectedItem, setSelectedItem] = useState<ImportantInfoItem | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -33,6 +35,14 @@ export function ImportantInformation({
   const notAllowedClean = cleanList(notAllowed)
   const notSuitableClean = cleanList(notSuitable)
   const beforeTravelClean = cleanList(beforeTravel)
+  const hasBeforeTravelHtml = typeof beforeTravelHtml === 'string' && beforeTravelHtml.trim().length > 0
+
+  const ensureUlClasses = (html: string): string => {
+    const s = String(html || '')
+    if (!s) return ''
+    if (/<ul[\s>]/i.test(s)) return s.replace('<ul', '<ul class="list-disc pl-5 space-y-1"')
+    return `<ul class="list-disc pl-5 space-y-1">${s}</ul>`
+  }
 
   const infoItems: ImportantInfoItem[] = [
     {
@@ -65,7 +75,12 @@ export function ImportantInformation({
     }
   ]
 
-  const visibleItems = infoItems.filter((it) => Array.isArray(it.content) && it.content.length > 0)
+  const visibleItems = infoItems.filter((it) => {
+    if (it.id === 'before-travel') {
+      return (Array.isArray(it.content) && it.content.length > 0) || hasBeforeTravelHtml
+    }
+    return Array.isArray(it.content) && it.content.length > 0
+  })
 
   const handleItemClick = (item: ImportantInfoItem) => {
     setSelectedItem(item)
@@ -117,32 +132,30 @@ export function ImportantInformation({
             </DialogTitle>
           </DialogHeader>
           <div className="mt-1">
-            {selectedItem?.content && selectedItem.content.length > 0 ? (
-              selectedItem.id === 'before-travel' ? (
-                <ul className="space-y-2 sm:space-y-3">
-                  {selectedItem.content[0]
-                    .split(/<br\s*\/?>|<li[^>]*>/i) // <br> 태그와 <li> 태그로 분할
-                    .map(item => item.replace(/<[^>]*>/g, '')) // 각 항목에서 HTML 태그 제거
-                    .filter(item => item.trim()) // 빈 문자열 제거
-                    .map((item, index) => (
-                      <li key={index} className="flex items-center gap-3 sm:gap-4">
-                        <span className="text-gray-900 flex-shrink-0 text-lg">•</span>
-                        <span className="text-gray-700 text-base sm:text-lg leading-relaxed break-words">{item.trim()}</span>
-                      </li>
-                    ))
-                  }
-                </ul>
-              ) : (
-                <ul className="space-y-2 sm:space-y-3">
-                  {selectedItem.content.map((item, index) => (
-                    <li key={index} className="flex items-center gap-3 sm:gap-4">
-                      <span className="text-gray-900 flex-shrink-0 text-lg">•</span>
-                      <span className="text-gray-700 text-base sm:text-lg leading-relaxed break-words">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              )
-            ) : (
+            {selectedItem?.id === 'before-travel' && hasBeforeTravelHtml && (
+              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: ensureUlClasses(beforeTravelHtml) }} />
+            )}
+            {selectedItem?.id === 'before-travel' && !hasBeforeTravelHtml && selectedItem?.content && selectedItem.content.length > 0 && (
+              <ul className="space-y-2 sm:space-y-3">
+                {selectedItem.content.map((item, index) => (
+                  <li key={index} className="flex items-center gap-3 sm:gap-4">
+                    <span className="text-gray-900 flex-shrink-0 text-lg">•</span>
+                    <span className="text-gray-700 text-base sm:text-lg leading-relaxed break-words">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {selectedItem?.id !== 'before-travel' && selectedItem?.content && selectedItem.content.length > 0 && (
+              <ul className="space-y-2 sm:space-y-3">
+                {selectedItem.content.map((item, index) => (
+                  <li key={index} className="flex items-center gap-3 sm:gap-4">
+                    <span className="text-gray-900 flex-shrink-0 text-lg">•</span>
+                    <span className="text-gray-700 text-base sm:text-lg leading-relaxed break-words">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {(!selectedItem?.content || selectedItem?.content.length === 0) && (!hasBeforeTravelHtml || selectedItem?.id !== 'before-travel') && (
               <p className="text-gray-500 text-base sm:text-lg">No specific information available.</p>
             )}
           </div>

@@ -8,22 +8,25 @@ import { useDerivedFilters } from '@/features/activity/hooks/useDerivedFilters'
 import { ActivityCard } from '@/features/activity/components/ActivityCard'
 import type { ProductItem } from '@/features/activity/types'
 import { useFiltersState } from '@/features/activity/hooks/useFiltersState'
+import { useProducts } from '@/hooks/useProducts'
 
-export default function SearchPageClient({ items }: { items: ProductItem[] }) {
+export default function SearchPageClient({ items, providerIds, keyword }: { items: ProductItem[]; providerIds?: string; keyword?: string }) {
+  const query = useProducts(providerIds || '', keyword)
+  const itemsSource = (providerIds && query.data?.items && query.data.items.length > 0) ? query.data.items : items
   const { categories: dynamicCategories, locations: dynamicLocations, price: priceBounds } = useDerivedFilters(items)
   const { filters, replace } = useFiltersState({ initialPriceMin: priceBounds.min, initialPriceMax: priceBounds.max })
 
   const handleFiltersChange = useCallback((next: typeof filters) => replace(next), [replace])
 
   const filtered = useMemo(() => {
-    return items.filter((it) => {
+    return itemsSource.filter((it) => {
       const locationMatch = filters.locations.length === 0 || filters.locations.includes(it.location || '')
       const categoryMatch = !filters.category || (it.category || '') === filters.category
       const priceValue = typeof it.price === 'number' ? it.price : null
       const priceMatch = priceValue !== null && priceValue >= filters.priceRange[0] && priceValue <= filters.priceRange[1]
       return locationMatch && categoryMatch && priceMatch
     })
-  }, [items, filters])
+  }, [itemsSource, filters])
 
   return (
     <LayoutProvider>

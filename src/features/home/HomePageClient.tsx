@@ -12,6 +12,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { ActivityCard } from '@/features/activity/components/ActivityCard'
 import type { Banner, Category, Region, Section } from './types'
 import type { ProductItem } from '@/features/activity/types'
+import { SectionCategoryCarousel } from '@/features/home/components/SectionCategoryCarousel'
+import { SectionFourByOne } from '@/features/home/components/SectionFourByOne'
 
 export interface HomePageClientProps {
   banners: Banner[]
@@ -215,7 +217,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                     <span className="text-base sm:text-lg font-semibold">{cat.title}</span>
                   </AccordionTrigger>
                   <AccordionContent className="pt-2">
-                    {renderCarousel(cat.items, { showArrows: cat.items.length > 4 })}
+                    <SectionCategoryCarousel title={cat.title} defaultItems={cat.items} showArrows={cat.items.length > 4} />
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -259,31 +261,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
                 <h3 className="text-xl sm:text-2xl font-bold">{cat.title}</h3>
                 <Link href={`/products?theme=${idx + 1}`} className="text-blue-600 text-sm sm:text-base hover:underline">View more</Link>
               </div>
-              <Carousel className="w-full relative" opts={{ align: 'start' }}>
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {cat.items.slice(0, 4).map((p) => {
-                    const productItem: ProductItem = {
-                      id: p.id,
-                      title: p.title,
-                      image: p.image,
-                      images: p.images || (p.image ? [p.image] : []),
-                      price: typeof p.price === 'string' ? Number(p.price) : p.price,
-                      originalPrice: typeof p.originalPrice === 'string' ? Number(p.originalPrice) : p.originalPrice,
-                      discountRate: typeof p.discountRate === 'string' ? Number(p.discountRate) : p.discountRate,
-                      rating: p.rating,
-                      reviewCount: p.reviewCount,
-                      location: p.location,
-                      category: p.category,
-                    }
-                    
-                    return (
-                      <CarouselItem key={p.id} className="pl-2 md:pl-4 basis-3/4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                        <ActivityCard item={productItem} />
-                      </CarouselItem>
-                    )
-                  })}
-                </CarouselContent>
-              </Carousel>
+              <SectionFourByOne title={cat.title} defaultItems={cat.items} />
             </div>
           </section>
         )

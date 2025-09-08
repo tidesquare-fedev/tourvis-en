@@ -6,11 +6,12 @@ type TourSectionTabsProps = {
   sections: Section[]
   activeSection: string
   onClick: (id: string) => void
+  idAttr?: string
 }
 
-export function TourSectionTabs({ sections, activeSection, onClick }: TourSectionTabsProps) {
+export function TourSectionTabs({ sections, activeSection, onClick, idAttr }: TourSectionTabsProps) {
   return (
-    <div className="border-b mb-8 w-full">
+    <div id={idAttr} className="border-b mb-8 w-full">
       <div className="flex gap-2 px-1 overflow-x-auto scrollbar-hide max-w-full min-w-0">
         {sections.map((section) => (
           <button

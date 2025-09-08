@@ -62,7 +62,7 @@ export default async function ActivitySearchPage({ searchParams }: { searchParam
     )
   }
 
-  return <SearchPageClient items={items as any} />
+  return <SearchPageClient items={items as any} providerIds={providerIds} keyword={keyword} />
 }
 
 

@@ -25,6 +25,10 @@ import { TourUsageGuide } from '@/features/tour/components/TourUsageGuide'
 import { ImportantInformation } from '@/features/tour/components/ImportantInformation'
 import { IncludedExcluded } from '@/features/tour/components/IncludedExcluded'
 import { TourApiResponse } from '@/types/tour'
+import { useReviews } from '@/hooks/useReviewApi'
+import { useTnaOptions } from '@/hooks/useTnaOptions'
+import { CancellationPolicy } from '@/features/tour/components/CancellationPolicy'
+import { StickyBox } from '@/components/shared/StickyBox'
 // 옵션/가격 조회는 클라이언트→Next API 프록시를 통해 서버에서 토큰으로 호출
 
 interface TourDetailClientProps {
@@ -127,61 +131,10 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     setSelectedDate,
   } = useTourDetailState([])
 
-  // Reviews state (batch fetch 100, paginate 10 per page locally)
-  const [allReviews, setAllReviews] = useState<any[]>([])
-  const [reviewTotalCount, setReviewTotalCount] = useState<number>(0)
+  // Reviews: use unified hook (React Query)
+  const { reviews: fetchedReviews, totalCount: reviewTotalCount, isLoading: isLoadingReviews } = useReviews(tourId)
   const [reviewPage, setReviewPage] = useState(1)
-  const [isLoadingReviews, setIsLoadingReviews] = useState(false)
-  const [hasMoreReviews, setHasMoreReviews] = useState(true)
-  const [loadedBatchCount, setLoadedBatchCount] = useState(0) // how many 100-sized batches loaded
-
-  // Fetch all reviews up to count, then paginate locally by 10
-  const fetchAllReviews = async () => {
-    try {
-      setIsLoadingReviews(true)
-      // 1) fetch count
-      const cntRes = await fetch(`${BASE_PATH}/api/review/reviewCnt`, {
-        method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ brand: 'TOURVIS', prodCat: 'TNT', prodCd: tourId })
-      })
-      const cntJson = await cntRes.json().catch(() => null)
-      const totalCount = Number(cntJson?.data?.count ?? 0) || 0
-      setReviewTotalCount(totalCount)
-      // 2) fetch list with limit = totalCount (fallback to 100 if zero)
-      const limit = totalCount > 0 ? totalCount : 100
-      const res = await fetch(`${BASE_PATH}/api/review/reviewList`, {
-        method: 'POST',
-        cache: 'no-store',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ brand: 'TOURVIS', prodCat: 'TNT', prodCd: tourId, limit })
-      })
-      const json = await res.json()
-      if (json?.success) {
-        const items = Array.isArray(json?.data?.items) ? json.data.items : []
-        setAllReviews(items)
-        setHasMoreReviews(false)
-      } else {
-        setHasMoreReviews(false)
-      }
-    } catch (_e) {
-      setHasMoreReviews(false)
-    } finally {
-      setIsLoadingReviews(false)
-    }
-  }
-
-  useEffect(() => {
-    setReviewPage(1)
-    setAllReviews([])
-    setHasMoreReviews(true)
-    setLoadedBatchCount(0)
-    // 신규 로직: count 조회 후 전체 리뷰 한 번에 로드
-    fetchAllReviews()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tourId])
-
-  const pagesLoaded = Math.ceil(allReviews.length / 10)
-  const pagedReviews = allReviews.slice((reviewPage - 1) * 10, (reviewPage - 1) * 10 + 10)
+  const pagedReviews = fetchedReviews.slice((reviewPage - 1) * 10, (reviewPage - 1) * 10 + 10)
 
   const goToReviewPage = async (p: number) => {
     if (p < 1) return
@@ -209,6 +162,9 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
 
   // Helpers to derive UI-friendly data from API response
   const splitToList = (raw: unknown): string[] => {
+    if (Array.isArray(raw)) {
+      return raw.map((v) => String(v ?? '').replace(/<[^>]*>/g, '').trim()).filter(Boolean)
+    }
     const s = typeof raw === 'string' ? raw : ''
     if (!s) return []
     return s
@@ -241,6 +197,61 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     }
     const extra = splitToList(tourData.detail.additional_info)
     return [...candidates, ...extra]
+  }
+  const beforeTravelHtml = String(tourData.detail.additional_info || '')
+
+  const deriveBringItems = (): string[] => {
+    const fromBasic = (() => {
+      const raw = (tourData as any)?.basic?.bring_items
+      if (Array.isArray(raw)) return raw.map((s: any) => String(s || '').trim()).filter(Boolean)
+      return splitToList(raw)
+    })()
+    const fields: any[] = Array.isArray(tourData.detail.additional_fields) ? tourData.detail.additional_fields : []
+    const fromFields: string[] = []
+    for (const f of fields) {
+      const key = String(f?.key || '').toLowerCase()
+      const title = String(f?.title || '').toLowerCase()
+      if (/(bring|준비|준비물)/i.test(key) || /(bring|준비|준비물)/i.test(title)) {
+        fromFields.push(...splitToList(f?.content))
+      }
+    }
+    return [...fromBasic, ...fromFields]
+  }
+
+  const deriveNotAllowed = (): string[] => {
+    const fromBasic = (() => {
+      const raw = (tourData as any)?.basic?.not_allowed
+      if (Array.isArray(raw)) return raw.map((s: any) => String(s || '').trim()).filter(Boolean)
+      return splitToList(raw)
+    })()
+    const fields: any[] = Array.isArray(tourData.detail.additional_fields) ? tourData.detail.additional_fields : []
+    const fromFields: string[] = []
+    for (const f of fields) {
+      const key = String(f?.key || '').toLowerCase()
+      const title = String(f?.title || '').toLowerCase()
+      if (/(not\s*allowed|금지|허용되지)/i.test(key) || /(not\s*allowed|금지|허용되지)/i.test(title)) {
+        fromFields.push(...splitToList(f?.content))
+      }
+    }
+    return [...fromBasic, ...fromFields]
+  }
+
+  const deriveNotSuitable = (): string[] => {
+    const fromBasic = (() => {
+      const raw = (tourData as any)?.basic?.not_suitable
+      if (Array.isArray(raw)) return raw.map((s: any) => String(s || '').trim()).filter(Boolean)
+      return splitToList(raw)
+    })()
+    const fields: any[] = Array.isArray(tourData.detail.additional_fields) ? tourData.detail.additional_fields : []
+    const fromFields: string[] = []
+    for (const f of fields) {
+      const key = String(f?.key || '').toLowerCase()
+      const title = String(f?.title || '').toLowerCase()
+      if (/(not\s*suitable|참가가\s*어려워|부적합)/i.test(key) || /(not\s*suitable|참가가\s*어려워|부적합)/i.test(title)) {
+        fromFields.push(...splitToList(f?.content))
+      }
+    }
+    return [...fromBasic, ...fromFields]
   }
 
   const deriveItineraryFromCourses = (): Array<{ day: number; title: string; description: string; duration: string; activities: string[] }> => {
@@ -287,57 +298,15 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const [selectedLabelQtyByOption, setSelectedLabelQtyByOption] = useState<Record<string, Record<string, number>>>({})
   const isDateType = useMemo(() => String(tourData.basic.calendar_type).toUpperCase() === 'DATE', [tourData.basic.calendar_type])
 
-  // 날짜형: 날짜 선택 시 옵션 조회 (Next API 프록시) - 번들 API 사용 가능
+  // 옵션/가격 API 접근을 훅으로 일원화
+  const { optionsQuery, priceDateType, pricePeriodType, startStr, endStr, isDateType: _hookDateType } = useTnaOptions(tourId, {
+    calendarType: isDateType ? 'DATE' : 'PERIOD',
+    selectedDate,
+    range,
+  })
   useEffect(() => {
-    const run = async () => {
-      if (!isDateType) return
-      if (!selectedDate) { setOptionData(null); return }
-      const dateStr = format(selectedDate, 'yyyy-MM-dd')
-      try {
-        const url1 = `${BASE_PATH}/api/tna/bundle`
-        const res = await fetch(url1, { cache: 'no-store', method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product_id: tourId, date: dateStr, option_codes: [] }) })
-        if (res.ok) {
-          const json = await res.json()
-          if (json?.success) { setOptionData(json.data?.options); return }
-        } else {
-          console.error('[bundle options] HTTP', res.status, url1)
-        }
-        // fallback: 기존 옵션 라우트
-        const url2 = `${BASE_PATH}/api/tna/options?product_id=${encodeURIComponent(tourId)}&date=${encodeURIComponent(dateStr)}`
-        const res2 = await fetch(url2, { cache: 'no-store' })
-        if (!res2.ok) {
-          console.error('[options fallback] HTTP', res2.status, url2)
-        }
-        const json2 = await res2.json().catch(() => null)
-        setOptionData(json2?.success ? json2.data : null)
-      } catch (e) { 
-        console.error('[options load error]', e)
-        setOptionData(null) 
-      }
-    }
-    run()
-  }, [isDateType, selectedDate, tourId])
-
-  // 기간형: 초기 로드 시 옵션 조회 (Next API 프록시)
-  useEffect(() => {
-    const run = async () => {
-      if (isDateType) return
-      try {
-        const url = `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/options`
-        const res = await fetch(url, { cache: 'no-store' })
-        if (!res.ok) {
-          console.error('[options period-type] HTTP', res.status, url)
-        }
-        const json = await res.json().catch(() => null)
-        if (json?.success) setOptionData(json.data)
-        else setOptionData(null)
-      } catch (e) {
-        console.error('[options period-type error]', e)
-        setOptionData(null)
-      }
-    }
-    run()
-  }, [isDateType, tourId])
+    setOptionData(optionsQuery.data ?? null)
+  }, [optionsQuery.data])
 
   // 옵션 가격 일괄 조회 (dynamic_price 이거나 라벨에 price가 없을 때만)
   useEffect(() => {
@@ -353,9 +322,6 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       const end = isDateType ? (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined) : (range.to ? format(range.to, 'yyyy-MM-dd') : start)
       if (!start || !end) return
       // bulk 가격 조회: 라벨 가격 사전 확보 목적 (회차 필요 없는 엔드포인트 대응)
-      const url = isDateType
-        ? `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/data-type`
-        : `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/period-type`
       try {
         const needPricing = opts.filter((o) => {
           const hasLabelPrices = Array.isArray(o.labels) && o.labels.some((l: any) => typeof l?.price === 'number' && l.price > 0)
@@ -366,15 +332,13 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
             const code = String(o.code || o.product_option_code || o.option_code || o.id || '')
             if (!code) return [code, 0] as const
             const payload: any = { product_option_code: code, start_date: start, end_date: end }
-            const res = await fetch(url, { method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
-            if (!res.ok) {
-              console.error('[price bulk] HTTP', res.status, url, { code, start, end })
-            }
-            const json = await res.json().catch(() => null)
+            const json = isDateType
+              ? await priceDateType.mutateAsync(payload)
+              : await pricePeriodType.mutateAsync(payload)
             // update label prices if present
             try {
-              const pricesArray: any[] = Array.isArray(json?.data?.prices) ? json.data.prices :
-                (Array.isArray(json?.data?.dates) ? (json.data.dates[0]?.prices ?? []) : (Array.isArray((json as any)?.dates) ? ((json as any).dates?.[0]?.prices ?? []) : []))
+              const pricesArray: any[] = Array.isArray((json as any)?.data?.prices) ? (json as any).data.prices :
+                (Array.isArray((json as any)?.data?.dates) ? ((json as any).data.dates[0]?.prices ?? []) : (Array.isArray((json as any)?.dates) ? ((json as any).dates?.[0]?.prices ?? []) : []))
               if (Array.isArray(pricesArray) && pricesArray.length > 0) {
                 setLabelPriceMap(prev => ({
                   ...prev,
@@ -387,7 +351,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                 }))
               }
             } catch {}
-            const price = json?.success ? Number(json?.data?.price ?? json?.data?.sale_price ?? json?.data?.amount ?? 0) : 0
+            const price = (json as any)?.success ? Number((json as any)?.data?.price ?? (json as any)?.data?.sale_price ?? (json as any)?.data?.amount ?? 0) : 0
             return [code, price] as const
           })
         )
@@ -413,21 +377,15 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       const start = isDateType ? (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined) : (range.from ? format(range.from, 'yyyy-MM-dd') : undefined)
       const end = isDateType ? (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined) : (range.to ? format(range.to, 'yyyy-MM-dd') : start)
       if (!start || !end) return
-      const url = isDateType
-        ? `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/data-type`
-        : `${BASE_PATH}/api/tna/product/${encodeURIComponent(tourId)}/price/period-type`
+      const priceCall = isDateType ? priceDateType.mutateAsync : pricePeriodType.mutateAsync
       try {
         const payload: any = { product_option_code: selectedOptionCode, start_date: start, end_date: end }
         // 회차/라벨은 날짜형 엔드포인트에서는 불필요할 수 있으므로 제외하여 404 회피
-        const res = await fetch(url, { method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
-        if (!res.ok) {
-          console.error('[price single] HTTP', res.status, url, { selectedOptionCode, start, end, selectedLabelId, selectedTimeslotId })
-        }
-        const json = await res.json().catch(() => null)
+        const json = await priceCall(payload)
         // update label prices from single response if available
         try {
-          const pricesArray: any[] = Array.isArray(json?.data?.prices) ? json.data.prices :
-            (Array.isArray(json?.data?.dates) ? (json.data.dates[0]?.prices ?? []) : (Array.isArray((json as any)?.dates) ? ((json as any).dates?.[0]?.prices ?? []) : []))
+          const pricesArray: any[] = Array.isArray((json as any)?.data?.prices) ? (json as any).data.prices :
+            (Array.isArray((json as any)?.data?.dates) ? ((json as any).data.dates[0]?.prices ?? []) : (Array.isArray((json as any)?.dates) ? ((json as any).dates?.[0]?.prices ?? []) : []))
           if (Array.isArray(pricesArray) && pricesArray.length > 0) {
             setLabelPriceMap(prev => ({
               ...prev,
@@ -440,7 +398,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
             }))
           }
         } catch {}
-        const price = json?.success ? Number(json?.data?.price ?? json?.data?.sale_price ?? json?.data?.amount ?? 0) : 0
+        const price = (json as any)?.success ? Number((json as any)?.data?.price ?? (json as any)?.data?.sale_price ?? (json as any)?.data?.amount ?? 0) : 0
         setOptionPriceMap(prev => ({ ...prev, [selectedOptionCode]: price }))
       } catch (e) {
         console.error('[price single error]', e)
@@ -587,14 +545,17 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const includedList = deriveIncluded()
   const excludedList = deriveExcluded()
   const beforeTravelList = deriveBeforeTravel()
-  const hasImportantInfo = (Array.isArray(tour.bringItems) && tour.bringItems.length > 0)
-    || (Array.isArray(tour.notAllowed) && tour.notAllowed.length > 0)
-    || (Array.isArray(tour.notSuitable) && tour.notSuitable.length > 0)
+  const bringItemsList = deriveBringItems()
+  const notAllowedList = deriveNotAllowed()
+  const notSuitableList = deriveNotSuitable()
+  const hasImportantInfo = (bringItemsList.length > 0)
+    || (notAllowedList.length > 0)
+    || (notSuitableList.length > 0)
     || (beforeTravelList.length > 0)
   const hasMeetingPoint = Boolean((tourData.detail.additional_fields?.find(field => field.key === 'meetingPoint')?.content) || tourData.basic.meeting_point)
 
   const showItineraryTab = initialItineraryList.length > 0 || itineraryList.length > 0
-  const hasReviews = (Array.isArray(allReviews) && allReviews.length > 0) || (Array.isArray(tour.reviews) && tour.reviews.length > 0)
+  const hasReviews = (Array.isArray(fetchedReviews) && fetchedReviews.length > 0) || (Array.isArray(tour.reviews) && tour.reviews.length > 0)
   const hasCancellation = Boolean(tourData.basic.cancellation_description)
 
   const sections = useMemo(() => ([
@@ -621,12 +582,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
         starColor={STAR_COLOR}
         onScrollToReviews={() => scrollToSection('reviews')}
         maskName={maskName}
-        reviewsOverride={allReviews.slice(0, 100).map((r: any) => ({
-          name: r?.writer ?? r?.name ?? 'Guest',
-          rating: Number(r?.score ?? r?.rating ?? 0),
-          date: String(r?.regDate ?? r?.writeDate ?? r?.date ?? ''),
-          comment: String(r?.reviewCont ?? r?.content ?? r?.comment ?? ''),
-        }))}
+        reviewsOverride={fetchedReviews.slice(0, 100).map(({ name, rating, date, comment }) => ({ name, rating, date, comment }))}
         ratingOverride={Number(tour.rating) || 0}
         reviewCountOverride={reviewTotalCount}
       />
@@ -644,7 +600,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 booking-container">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Options Section */}
@@ -653,6 +609,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
         sections={sections}
         activeSection={activeSection}
         onClick={scrollToSection}
+        idAttr="tabs-trigger"
       />
               
               <div className="mt-6 space-y-6">
@@ -925,10 +882,11 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
             {hasImportantInfo && (
             <div ref={informationRef} id="information" className="scroll-mt-20">
               <ImportantInformation
-                bringItems={tour.bringItems}
-                notAllowed={tour.notAllowed}
-                notSuitable={tour.notSuitable}
+                bringItems={bringItemsList}
+                notAllowed={notAllowedList}
+                notSuitable={notSuitableList}
                 beforeTravel={beforeTravelList}
+                beforeTravelHtml={beforeTravelHtml}
               />
             </div>
             )}
@@ -948,20 +906,8 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
               <div className="mb-4">
                 <TourReviews
                   rating={tour.rating}
-                  reviews={pagedReviews.map((r: any) => ({
-                    name: r?.writer ?? r?.name ?? 'Guest',
-                    rating: Number(r?.score ?? r?.rating ?? 0),
-                    date: String(r?.regDate ?? r?.writeDate ?? r?.date ?? ''),
-                    comment: String(r?.reviewCont ?? r?.content ?? r?.comment ?? ''),
-                    helpful: Number(r?.likeCnt ?? 0),
-                  }))}
-                  statsReviews={allReviews.map((r: any) => ({
-                    name: r?.writer ?? r?.name ?? 'Guest',
-                    rating: Number(r?.score ?? r?.rating ?? 0),
-                    date: String(r?.regDate ?? r?.writeDate ?? r?.date ?? ''),
-                    comment: String(r?.reviewCont ?? r?.content ?? r?.comment ?? ''),
-                    helpful: Number(r?.likeCnt ?? 0),
-                  }))}
+                  reviews={pagedReviews}
+                  statsReviews={fetchedReviews}
                   showAll={true}
                   onShowAll={() => {}}
                   onShowLess={() => {}}
@@ -969,10 +915,10 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                   totalCount={reviewTotalCount}
                 />
               </div>
-              {allReviews.length > 0 && (
+              {fetchedReviews.length > 0 && (
                 <div className="mt-4 flex items-center justify-center gap-2 flex-wrap">
                   {(() => {
-                    const totalPages = Math.max(1, Math.ceil((reviewTotalCount || allReviews.length) / 10))
+                    const totalPages = Math.max(1, Math.ceil((reviewTotalCount || fetchedReviews.length) / 10))
                     const blockIndex = Math.floor((reviewPage - 1) / 10)
                     const blockStart = blockIndex * 10 + 1
                     const blockEnd = Math.min(totalPages, blockStart + 9)
@@ -1034,36 +980,20 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
 
             {/* Cancellation Section */}
             <div ref={cancellationRef} id="cancellation" className="scroll-mt-20">
-              <div className="bg-white rounded-2xl shadow-sm border p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Cancellation Policy</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                      <AlertTriangle className="w-6 h-6 text-orange-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Free Cancellation</h4>
-                      <p className="text-sm text-gray-600">Cancel up to 24 hours before the tour for a full refund.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                      <XCircle className="w-6 h-6 text-red-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">No Show Policy</h4>
-                      <p className="text-sm text-gray-600">No refund for no-shows or cancellations within 24 hours.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <CancellationPolicy
+                refund={tourData.refund as any}
+                description={tourData.basic.cancellation_description}
+                cancellationHours={tourData.basic.cancellation_hours}
+                pivotHoursOverride={48}
+                labels={{ title: 'Cancellation Policy', freeTitle: 'Free cancellation', left: '100% refund', right: 'No refund' }}
+                colors={{ leftBg: 'bg-emerald-400/80', rightBg: 'bg-rose-400/80', divider: 'bg-emerald-200' }}
+              />
             </div>
           </div>
 
           {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24">
+          <div className="lg:col-span-1 lg:self-start" id="booking-boundary">
+            <StickyBox topOffset={128} enableBelow={1024} boundarySelector="#booking-boundary" triggerSelector="#tabs-trigger">
               <TourBookingCard
                 discountRate={tour.discountRate}
                 originalPrice={tour.originalPrice}
@@ -1079,7 +1009,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                 totalAmount={totalPrice}
                 onBook={handleBooking}
               />
-            </div>
+            </StickyBox>
           </div>
         </div>
       </div>

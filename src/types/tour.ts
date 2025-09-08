@@ -154,6 +154,13 @@ export interface TourRefund {
   cancel_info: string
   provider_cancel_days: number | null
   partial_cancel_is: boolean | null
+  // Extended fields from refund_detail
+  working_days?: string | null
+  work_on_korean_holiday?: boolean | null
+  working_hour?: string | null
+  working_timezone?: string | null
+  fee_rates?: Array<{ start?: number | null; end?: number | null; rate: number }>
+  free_cancel_due_date?: string | null
 }
 
 export interface TourLabel {
