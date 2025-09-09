@@ -49,12 +49,12 @@ export function TourDetailLayout({
             key={section.id}
             onClick={() => onSectionClick(section.id)}
             className={`relative px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-              activeSection === section.id ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
+              activeSection === section.id ? 'text-[#01c5fd]' : 'text-gray-600 hover:text-[#01c5fd]'
             }`}
           >
             {section.label}
             <span className={`absolute left-0 right-0 -bottom-px h-0.5 transition-all ${
-              activeSection === section.id ? 'bg-blue-600' : 'bg-transparent'
+              activeSection === section.id ? 'bg-[#01c5fd]' : 'bg-transparent'
             }`}></span>
           </button>
         ))}

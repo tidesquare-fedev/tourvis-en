@@ -55,9 +55,9 @@ export function AppHeader({ active, mobileTitle }: { active?: 'tours' | 'inquiry
             <SearchBox />
           </div>
           <nav className={`ml-auto items-center gap-3 sm:gap-6 text-gray-600 ${isDetailPage ? 'hidden md:flex' : 'flex'}`}>
-            <Link href="/activity/search" className={`text-xs sm:text-sm hover:text-blue-600 ${active === 'tours' ? 'text-blue-600 font-medium' : ''}`}>Tours</Link>
-            <Link href="/inquiry-list" className={`text-xs sm:text-sm hover:text-blue-600 ${active === 'inquiry' ? 'text-blue-600 font-medium' : ''}`}>Inquiry</Link>
-            <Link href="/reservation-lookup" className={`text-xs sm:text-sm hover:text-blue-600 ${active === 'reservation' ? 'text-blue-600 font-medium' : ''}`}>Reservations</Link>
+            <Link href="/activity/search" className={`text-xs sm:text-sm hover:text-[#01c5fd] ${active === 'tours' ? 'text-[#01c5fd] font-medium' : ''}`}>Tours</Link>
+            <Link href="/inquiry-list" className={`text-xs sm:text-sm hover:text-[#01c5fd] ${active === 'inquiry' ? 'text-[#01c5fd]0 font-medium' : ''}`}>Inquiry</Link>
+            <Link href="/reservation-lookup" className={`text-xs sm:text-sm hover:text-[#01c5fd] ${active === 'reservation' ? 'text-[#01c5fd] font-medium' : ''}`}>Reservations</Link>
           </nav>
         </div>
         {showMobileSearch && (

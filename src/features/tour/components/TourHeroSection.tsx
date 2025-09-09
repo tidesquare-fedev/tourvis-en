@@ -119,7 +119,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
   }, [selectedImageIndex, isModalOpen])
 
   return (
-    <div className="bg-white pt-4 lg:pt-4">
+    <div className="bg-white pt-0 lg:pt-4">
       {/* Main Hero Section */}
       <div className="max-w-7xl mx-auto px-0 lg:px-4 pb-4">
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12">

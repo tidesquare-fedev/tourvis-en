@@ -111,7 +111,7 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
       <h4 className="font-medium text-[18px]">Tour Options</h4>
       {selectedDate && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-          <div className="text-blue-800 text-base font-semibold">Selected date: {format(selectedDate, 'PPP')}</div>
+          <div className="text-black text-base font-semibold">{format(selectedDate, 'PPP')}</div>
         </div>
       )}
 
@@ -121,10 +121,10 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
           {options.map((option) => (
             <div 
               key={option.code}
-              className={`p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${!cardExpanded[option.code] ? 'min-h-[64px] flex items-center' : ''} ${
+              className={`p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#01c5fd] ${!cardExpanded[option.code] ? 'min-h-[64px] flex items-center' : ''} ${
                 selectedOption?.code === option.code 
-                  ? 'border-blue-500 shadow-md' 
-                  : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-sm'
+                  ? 'border-[#01c5fd] shadow-md' 
+                  : 'border-gray-200 hover:border-[#01c5fd] bg-white hover:shadow-sm'
             }`}
             onClick={() => {
               if (selectedOption?.code !== option.code) {
@@ -229,7 +229,7 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
                                 }
                                 if (onSelectTimeslot) { onSelectTimeslot(option.code || '', ts.id, ts.labelId) }
                               }}
-                              className={`px-5 py-3 rounded-xl border text-base ${active ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm' : 'border-gray-300 hover:bg-gray-50'}`}
+                              className={`px-5 py-3 rounded-xl border text-base ${active ? 'border-[#01c5fd] bg-[#e6faff] text-[#01a6db] shadow-sm' : 'border-gray-300 hover:border-[#01c5fd]'}`}
                             >
                               {ts.title}
                             </button>

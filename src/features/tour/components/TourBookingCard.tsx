@@ -72,18 +72,12 @@ export function TourBookingCard({ discountRate, originalPrice, price, selectedDa
             </div>
           )}
           {typeof total === 'number' && (
-            <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="text-center p-3 rounded-lg">
               <div className="text-sm text-gray-600">Participants: {quantity}</div>
-              <div className="text-xl font-bold text-green-600">Total: {formatCurrency(total)}</div>
+              <div className="text-xl font-bold text-black">Total: {formatCurrency(total)}</div>
             </div>
           )}
-          <div className="border-t pt-3 space-y-2">
-            <div className="flex items-center justify-between text-base font-semibold">
-              <span>Total</span>
-              <span>{formatCurrency(total)}</span>
-            </div>
-          </div>
-          <Button onClick={onBook} className="w-full" size="lg" disabled={!canBook}>
+          <Button onClick={onBook} className="w-full bg-[#01c5fd] hover:bg-[#01b7ea] text-white" size="lg" disabled={!canBook}>
             {canBook ? 'Confirm & pay' : 'Complete selections'}
           </Button>
           {onValidateMsg && <p className="text-xs text-gray-500 text-center">{onValidateMsg}</p>}

@@ -59,7 +59,7 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
         >
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
-            위치
+            Location
           </span>
           <span className="text-gray-500">
             {getDisplayText()}
@@ -68,23 +68,23 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-lg">위치 선택</DialogTitle>
+          <DialogTitle className="text-lg">Location</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {/* 선택된 위치들 */}
           {tempValue.length > 0 && (
             <div className="space-y-2">
-              <div className="text-sm font-medium text-gray-700">선택된 위치</div>
+              <div className="text-sm font-medium text-gray-700">Selected Location</div>
               <div className="flex flex-wrap gap-2">
                 {tempValue.map((location) => (
                   <div
                     key={location}
-                    className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                    className="flex items-center gap-1 px-2 py-1 bg-[#01b7ea] text-white rounded-full text-xs"
                   >
                     {location}
                     <button
                       onClick={() => toggleLocation(location)}
-                      className="hover:bg-blue-200 rounded-full p-0.5"
+                      className="hover:bg-[#01b7ea] rounded-full p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -95,31 +95,28 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
           )}
 
           {/* 위치 목록 */}
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">위치 목록</div>
-            <div className="max-h-60 overflow-y-auto space-y-1">
-              {locations.map((location) => (
-                <button
-                  key={location.value}
-                  onClick={() => toggleLocation(location.value)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                    tempValue.includes(location.value)
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-                >
-                  {location.label}
-                </button>
-              ))}
-            </div>
+          <div className="max-h-60 overflow-y-auto space-y-1">
+            {locations.map((location) => (
+              <button
+                key={location.value}
+                onClick={() => toggleLocation(location.value)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  tempValue.includes(location.value)
+                    ? 'bg-[#01c5fd] text-white border border-[#01c5fd]'
+                    : 'hover:bg-[#01c5fd] text-gray-700'
+                }`}
+              >
+                {location.label}
+              </button>
+            ))}
           </div>
 
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={handleReset}>
-              초기화
+            Reset
             </Button>
             <Button size="sm" onClick={handleApply}>
-              적용
+            Apply
             </Button>
           </div>
         </div>

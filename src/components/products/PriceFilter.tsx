@@ -50,16 +50,16 @@ export const PriceFilter = ({ value, onChange, min: minProp, max: maxProp, step:
         >
           <span className="flex items-center gap-1">
             <Filter className="w-3 h-3" />
-            가격 범위
+            Price
           </span>
           <span className="text-gray-500">
-            {isDefault ? '전체' : `${display(value[0])} - ${display(value[1])}`}
+            {isDefault ? 'ALL' : `${display(value[0])} - ${display(value[1])}`}
           </span>
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-lg">가격 범위 선택</DialogTitle>
+          <DialogTitle className="text-lg">Price</DialogTitle>
         </DialogHeader>
         <div className="space-y-6">
           <div className="px-4">
@@ -78,10 +78,10 @@ export const PriceFilter = ({ value, onChange, min: minProp, max: maxProp, step:
           </div>
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={handleReset}>
-              초기화
+            Reset 
             </Button>
             <Button size="sm" onClick={handleApply}>
-              적용
+            Apply
             </Button>
           </div>
         </div>

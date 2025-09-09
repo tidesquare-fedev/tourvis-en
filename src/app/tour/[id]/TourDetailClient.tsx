@@ -48,6 +48,18 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const cancellationRef = useRef<HTMLDivElement>(null)
   const informationRef = useRef<HTMLDivElement>(null)
   const includedRef = useRef<HTMLDivElement>(null)
+  // Sections for intersection observing (tabs auto-highlight)
+  const sectionsForObserver = useMemo(() => (
+    [
+      { id: 'options', label: 'Options', ref: optionsRef },
+      { id: 'description', label: 'Description', ref: descriptionRef },
+      { id: 'usage-guide', label: 'Itinerary', ref: usageGuideRef },
+      { id: 'information', label: 'Information', ref: informationRef },
+      { id: 'included', label: 'Included', ref: includedRef },
+      { id: 'reviews', label: 'Reviews', ref: reviewsRef },
+      { id: 'cancellation', label: 'Cancellation', ref: cancellationRef },
+    ]
+  ), [])
   
   const [isMeetingPointExpanded, setIsMeetingPointExpanded] = useState(false)
   const [initialItineraryList, setInitialItineraryList] = useState<Array<{ day: number; title: string; description: string; duration: string; activities: string[] }>>([])
@@ -149,7 +161,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     scrollToSection,
     handleQuantityChange,
     setSelectedDate,
-  } = useTourDetailState([])
+  } = useTourDetailState(sectionsForObserver as any)
 
   // Reviews: use unified hook (React Query)
   const { reviews: fetchedReviews, totalCount: reviewTotalCount, isLoading: isLoadingReviews } = useReviews(tourId)
@@ -166,6 +178,24 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       toast({ title: 'Quantity Required', description: 'Please select at least 1 participant to continue.', variant: 'destructive' })
       return
     }
+    try {
+      const participants = Object.values(selectedLabelQtyByOption).reduce((t, m) => t + Object.values(m || {}).reduce((s, n) => s + Number(n || 0), 0), 0)
+      const payload = {
+        tourId,
+        title: tour.title,
+        image: Array.isArray(tour.images) ? (tour.images[0] || '') : '',
+        date: selectedDate ? selectedDate.toISOString() : undefined,
+        quantity: participants,
+        optionTitle: String((selectedOptionObj as any)?.title || (selectedOptionObj as any)?.name || ''),
+        timeslotTitle: String((selectedTimeslotObj as any)?.title || (selectedTimeslotObj as any)?.name || ''),
+        totalAmount: totalPrice,
+        currency: 'USD',
+        selections: bookingSelections
+      }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('selectedProduct', JSON.stringify(payload))
+      }
+    } catch {}
     router.push(`/booking-info?tour=${tourId}&date=${selectedDate?.toISOString()}&quantity=${quantity}`)
   }
 
@@ -598,13 +628,13 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const hasCancellation = Boolean(tourData.basic.cancellation_description)
 
   const sections = useMemo(() => ([
-    { id: 'options', label: 'Options', ref: optionsRef },
-    ...(hasDescription ? [{ id: 'description', label: 'Description', ref: descriptionRef }] : []),
-    ...(showItineraryTab ? [{ id: 'usage-guide', label: 'Itinerary', ref: usageGuideRef }] : []),
-    ...(hasImportantInfo ? [{ id: 'information', label: 'Information', ref: informationRef }] : []),
-    ...((includedList.length > 0 || excludedList.length > 0) ? [{ id: 'included', label: 'Included', ref: includedRef }] : []),
-    ...(hasReviews ? [{ id: 'reviews', label: 'Reviews', ref: reviewsRef }] : []),
-    ...(hasCancellation ? [{ id: 'cancellation', label: 'Cancellation', ref: cancellationRef }] : []),
+    { id: 'options', label: 'Options' },
+    ...(hasDescription ? [{ id: 'description', label: 'Description' }] : []),
+    ...(showItineraryTab ? [{ id: 'usage-guide', label: 'Itinerary' }] : []),
+    ...(hasImportantInfo ? [{ id: 'information', label: 'Information' }] : []),
+    ...((includedList.length > 0 || excludedList.length > 0) ? [{ id: 'included', label: 'Included' }] : []),
+    ...(hasReviews ? [{ id: 'reviews', label: 'Reviews' }] : []),
+    ...(hasCancellation ? [{ id: 'cancellation', label: 'Cancellation' }] : []),
   ]), [hasDescription, showItineraryTab, hasImportantInfo, includedList.length, excludedList.length, hasReviews, hasCancellation])
 
   return (
@@ -638,7 +668,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
 
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 pt-0 pb-8">
+      <div className="max-w-7xl mx-auto px-4 pt-0 pb-28 lg:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 booking-container items-start">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -1030,8 +1060,8 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
             </div>
           </div>
 
-          {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Booking Card (desktop only) */}
+          <div className="lg:col-span-1 hidden lg:block">
           <StickyBox topOffset={128} enableBelow={0} boundarySelector=".booking-container" triggerSelector="#tabs-trigger" debug>
               <TourBookingCard
                 discountRate={tour.discountRate}
@@ -1058,13 +1088,13 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
         <div className="max-w-7xl mx-auto px-2">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <div className="text-xs text-gray-500">Total</div>
-              <div className="text-lg font-semibold text-blue-600">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalPrice || 0)}</div>
+              <div className="text-xs text-gray-500">Participants: {Object.values(selectedLabelQtyByOption).reduce((t, m) => t + Object.values(m || {}).reduce((s, n) => s + Number(n || 0), 0), 0)}</div>
+              <div className="text-lg font-semibold text-black">Total: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalPrice || 0)}</div>
             </div>
             <button
               onClick={handleBooking}
               disabled={!canBook}
-              className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-40 disabled:pointer-events-none hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 rounded-lg bg-[#01c5fd] text-white font-semibold disabled:opacity-40 disabled:pointer-events-none hover:bg-[#01b7ea] transition-colors"
             >
               {canBook ? 'Book now' : 'Select date & qty'}
             </button>

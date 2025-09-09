@@ -89,7 +89,7 @@ export function TourDatePicker({ selectedDate, onSelect, mode = 'single', select
                   head_cell: 'w-10 text-center text-gray-500 font-normal',
                   row: 'grid grid-cols-7 mt-2',
                   cell: 'h-10 w-10 text-center p-0',
-                  day: 'h-10 w-10 rounded-full aria-selected:bg-blue-600 aria-selected:text-white hover:bg-gray-100',
+                  day: 'h-10 w-10 rounded-full aria-selected:bg-[#01c5fd] aria-selected:text-white hover:bg-gray-100',
                   day_outside: 'text-gray-300',
                   day_disabled: 'text-gray-300 opacity-50 pointer-events-none',
                 }}
@@ -117,7 +117,7 @@ export function TourDatePicker({ selectedDate, onSelect, mode = 'single', select
                   head_cell: 'w-10 text-center text-gray-500 font-normal',
                   row: 'grid grid-cols-7 mt-2',
                   cell: 'h-10 w-10 text-center p-0',
-                  day: 'h-10 w-10 rounded-full aria-selected:bg-blue-600 aria-selected:text-white hover:bg-gray-100',
+                  day: 'h-10 w-10 rounded-full aria-selected:bg-[#01c5fd] aria-selected:text-white hover:bg-gray-100',
                   day_outside: 'text-gray-300',
                   day_disabled: 'text-gray-300 opacity-50 pointer-events-none',
                 }}

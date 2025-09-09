@@ -23,7 +23,7 @@ export const CategoryFilter = ({ value, onChange, options, variant = 'list' }: C
   if (variant === 'pills') {
     return (
       <div>
-        <div className="text-xs font-semibold text-gray-500 mb-1.5 tracking-wide">카테고리</div>
+        <div className="text-xs font-semibold text-gray-500 mb-1.5 tracking-wide">Categories</div>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-hide no-scrollbar">
           {categories.map(({ value: v, label }) => {
             const selected = (value || "all") === v || (v !== "all" && value === v)
@@ -33,7 +33,7 @@ export const CategoryFilter = ({ value, onChange, options, variant = 'list' }: C
                 type="button"
                 onClick={() => onChange(v === "all" ? "" : v)}
                 className={`whitespace-nowrap px-2.5 py-1 rounded-full border text-xs transition-colors ${
-                  selected ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                  selected ? "bg-[#01c5fd] border-[#01c5fd] text-white" : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
                 }`}
               >
                 {label}
@@ -59,7 +59,7 @@ export const CategoryFilter = ({ value, onChange, options, variant = 'list' }: C
               onClick={() => onChange(v === "all" ? "" : v)}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg border text-sm transition-colors ${
                 selected
-                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                  ? "bg-[#01c5fd] border-[#01c5fd] text-blue-700"
                   : "bg-white border-gray-200 hover:bg-gray-50 text-gray-700"
               }`}
             >

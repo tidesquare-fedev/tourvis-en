@@ -13,16 +13,16 @@ export const ActivityCardPrice = memo(function ActivityCardPrice({ price, origin
   return (
     <div className="space-y-1">
       {typeof discountRate === 'number' && discountRate > 0 && (
-        <span className="text-xs sm:text-sm font-bold text-red-500">{discountRate}% OFF</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs sm:text-sm font-bold text-red-500">{discountRate}%</span>
+          {typeof originalPrice === 'number' && (
+            <span className="text-xs sm:text-sm text-gray-500 line-through">{formatCurrency(originalPrice)}</span>
+          )}
+        </div>
       )}
-      {typeof discountRate === 'number' && discountRate > 0 && typeof originalPrice === 'number' && (
-        <div className="text-xs sm:text-sm text-gray-500 line-through">{formatCurrency(originalPrice)}</div>
+      {typeof price === 'number' && (
+        <div className="text-[18px] font-bold text-black">{formatCurrency(price)}</div>
       )}
-      <div className="flex items-center gap-2">
-        {typeof price === 'number' && (
-          <div className="text-lg sm:text-xl font-bold text-blue-600">{formatCurrency(price)}</div>
-        )}
-      </div>
     </div>
   )}
 )

@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from '@/components/ui/drawer'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Info, X, Edit, Apple, Calendar, Users, ArrowLeft } from 'lucide-react'
 
 const tours = {
@@ -27,11 +27,33 @@ function BookingInfoContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const tourId = searchParams.get('tour') || 'jeju-hallasan-hiking'
-  const tour = (tours as any)[tourId] || (tours as any)['jeju-hallasan-hiking']
+  const stored = typeof window !== 'undefined' ? localStorage.getItem('selectedProduct') : null
+  const storedObj = stored ? JSON.parse(stored) as any : null
+  const tour = storedObj ? { id: storedObj.tourId, title: storedObj.title, price: Math.round(Number(storedObj.totalAmount || 0) / Math.max(1, Number(searchParams.get('quantity') || 1))), image: storedObj.image || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&h=80&q=80' } : (tours as any)[tourId] || (tours as any)['jeju-hallasan-hiking']
+  const selections = Array.isArray(storedObj?.selections) ? storedObj!.selections as Array<{ optionTitle: string; timeslotTitle?: string; lines: Array<{ label: string; qty: number; unit: number }>; subtotal: number }> : []
+  const formatNum = (n: number) => new Intl.NumberFormat('en-US').format(Math.max(0, Number(n) || 0))
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '', countryCode: '+82', date: new Date().toISOString().split('T')[0], adults: 1, children: 0, specialRequests: '' })
+  const travelerText = (() => {
+    if (selections.length > 0) {
+      const map: Record<string, number> = {}
+      selections.forEach((s) => {
+        s.lines.forEach((ln) => {
+          const key = String(ln.label || 'Traveler')
+          const qty = Number(ln.qty || 0)
+          if (qty > 0) map[key] = (map[key] || 0) + qty
+        })
+      })
+      const parts = Object.entries(map).filter(([, q]) => q > 0).map(([k, q]) => `${q} ${k}`)
+      if (parts.length > 0) return parts.join(', ')
+    }
+    return `${storedObj?.quantity || (formData.adults + formData.children)} Travelers`
+  })()
+  const dateText = storedObj?.date ? new Date(storedObj.date).toLocaleDateString() : (formData.date ? new Date(formData.date).toLocaleDateString() : 'Wed, Jul 23, 2025')
+  const selectedTimes = Array.from(new Set(selections.map((s) => String(s.timeslotTitle || '').trim()).filter(Boolean)))
+  const dateTimeText = selectedTimes.length > 0 ? `${dateText} • ${selectedTimes.join(', ')}` : `${dateText}${storedObj?.timeslotTitle ? ` • ${storedObj.timeslotTitle}` : ''}`
 
   const [activeStep, setActiveStep] = useState(1)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '', countryCode: '+82', date: new Date().toISOString().split('T')[0], adults: 1, children: 0, specialRequests: '' })
   const [ticketUserData, setTicketUserData] = useState({ firstName: '', lastName: '', email: '', phone: '', countryCode: '+82' })
   const [sameAsTraveler, setSameAsTraveler] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('')
@@ -146,57 +168,76 @@ function BookingInfoContent() {
             <div className="flex items-center gap-4 mb-4">
               <img src={tour.image} alt="Tour" className="w-20 h-16 object-cover rounded-lg" />
               <div className="flex-1">
-                <h3 className="font-semibold">{tour.title}</h3>
-                <p className="text-sm text-gray-600">Usage Date: {formData.date ? new Date(formData.date).toLocaleDateString() : 'Friday, July 18, 2025'}</p>
+                <h3 className="font-semibold">{storedObj?.title || tour.title}</h3>
+                <p className="text-sm text-gray-600">Usage Date: {storedObj?.date ? new Date(storedObj.date).toLocaleDateString() : (formData.date ? new Date(formData.date).toLocaleDateString() : 'Friday, July 18, 2025')}</p>
               </div>
-              <Drawer>
-                <DrawerTrigger asChild>
+              <Dialog>
+                <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
                     <Info className="h-4 w-4" />
                     Option Information
                   </Button>
-                </DrawerTrigger>
-                <DrawerContent className="max-w-2xl mx-auto">
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-2xl">
                   <div className="mx-auto w-full max-w-2xl">
-                    <DrawerHeader className="relative">
-                      <DrawerTitle className="text-left">Option Information</DrawerTitle>
-                      <DrawerClose className="absolute right-4 top-4">
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Close</span>
-                      </DrawerClose>
-                    </DrawerHeader>
+                    <DialogHeader className="relative pb-2 mb-4 border-b">
+                      <DialogTitle className="text-left">Option Information</DialogTitle>
+                    </DialogHeader>
                     <div className="px-4 pb-6">
                       <div className="bg-white rounded-lg border p-4">
                         <div className="flex items-start gap-4 mb-4">
                           <img src={tour.image} alt="Tour" className="w-20 h-15 object-cover rounded-lg" />
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-1">{tour.title}</h3>
-                            <p className="text-sm text-gray-600">Usage Date: {formData.date ? new Date(formData.date).toLocaleDateString() : 'Friday, July 18, 2025'}</p>
+                            <h3 className="font-semibold text-lg mb-1">{storedObj?.title || tour.title}</h3>
+                            <p className="text-sm text-gray-600">Usage Date: {storedObj?.date ? new Date(storedObj.date).toLocaleDateString() : (formData.date ? new Date(formData.date).toLocaleDateString() : 'Friday, July 18, 2025')}</p>
                           </div>
                         </div>
                         <div className="space-y-4 border-t pt-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-700">Option</span>
-                            <span className="font-medium">{tour.title}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-700">Quantity</span>
-                            <span className="font-medium">Adult/Child (Same rate) x {formData.adults + formData.children}</span>
-                          </div>
-                          <div className="flex justify-between items-center pt-2 border-t">
+                          {selections.length > 0 ? (
+                            selections.map((s, idx) => (
+                              <div key={idx} className="border rounded-lg p-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="font-medium">{s.optionTitle}{s.timeslotTitle ? ` • ${s.timeslotTitle}` : ''}</span>
+                                </div>
+                                <div className="mt-2 space-y-1">
+                                  {s.lines.map((ln, i) => (
+                                    <div key={i} className="flex justify-between text-sm text-gray-700">
+                                      <span>{ln.label}</span>
+                                      <span>x {ln.qty}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t mt-2">
+                                  <span className="text-sm font-semibold">Subtotal</span>
+                                  <span className="text-sm font-bold">${formatNum(s.subtotal)}</span>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <>
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium">{storedObj?.optionTitle || tour.title}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-700">Quantity</span>
+                                <span className="font-medium">x {storedObj?.quantity || (formData.adults + formData.children)}</span>
+                              </div>
+                            </>
+                          )}
+                          <div className="flex justify-between items-center pt-3 border-t">
                             <span className="text-lg font-semibold">Total Product Amount</span>
-                            <span className="text-lg font-bold text-right">${tour.price * (formData.adults + formData.children)} USD<br /><span className="text-sm font-normal text-gray-600">${tour.price} USD per person</span></span>
+                            <span className="text-lg font-bold text-right">${formatNum(storedObj?.totalAmount || (tour.price * (formData.adults + formData.children)))}<br /><span className="text-sm font-normal text-gray-600">${formatNum(tour.price)} per person</span></span>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </DrawerContent>
-              </Drawer>
+                </DialogContent>
+              </Dialog>
             </div>
             <div className="space-y-3 border-t pt-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600"><Users className="h-4 w-4" /><span>{formData.adults + formData.children} Travelers</span></div>
-              <div className="flex items-center gap-2 text-sm text-gray-600"><Calendar className="h-4 w-4" /><span>{formData.date ? new Date(formData.date).toLocaleDateString() : 'Wed, Jul 23, 2025'} • 9:00 AM</span></div>
+              <div className="flex items-center gap-2 text-sm text-gray-600"><Users className="h-4 w-4" /><span>{travelerText}</span></div>
+              <div className="flex items-center gap-2 text-sm text-gray-600"><Calendar className="h-4 w-4" /><span>{dateTimeText}</span></div>
               <div className="flex justify-between items-center pt-2 border-t"><span className="text-lg font-semibold">Total</span><span className="text-lg font-bold">${(tour.price * (formData.adults + formData.children)).toFixed(2)} USD</span></div>
             </div>
           </CardContent>
