@@ -115,7 +115,7 @@ export const TopReviewsCarousel = memo(function TopReviewsCarousel({ reviews, st
   if (topReviews.length === 0) return null
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 overflow-visible">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 className="text-lg md:text-xl font-semibold">Real Traveler Reviews</h3>
         {typeof rating === 'number' && (
@@ -131,8 +131,8 @@ export const TopReviewsCarousel = memo(function TopReviewsCarousel({ reviews, st
           </div>
         )}
       </div>
-      <div className="relative group">
-        <div className="overflow-hidden" ref={emblaRef}>
+      <div className="relative group overflow-visible">
+        <div className="overflow-x-hidden" ref={emblaRef}>
           <div className="flex">
             {topReviews.map((review, index) => (
               <div key={index} className="flex-[0_0_85%] sm:flex-[0_0_60%] md:flex-[0_0_50%] px-2">

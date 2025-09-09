@@ -1,30 +1,23 @@
 import type { ProductItem, ProductSearchResponse } from '@/features/activity/types'
 
 const normalizeImage = (p: any): string => {
-  const primary = p?.primary_image || {}
   const displayImages = Array.isArray(p?.display_images) ? p.display_images : []
-  const candidate = primary?.wide || primary?.square || primary?.origin || (displayImages[0]?.wide || displayImages[0]?.square || displayImages[0]?.origin) || ''
+  const fromDisplay = displayImages.find((img: any) => typeof img?.origin === 'string')?.origin
+  const fallback = typeof p?.primary_image?.origin === 'string' ? p.primary_image.origin : ''
+  const candidate = fromDisplay || fallback || ''
   return String(candidate || '')
 }
 
 const normalizeImages = (p: any): string[] => {
-  const primary = p?.primary_image || {}
   const displayImages = Array.isArray(p?.display_images) ? p.display_images : []
   const images: string[] = []
-  
-  // Primary image 추가
-  if (primary?.wide) images.push(String(primary.wide))
-  else if (primary?.square) images.push(String(primary.square))
-  else if (primary?.origin) images.push(String(primary.origin))
-  
-  // Display images 추가 (중복 제거)
+  // display_images의 origin만 사용
   displayImages.forEach((img: any) => {
-    const imgUrl = img?.wide || img?.square || img?.origin
-    if (imgUrl && !images.includes(String(imgUrl))) {
-      images.push(String(imgUrl))
+    const origin = typeof img?.origin === 'string' ? String(img.origin) : ''
+    if (origin && !images.includes(origin)) {
+      images.push(origin)
     }
   })
-  
   return images
 }
 

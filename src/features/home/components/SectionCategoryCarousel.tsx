@@ -14,11 +14,12 @@ type Props = {
 export function SectionCategoryCarousel({ title, defaultItems, showArrows = true }: Props) {
   const query = useSectionProducts({ templateId: 'TV_TAB_BSTP', title })
   const items = (query.data?.items && query.data.items.length > 0) ? query.data.items : defaultItems
+  const shouldShowArrows = showArrows && Array.isArray(items) && items.length > 4
 
   return (
     <Carousel className="w-full" opts={{ align: 'start', slidesToScroll: 1 }}>
       <CarouselContent className="-ml-2 md:-ml-4">
-        {items.slice(0, 4).map((p: any) => {
+        {items.map((p: any) => {
           const productItem: ProductItem = {
             id: p.id,
             title: p.title,
@@ -39,7 +40,7 @@ export function SectionCategoryCarousel({ title, defaultItems, showArrows = true
           )
         })}
       </CarouselContent>
-      {showArrows && (
+      {shouldShowArrows && (
         <div className="flex justify-center mt-3 space-x-4">
           <CarouselPrevious className="relative translate-x-0 translate-y-0" />
           <CarouselNext className="relative translate-x-0 translate-y-0" />

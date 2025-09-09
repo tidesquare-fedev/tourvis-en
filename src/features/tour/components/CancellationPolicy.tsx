@@ -188,7 +188,7 @@ export function CancellationPolicy({ refund, description, cancellationHours, piv
                 <span>{pivotHours} hours prior</span>
                 <span>Within {pivotHours} hours</span>
               </div>
-              <div className="relative w-full h-12 rounded-xl overflow-hidden">
+              <div className="relative w-full h-12 rounded-xl overflow-visible">
                 <div className={`absolute inset-y-0 left-0 w-1/2 ${theme.leftBg} flex items-center justify-center font-semibold`}>{ui.left}</div>
                 <div className={`absolute inset-y-0 right-0 w-1/2 ${theme.rightBg} flex items-center justify-center font-semibold`}>{ui.right}</div>
                 <div className={`absolute inset-y-0 left-1/2 w-0.5 ${theme.divider}`} />
@@ -198,7 +198,7 @@ export function CancellationPolicy({ refund, description, cancellationHours, piv
           {refundType === 'AVAILABLE' && (
             <>
               <div className="text-lg font-semibold text-gray-900 mb-2">{ui.freeTitle}</div>
-              <div className="relative w-full h-12 rounded-xl overflow-hidden">
+              <div className="relative w-full h-12 rounded-xl overflow-visible">
                 <div className={`absolute inset-0 ${theme.leftBg} flex items-center justify-center font-semibold`}>{ui.left} (anytime)</div>
               </div>
             </>
@@ -206,7 +206,7 @@ export function CancellationPolicy({ refund, description, cancellationHours, piv
           {refundType === 'UNAVAILABLE' && (
             <>
               <div className="text-lg font-semibold text-gray-900 mb-2">No cancellation</div>
-              <div className="relative w-full h-12 rounded-xl overflow-hidden">
+              <div className="relative w-full h-12 rounded-xl overflow-visible">
                 <div className={`absolute inset-0 ${theme.rightBg} flex items-center justify-center font-semibold`}>{ui.right}</div>
               </div>
             </>

@@ -125,7 +125,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
   const renderCarousel = (items: any[], opts?: { showArrows?: boolean }) => (
     <Carousel className="w-full" opts={{ align: 'start', slidesToScroll: 1 }}>
       <CarouselContent className="-ml-2 md:-ml-4">
-        {items.slice(0, 4).map((p) => {
+        {items.map((p) => {
           // 기존 데이터를 ProductItem 형태로 변환
           const productItem: ProductItem = {
             id: p.id,
@@ -148,7 +148,7 @@ export default function HomePageClient({ banners, regions, categories, sections 
           )
         })}
       </CarouselContent>
-      {(opts?.showArrows ?? true) && (
+      {(opts?.showArrows ?? true) && Array.isArray(items) && items.length > 4 && (
         <div className="flex justify-center mt-3 space-x-4">
           <CarouselPrevious className="relative translate-x-0 translate-y-0" />
           <CarouselNext className="relative translate-x-0 translate-y-0" />

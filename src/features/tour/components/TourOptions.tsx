@@ -84,25 +84,34 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
     }
   }, [options])
 
+  // Derive a human-readable summary for a given option when collapsed
+  const getOptionSummary = (option: TourOption): { time?: string; participants?: string } => {
+    const code = option.code || ''
+    let time: string | undefined
+    const selId = selectedTimeslot[code]
+    if (selId) {
+      const list = deriveTimeslotOptions(option)
+      const target = list.find((t) => t.id === selId)
+      if (target) time = String(target.title)
+    }
+    const labels: any[] = Array.isArray((option as any).labels) ? (option as any).labels : []
+    const map = labelQuantities[code] || {}
+    const parts: string[] = []
+    labels.forEach((lb: any, idx: number) => {
+      const lCode = String(lb?.code || lb?.id || `L${idx}`).toUpperCase()
+      const qty = Number(map[lCode] ?? 0)
+      if (qty > 0) parts.push(`${String(lb?.title || lb?.name || 'Participant')} ${qty}`)
+    })
+    const participants = parts.length > 0 ? parts.join(', ') : undefined
+    return { time, participants }
+  }
+
   return (
     <div className="space-y-5 min-w-0">
       <h4 className="font-medium text-[18px]">Tour Options</h4>
       {selectedDate && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
           <div className="text-blue-800 text-base font-semibold">Selected date: {format(selectedDate, 'PPP')}</div>
-          <div className="mt-2 text-right">
-            <Button variant="outline" size="sm" onClick={() => {
-              setSelectedOption(undefined)
-              setSelectedTimeslot({})
-              setLabelQuantities({})
-              setOptionQuantities({})
-              onQuantityChange(0)
-              if (onChangeLabelQuantities) {
-                // notify parent to clear all option selections by sending empty maps for known options
-                options.forEach((o: any) => onChangeLabelQuantities((o.code || o.id || '') as string, {} as any))
-              }
-            }}>Reset selections</Button>
-          </div>
         </div>
       )}
 
@@ -132,10 +141,18 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
               }
             }}
           >
-            <div className="flex justify-between items-center gap-4 mb-0 w-full">
+            <div className="flex justify-between items-start gap-4 mb-0 w-full">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center">
+                <div className="flex items-start justify-between gap-4">
                   <h5 className="font-semibold text-gray-900 text-[16px] leading-snug truncate">{option.title}</h5>
+                  {!cardExpanded[option.code] && (
+                    <div className="text-sm text-gray-600 text-right">
+                      {(() => { const s = getOptionSummary(option); return (<>
+                        {s.time && <div className="font-medium">{s.time}</div>}
+                        {s.participants && <div className="truncate max-w-[220px]">{s.participants}</div>}
+                      </>) })()}
+                    </div>
+                  )}
                 </div>
                 {/* per-option reset */}
                 {cardExpanded[option.code] && (

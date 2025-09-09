@@ -2926,7 +2926,15 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
     if (imgList.length > 0) base.basic.images = imgList
     // 지역/카테고리
     const areas = Array.isArray(raw?.areas) ? raw.areas : (Array.isArray(raw?.region_list) ? raw.region_list : [])
-    base.basic.areas = areas.map((a: any) => ({ code: String(a?.code ?? a?.id ?? ''), name: String(a?.name ?? '') }))
+    const extractParent = (p: any): any => {
+      if (!p || typeof p !== 'object') return null
+      return { name: String(p?.name ?? ''), parent: extractParent(p?.parent) }
+    }
+    ;(base.basic as any).areas = areas.map((a: any) => ({
+      code: String(a?.code ?? a?.id ?? ''),
+      name: String(a?.name ?? ''),
+      parent: extractParent(a?.parent)
+    }))
     const categories = Array.isArray(raw?.categories) ? raw.categories : (Array.isArray(raw?.category_list) ? raw.category_list : [])
     base.basic.categories = categories.map((c: any) => ({ code: String(c?.code ?? c?.id ?? ''), name: String(c?.name ?? '') }))
     // 리뷰 (있을 경우)

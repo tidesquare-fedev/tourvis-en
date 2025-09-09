@@ -20,6 +20,7 @@ type TourBookingCardProps = {
   totalAmount?: number
   selections?: Array<{
     optionTitle: string
+    timeslotTitle?: string
     lines: Array<{ label: string; qty: number; unit: number }>
     subtotal: number
   }>
@@ -43,11 +44,17 @@ export function TourBookingCard({ discountRate, originalPrice, price, selectedDa
               <div className="font-semibold">{format(selectedDate, 'PPP')}</div>
             </div>
           )}
+          {/* Global selected time panel removed as time is shown per option */}
           {selections.length > 0 && (
             <div className="space-y-2">
               {selections.map((sel, idx) => (
                 <div key={idx} className="p-3 bg-gray-50 rounded-lg border">
-                  <div className="text-sm font-semibold text-gray-900">{sel.optionTitle}</div>
+                  <div className="text-sm font-semibold text-gray-900 flex items-center justify-between gap-2">
+                    <span>{sel.optionTitle}</span>
+                    {sel.timeslotTitle && (
+                      <span className="text-gray-700 font-medium">{sel.timeslotTitle}</span>
+                    )}
+                  </div>
                   <div className="mt-1 space-y-1">
                     {sel.lines.map((ln, i) => (
                       <div key={i} className="flex items-center justify-between text-xs">

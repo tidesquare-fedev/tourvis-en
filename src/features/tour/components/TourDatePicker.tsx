@@ -47,9 +47,9 @@ export function TourDatePicker({ selectedDate, onSelect, mode = 'single', select
   const clampMonth = (m: Date) => (isBefore(startOfMonth(m), minMonth) ? minMonth : m)
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-visible">
       <h4 className="font-medium mb-4 text-[18px]">Select Date</h4>
-      <div className="relative">
+      <div className="relative overflow-visible">
         {/* Navigation buttons */}
         <button
           type="button"

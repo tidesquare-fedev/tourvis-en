@@ -43,6 +43,14 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Layout variables */
+    --header-height: 4rem; /* 64px */
+    --header-height-mobile: 3rem; /* 48px */
+    --sticky-nav-height: 3rem; /* 48px */
+    --content-padding: 1rem; /* 16px */
+    --content-padding-mobile: 0.75rem; /* 12px */
+    --max-content-width: 80rem; /* 1280px */
   }
 
   .dark {
@@ -128,7 +136,11 @@
   .booking-container {
     min-height: 100vh;
     overflow: visible !important;
-    contain: paint;
+  }
+
+  /* Prevent any ancestor from accidentally creating a new containing block */
+  .booking-container *, .booking-container {
+    transform: none !important;
   }
   
   /* Fixed booking card - 독립적으로 배치 */

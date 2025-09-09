@@ -74,8 +74,8 @@ export function TourDetailLayout({
         </div>
       )}
       
-      {/* GNB 아래 여백 - 메뉴 네비게이션 고려 */}
-      <div className={`transition-all duration-200 ${showStickyHeader ? 'sticky-nav-spacing' : 'header-spacing'}`}></div>
+      {/* GNB 아래 여백 + 대표이미지와의 간격(16px) */}
+      <div className={`transition-all duration-200 ${showStickyHeader ? 'sticky-nav-spacing' : 'header-spacing'} mb-4`}></div>
       
       {children}
     </div>

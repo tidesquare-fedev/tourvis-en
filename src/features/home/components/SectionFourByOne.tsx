@@ -13,11 +13,12 @@ type Props = {
 export function SectionFourByOne({ title, defaultItems }: Props) {
   const query = useSectionProducts({ templateId: 'TV_PC_TM_PRODUCT_4X1', title })
   const items = (query.data?.items && query.data.items.length > 0) ? query.data.items : defaultItems
+  const shouldShowArrows = Array.isArray(items) && items.length > 4
 
   return (
     <Carousel className="w-full relative" opts={{ align: 'start' }}>
       <CarouselContent className="-ml-2 md:-ml-4">
-        {items.slice(0, 4).map((p) => {
+        {items.map((p) => {
           const productItem: ProductItem = {
             id: (p as any).id,
             title: (p as any).title,
@@ -38,6 +39,11 @@ export function SectionFourByOne({ title, defaultItems }: Props) {
           )
         })}
       </CarouselContent>
+      {shouldShowArrows && (
+        <div className="flex justify-center mt-3 space-x-4">
+          {/* 재사용 가능한 Carousel 버튼 */}
+        </div>
+      )}
     </Carousel>
   )
 }

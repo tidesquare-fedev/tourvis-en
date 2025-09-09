@@ -64,12 +64,32 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     return textContent.substring(0, 200) + '...'
   }
 
+  // 지역명 조합: areas[0].name + (parent.name || parent.parent.name)
+  const composeLocation = (areas: unknown): string => {
+    try {
+      const list = Array.isArray(areas) ? areas : []
+      if (list.length === 0) return ''
+      const first: any = list[0]
+      const cityName = String(first?.name || '')
+      let parentName = ''
+      if (first?.parent && typeof first.parent === 'object') {
+        parentName = String((first.parent as any)?.name || '')
+        if (!parentName && (first.parent as any)?.parent) {
+          parentName = String(((first.parent as any).parent as any)?.name || '')
+        }
+      }
+      return parentName ? `${cityName}, ${parentName}` : cityName
+    } catch (_err) {
+      return ''
+    }
+  }
+
   // Mock tour data - 실제로는 API에서 가져올 데이터
   const tour = {
     id: tourId,
     title: tourData.basic.name,
     subtitle: tourData.basic.sub_name,
-    location: "로마, 이탈리아",
+    location: composeLocation((tourData.basic as any)?.areas) || ' ',
     rating: 4.8,
     reviewCount: 1247,
     images: tourData.basic.images,
@@ -294,6 +314,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const [selectedOptionCode, setSelectedOptionCode] = useState<string>('')
   const [selectedLabelId, setSelectedLabelId] = useState<string | undefined>(undefined)
   const [selectedTimeslotId, setSelectedTimeslotId] = useState<string | undefined>(undefined)
+  const [timeslotByOption, setTimeslotByOption] = useState<Record<string, { id: string; title: string }>>({})
   // label quantities per option: { [optionCode]: { [labelCode]: qty } }
   const [selectedLabelQtyByOption, setSelectedLabelQtyByOption] = useState<Record<string, Record<string, number>>>({})
   const isDateType = useMemo(() => String(tourData.basic.calendar_type).toUpperCase() === 'DATE', [tourData.basic.calendar_type])
@@ -433,6 +454,16 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     return times.find((t: any) => String(t.id || t.code || '') === String(selectedTimeslotId))
   }, [selectedOptionObj, selectedTimeslotId])
 
+  const getTimeslotTitleFromOptions = (optionCode: string, tsId?: string): string | undefined => {
+    try {
+      const opt = currentOptionList.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '') === String(optionCode))
+      const times: any[] = Array.isArray((opt as any)?.timeslots) ? (opt as any).timeslots : []
+      const t = times.find((tt: any) => String(tt.id || tt.code || '') === String(tsId))
+      if (t) return String(t.title || t.name || t.code || '')
+    } catch {}
+    return undefined
+  }
+
   const selectedUnitPrice = useMemo(() => 0, [])
 
   // 시간/라벨/옵션 선택 시 기본 수량 1로 설정 (처음 선택 시)
@@ -480,7 +511,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   }, [selectedLabelQtyByOption, labelPriceMap])
 
   const bookingSelections = useMemo(() => {
-    const selections: Array<{ optionTitle: string; lines: Array<{ label: string; qty: number; unit: number }>; subtotal: number }> = []
+    const selections: Array<{ optionTitle: string; timeslotTitle?: string; lines: Array<{ label: string; qty: number; unit: number }>; subtotal: number }> = []
     const getLabelUnitPrice = (optCode: string, labelCode: string): number => {
       const upper = String(labelCode).toUpperCase()
       const fromMap = Number(labelPriceMap[optCode]?.[upper] ?? 0)
@@ -520,11 +551,19 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
         const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
         const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
         const optionTitle = String(opt?.title || opt?.name || optCode)
-        selections.push({ optionTitle, lines, subtotal })
+        // timeslot title from selectedTimeslot
+        let timeslotTitle: string | undefined
+        try {
+          const sel = timeslotByOption[optCode]
+          if (sel) {
+            timeslotTitle = sel.title
+          }
+        } catch {}
+        selections.push({ optionTitle, timeslotTitle, lines, subtotal })
       }
     })
     return selections
-  }, [selectedLabelQtyByOption, labelPriceMap, optionData])
+  }, [selectedLabelQtyByOption, labelPriceMap, optionData, timeslotByOption])
   // 예약 가능 조건: 날짜 선택 + 수량 1이상 + 옵션 선택(필요 시 라벨/회차 포함)
   const canBook = Boolean(selectedDate) && totalPrice > 0
   // Reset booking state if quantities return to 0
@@ -588,7 +627,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       />
 
       {/* Tour Highlights */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 pt-6 pb-4">
         <TourHighlights
           highlights={tour.highlights || []}
           title={tourData.detail.highlight_title}
@@ -599,8 +638,8 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
 
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 booking-container">
+      <div className="max-w-7xl mx-auto px-4 pt-0 pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 booking-container items-start">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Options Section */}
@@ -695,7 +734,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                         onQuantityChange={handleQuantityChange}
                         inventoryScope={tourData.basic.inventory_scope}
                         onSelectOption={(c) => setSelectedOptionCode(c)}
-                        onSelectTimeslot={(code, tsId, labelId) => { setSelectedOptionCode(code); setSelectedTimeslotId(tsId); setSelectedLabelId(labelId) }}
+                        onSelectTimeslot={(code, tsId, labelId) => { setSelectedOptionCode(code); setSelectedTimeslotId(tsId); setSelectedLabelId(labelId); setTimeslotByOption(prev => ({ ...prev, [code]: { id: String(tsId || ''), title: String(getTimeslotTitleFromOptions(code, tsId) || tsId || '') } })) }}
                         onChangeLabelQuantities={(code, map) => { setSelectedLabelQtyByOption(prev => ({ ...prev, [code]: map })) }}
                         getLabelPrice={(code, label) => {
                           const v = labelPriceMap[code]?.[label]
@@ -725,7 +764,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                         onQuantityChange={handleQuantityChange}
                         inventoryScope={tourData.basic.inventory_scope}
                         onSelectOption={(c) => setSelectedOptionCode(c)}
-                        onSelectTimeslot={(code, tsId, labelId) => { setSelectedOptionCode(code); setSelectedTimeslotId(tsId); setSelectedLabelId(labelId) }}
+                        onSelectTimeslot={(code, tsId, labelId) => { setSelectedOptionCode(code); setSelectedTimeslotId(tsId); setSelectedLabelId(labelId); setTimeslotByOption(prev => ({ ...prev, [code]: { id: String(tsId || ''), title: String(getTimeslotTitleFromOptions(code, tsId) || tsId || '') } })) }}
                         onChangeLabelQuantities={(code, map) => { setSelectedLabelQtyByOption(prev => ({ ...prev, [code]: map })) }}
                         getLabelPrice={(code, label) => {
                           const v = labelPriceMap[code]?.[label]
@@ -992,8 +1031,8 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
           </div>
 
           {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1 lg:self-start" id="booking-boundary">
-            <StickyBox topOffset={128} enableBelow={1024} boundarySelector="#booking-boundary" triggerSelector="#tabs-trigger">
+          <div className="lg:col-span-1">
+          <StickyBox topOffset={128} enableBelow={0} boundarySelector=".booking-container" triggerSelector="#tabs-trigger" debug>
               <TourBookingCard
                 discountRate={tour.discountRate}
                 originalPrice={tour.originalPrice}

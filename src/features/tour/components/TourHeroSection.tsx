@@ -43,10 +43,7 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
   const primaryImage = allImages[0] || tourData.detail.primary_image?.file_url
   const additionalImages = allImages.slice(1, 5)
   
-  // 디버깅용 로그
-  console.log('TourHeroSection - tour.images:', tour.images)
-  console.log('TourHeroSection - allImages:', allImages)
-  console.log('TourHeroSection - primaryImage:', primaryImage)
+  // 디버그 로그 제거 (noise 방지)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [currentMainImageIndex, setCurrentMainImageIndex] = useState(0)
@@ -122,9 +119,9 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
   }, [selectedImageIndex, isModalOpen])
 
   return (
-    <div className="bg-white pt-4 lg:pt-20">
+    <div className="bg-white pt-4 lg:pt-4">
       {/* Main Hero Section */}
-      <div className="max-w-7xl mx-auto px-0 lg:px-4 py-8">
+      <div className="max-w-7xl mx-auto px-0 lg:px-4 pb-4">
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Main Image - Mobile: Top, Desktop: Left */}
           <div className="order-1 lg:order-1">
@@ -135,7 +132,6 @@ export function TourHeroSection({ tourData, tour, starColor, onScrollToReviews, 
                 className="w-full h-[300px] sm:h-[400px] lg:h-[600px] object-cover rounded-none lg:rounded-2xl shadow-lg cursor-pointer"
                 onClick={handleMainImageClick}
                 onError={(e) => {
-                  console.log('Image failed to load:', e.currentTarget.src)
                   e.currentTarget.src = 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=600&fit=crop'
                 }}
               />

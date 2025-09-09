@@ -28,12 +28,9 @@ const absolutize = (u: unknown): string | null => {
 const mapProductsToItems = (list: any[]): any[] => {
   return (Array.isArray(list) ? list : []).map((p: any) => {
     const detail = p?.productDetail || {}
-    const imageCandidate = detail.imageUrl || detail.imageUrlWide || ''
+    const imageCandidate = detail.imageUrl || ''
     const images: string[] = []
     if (detail.imageUrl) images.push(normalizeImage(detail.imageUrl))
-    if (detail.imageUrlWide && detail.imageUrlWide !== detail.imageUrl) images.push(normalizeImage(detail.imageUrlWide))
-    if (detail.imageCommon && detail.imageCommon !== detail.imageUrl && detail.imageCommon !== detail.imageUrlWide) images.push(normalizeImage(detail.imageCommon))
-    if (detail.imageCover && detail.imageCover !== detail.imageUrl && detail.imageCover !== detail.imageUrlWide && detail.imageCover !== detail.imageCommon) images.push(normalizeImage(detail.imageCover))
 
     const price = detail.discountPrice ?? detail.price ?? ''
     const discountRate = detail.discountRate ?? ''

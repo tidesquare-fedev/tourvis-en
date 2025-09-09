@@ -11,8 +11,8 @@ type TourSectionTabsProps = {
 
 export function TourSectionTabs({ sections, activeSection, onClick, idAttr }: TourSectionTabsProps) {
   return (
-    <div id={idAttr} className="border-b mb-8 w-full">
-      <div className="flex gap-2 px-1 overflow-x-auto scrollbar-hide max-w-full min-w-0">
+    <div id={idAttr} className="sticky top-16 z-30 bg-white/95 backdrop-blur border-b mb-8 w-full">
+      <div className="flex gap-2 px-1 max-w-full min-w-0 overflow-x-auto scrollbar-hide">
         {sections.map((section) => (
           <button
             key={section.id}
