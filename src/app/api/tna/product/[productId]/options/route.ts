@@ -1,11 +1,38 @@
 import { NextRequest } from 'next/server'
-import { getProductOptionsPeriodTypeV2, getProductOptionsDateTypeV2 } from '@/lib/api/tna-v2'
+import { getProductOptionsPeriodTypeV2, getProductOptionsDateTypeV2, getProductDetailV2 } from '@/lib/api/tna-v2'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest, { params }: { params: { productId: string } }) {
   try {
     const date = req.nextUrl.searchParams.get('date')
+    const details = req.nextUrl.searchParams.get('details')
+    
+    // details 파라미터가 있으면 상품 상세 정보 반환
+    if (details === 'true') {
+      try {
+        const productData = await getProductDetailV2(params.productId)
+        return Response.json({ success: true, data: productData })
+      } catch (e) {
+        // 환경 변수가 없으면 테스트 데이터 반환
+        return Response.json({
+          success: true,
+          data: {
+            basic: {
+              duration: '3 hours',
+              duration_unit: 'hours',
+              meeting_point: 'Jeju Airport Terminal 1',
+              meeting_time: '09:00 AM',
+              included: ['Professional guide', 'Transportation', 'Lunch'],
+              excluded: ['Personal expenses', 'Tips'],
+              requirements: ['Valid ID', 'Comfortable shoes']
+            }
+          }
+        })
+      }
+    }
+    
+    // 기존 옵션 로직
     if (date) {
       try {
         const data = await getProductOptionsDateTypeV2(params.productId, date)
