@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   MessageSquare, 
@@ -26,6 +27,7 @@ import { InquiryList } from '@/components/admin/InquiryList'
 import { InquiryDetail } from '@/components/admin/InquiryDetail'
 import { RealtimeIndicator } from '@/components/admin/RealtimeIndicator'
 import { ProtectedRoute } from '@/components/admin/ProtectedRoute'
+import { AccountManagement } from '@/components/admin/AccountManagement'
 import { useRealtimeInquiries } from '@/hooks/useRealtimeInquiries'
 
 function AdminDashboardContent() {
@@ -38,6 +40,7 @@ function AdminDashboardContent() {
   const [filterType, setFilterType] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [autoRefresh, setAutoRefresh] = useState(true)
+  const [activeTab, setActiveTab] = useState('inquiries')
   const router = useRouter()
   
   // 실시간 문의 데이터
@@ -212,252 +215,297 @@ function AdminDashboardContent() {
               </Button>
             </div>
           </div>
+          
+          {/* 탭 네비게이션 */}
+          <div className="border-t border-gray-200">
+            <nav className="flex space-x-8">
+              <button
+                onClick={() => setActiveTab('inquiries')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'inquiries'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <MessageSquare className="h-4 w-4 inline mr-2" />
+                문의 관리
+              </button>
+              {admin.role === 'super_admin' && (
+                <button
+                  onClick={() => setActiveTab('accounts')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'accounts'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <User className="h-4 w-4 inline mr-2" />
+                  계정 관리
+                </button>
+              )}
+            </nav>
+          </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 통계 카드 */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">전체 문의</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_inquiries}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">대기 중</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{stats.pending_inquiries}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">답변 완료</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats.answered_inquiries}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">오늘 문의</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{stats.today_inquiries}</div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* 검색 및 필터 */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="ID, 이름, 제목으로 검색..."
-                  className="pl-10"
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Filter className="w-5 h-5 text-gray-600" />
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="all">모든 유형</option>
-                  <option value="reservation">예약</option>
-                  <option value="cancel">취소</option>
-                  <option value="change">변경</option>
-                  <option value="product">상품</option>
-                  <option value="other">기타</option>
-                </select>
+        {activeTab === 'inquiries' && (
+          <>
+            {/* 통계 카드 */}
+            {stats && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">전체 문의</CardTitle>
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.total_inquiries}</div>
+                  </CardContent>
+                </Card>
                 
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="all">모든 상태</option>
-                  <option value="pending">대기 중</option>
-                  <option value="answered">답변 완료</option>
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 메인 콘텐츠 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 문의 목록 */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">문의 목록</h2>
-              </div>
-              <div className="overflow-y-auto" style={{ maxHeight: '700px' }}>
-                {filteredInquiries.map(inquiry => (
-                  <div
-                    key={inquiry.id}
-                    onClick={() => handleInquirySelect(inquiry)}
-                    className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors ${
-                      selectedInquiry?.id === inquiry.id ? 'bg-indigo-50' : ''
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-mono text-gray-500">{inquiry.id}</span>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        inquiry.status === 'pending' 
-                          ? 'bg-orange-100 text-orange-700' 
-                          : 'bg-green-100 text-green-700'
-                      }`}>
-                        {inquiry.status === 'pending' ? '대기 중' : '답변 완료'}
-                      </span>
-                    </div>
-                    <h3 className="font-medium text-gray-900 text-sm mb-1">{inquiry.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{inquiry.subject}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                        {inquiry.category}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(inquiry.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 문의 상세 및 답변 */}
-          <div className="lg:col-span-2">
-            {selectedInquiry ? (
-              <div className="bg-white rounded-lg shadow">
-                {/* 문의 헤더 */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="flex justify-between items-start mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      {selectedInquiry.subject}
-                    </h2>
-                    <span className={`px-3 py-1 text-sm rounded-full ${
-                      selectedInquiry.status === 'pending' 
-                        ? 'bg-orange-100 text-orange-700' 
-                        : 'bg-green-100 text-green-700'
-                    }`}>
-                      {selectedInquiry.status === 'pending' ? '대기 중' : '답변 완료'}
-                    </span>
-                  </div>
-                  
-                  {/* 문의 정보 */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600 mb-1">문의 번호:</p>
-                      <p className="font-medium text-gray-900">{selectedInquiry.id}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">이름:</p>
-                      <p className="font-medium text-gray-900">{selectedInquiry.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">카테고리:</p>
-                      <p className="font-medium text-gray-900">{selectedInquiry.category}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">이메일:</p>
-                      <p className="font-medium text-gray-900">{selectedInquiry.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">생성일:</p>
-                      <p className="font-medium text-gray-900">
-                        {new Date(selectedInquiry.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">전화번호:</p>
-                      <p className="font-medium text-gray-900">{selectedInquiry.phone || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* My Inquiry 섹션 */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="flex items-center mb-4">
-                    <User className="w-5 h-5 mr-2 text-gray-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">문의 내용</h3>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedInquiry.message}</p>
-                  </div>
-                </div>
-
-                {/* Response 섹션 */}
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <MessageSquare className="w-5 h-5 mr-2 text-gray-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">답변 관리</h3>
-                  </div>
-                  <InquiryDetail 
-                    inquiry={selectedInquiry}
-                    onInquiryUpdate={handleInquiryUpdate}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow p-12">
-                <div className="text-center text-gray-500">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>문의를 선택해주세요</p>
-                </div>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">대기 중</CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">{stats.pending_inquiries}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">답변 완료</CardTitle>
+                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{stats.answered_inquiries}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">오늘 문의</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">{stats.today_inquiries}</div>
+                  </CardContent>
+                </Card>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* 알림 토스트 */}
-        {notifications.length > 0 && (
-          <div className="fixed bottom-4 right-4 space-y-2 z-50">
-            {notifications.slice(0, 3).map(notification => (
-              <div
-                key={notification.id}
-                className="bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 animate-slide-in-right"
-              >
-                <Bell className="w-5 h-5 text-indigo-600" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{notification.message}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(notification.timestamp).toLocaleTimeString()}
-                  </p>
+            {/* 검색 및 필터 */}
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder="문의 검색..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Select value={filterType} onValueChange={setFilterType}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="카테고리" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        <SelectItem value="product">상품 문의</SelectItem>
+                        <SelectItem value="booking">예약 문의</SelectItem>
+                        <SelectItem value="cancel">취소 문의</SelectItem>
+                        <SelectItem value="other">기타</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="상태" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체</SelectItem>
+                        <SelectItem value="pending">대기 중</SelectItem>
+                        <SelectItem value="answered">답변 완료</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+              </CardContent>
+            </Card>
+
+            {/* 메인 콘텐츠 */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* 문의 목록 */}
+              <div className="lg:col-span-1">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>문의 목록</span>
+                      <Badge variant="secondary">{filteredInquiries.length}개</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="max-h-96 overflow-y-auto">
+                      {filteredInquiries.map((inquiry) => (
+                        <div
+                          key={inquiry.id}
+                          onClick={() => handleInquirySelect(inquiry)}
+                          className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${
+                            selectedInquiry?.id === inquiry.id ? 'bg-indigo-50 border-indigo-200' : ''
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm font-medium text-gray-900 truncate">
+                                {inquiry.subject}
+                              </h3>
+                              <p className="text-sm text-gray-500 truncate">
+                                {inquiry.name} ({inquiry.email})
+                              </p>
+                              <div className="flex items-center mt-1 space-x-2">
+                                <Badge 
+                                  variant={inquiry.status === 'pending' ? 'destructive' : 'secondary'}
+                                  className="text-xs"
+                                >
+                                  {inquiry.status === 'pending' ? '대기 중' : '답변 완료'}
+                                </Badge>
+                                <span className="text-xs text-gray-400">
+                                  {new Date(inquiry.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            ))}
-          </div>
+
+              {/* 문의 상세 및 답변 */}
+              <div className="lg:col-span-2">
+                {selectedInquiry ? (
+                  <div className="bg-white rounded-lg shadow">
+                    {/* 문의 헤더 */}
+                    <div className="p-6 border-b border-gray-200">
+                      <div className="flex justify-between items-start mb-4">
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          {selectedInquiry.subject}
+                        </h2>
+                        <span className={`px-3 py-1 text-sm rounded-full ${
+                          selectedInquiry.status === 'pending' 
+                            ? 'bg-orange-100 text-orange-700' 
+                            : 'bg-green-100 text-green-700'
+                        }`}>
+                          {selectedInquiry.status === 'pending' ? '대기 중' : '답변 완료'}
+                        </span>
+                      </div>
+                      
+                      {/* 문의 정보 */}
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600 mb-1">문의 번호:</p>
+                          <p className="font-medium text-gray-900">{selectedInquiry.id}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1">이름:</p>
+                          <p className="font-medium text-gray-900">{selectedInquiry.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1">카테고리:</p>
+                          <p className="font-medium text-gray-900">{selectedInquiry.category}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1">이메일:</p>
+                          <p className="font-medium text-gray-900">{selectedInquiry.email}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1">생성일:</p>
+                          <p className="font-medium text-gray-900">
+                            {new Date(selectedInquiry.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1">전화번호:</p>
+                          <p className="font-medium text-gray-900">{selectedInquiry.phone || 'N/A'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* My Inquiry 섹션 */}
+                    <div className="p-6 border-b border-gray-200">
+                      <div className="flex items-center mb-4">
+                        <User className="w-5 h-5 mr-2 text-gray-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">문의 내용</h3>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <p className="text-gray-700 whitespace-pre-wrap">{selectedInquiry.message}</p>
+                      </div>
+                    </div>
+
+                    {/* Response 섹션 */}
+                    <div className="p-6">
+                      <div className="flex items-center mb-4">
+                        <MessageSquare className="w-5 h-5 mr-2 text-gray-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">답변 관리</h3>
+                      </div>
+                      <InquiryDetail 
+                        inquiry={selectedInquiry}
+                        onInquiryUpdate={handleInquiryUpdate}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-lg shadow p-12">
+                    <div className="text-center text-gray-500">
+                      <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>문의를 선택해주세요</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'accounts' && (
+          <AccountManagement currentAdmin={admin} />
         )}
       </div>
+
+      {/* 알림 토스트 */}
+      {notifications.length > 0 && (
+        <div className="fixed bottom-4 right-4 space-y-2 z-50">
+          {notifications.slice(0, 3).map(notification => (
+            <div
+              key={notification.id}
+              className="bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 animate-slide-in-right"
+            >
+              <Bell className="w-5 h-5 text-indigo-600" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">{notification.message}</p>
+                <p className="text-xs text-gray-500">
+                  {new Date(notification.timestamp).toLocaleTimeString()}
+                </p>
+              </div>
+              <button
+                onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
