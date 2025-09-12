@@ -100,6 +100,29 @@
   }
 }
 
+/* 알림 토스트 애니메이션 */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -112,6 +135,29 @@
     overflow-x: hidden;
     /* sticky 헤더가 제대로 작동하도록 overflow 설정 */
   }
+}
+
+/* 알림 토스트 애니메이션 */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 
@@ -218,6 +264,29 @@
   .sticky-nav-spacing {
     height: var(--sticky-nav-height);
   }
+}
+
+/* 알림 토스트 애니메이션 */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 
