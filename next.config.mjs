@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: '/en',
+  output: 'standalone',
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/supabase-js']
+  },
   async redirects() {
     return [
       {

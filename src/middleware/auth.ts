@@ -73,7 +73,7 @@ export function withRateLimit(
     const windowStart = now - options.windowMs
 
     // 오래된 엔트리 정리
-    for (const [key, value] of rateLimitMap.entries()) {
+    for (const [key, value] of Array.from(rateLimitMap.entries())) {
       if (value.resetTime < windowStart) {
         rateLimitMap.delete(key)
       }

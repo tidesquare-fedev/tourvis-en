@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { InquiryApi } from '@/lib/api/inquiries'
 import { useNotificationStore } from '@/store/notification-store'
 import { useInquiryStore } from '@/store/inquiry-store'
@@ -20,7 +21,7 @@ export const inquiryKeys = {
 export function useInquiries() {
   const { setInquiries, setLoading, setConnected } = useInquiryStore()
 
-  return useQuery({
+  const query = useQuery({
     queryKey: inquiryKeys.lists(),
     queryFn: async () => {
       const inquiries = await InquiryApi.getAllInquiries()
@@ -30,15 +31,19 @@ export function useInquiries() {
     staleTime: 30 * 1000, // 30초
     gcTime: 5 * 60 * 1000, // 5분
     refetchOnWindowFocus: false,
-    onSuccess: () => {
+  })
+
+  useEffect(() => {
+    if (query.isSuccess) {
       setLoading(false)
       setConnected(true)
-    },
-    onError: () => {
+    } else if (query.isError) {
       setLoading(false)
       setConnected(false)
-    },
-  })
+    }
+  }, [query.isSuccess, query.isError, setLoading, setConnected])
+
+  return query
 }
 
 /**

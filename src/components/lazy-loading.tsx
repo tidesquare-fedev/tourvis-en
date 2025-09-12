@@ -48,7 +48,7 @@ interface LazyWrapperProps {
   errorFallback?: React.ReactNode
 }
 
-export function withLazyLoading<P extends Record<string, any>>(
+export function withLazyLoading<P = {}>(
   importFunc: () => Promise<{ default: ComponentType<P> }>,
   options: LazyWrapperProps = {}
 ) {
@@ -57,7 +57,7 @@ export function withLazyLoading<P extends Record<string, any>>(
   return function LazyWrapper(props: P) {
     return (
       <Suspense fallback={options.fallback || <LoadingSpinner />}>
-        <LazyComponent {...props} />
+        <LazyComponent {...(props as any)} />
       </Suspense>
     )
   }
@@ -73,7 +73,7 @@ export const LazyAdminDashboard = withLazyLoading(
 
 // 문의 상세 페이지용 Lazy Loading
 export const LazyInquiryDetail = withLazyLoading(
-  () => import('@/components/admin/InquiryDetail'),
+  () => import('@/components/admin/InquiryDetail').then(module => ({ default: module.InquiryDetail })),
   {
     fallback: <CardSkeleton />
   }
@@ -81,7 +81,7 @@ export const LazyInquiryDetail = withLazyLoading(
 
 // 문의 목록용 Lazy Loading
 export const LazyInquiryList = withLazyLoading(
-  () => import('@/components/admin/InquiryList'),
+  () => import('@/components/admin/InquiryList').then(module => ({ default: module.InquiryList })),
   {
     fallback: <ListSkeleton count={5} />
   }
@@ -89,7 +89,7 @@ export const LazyInquiryList = withLazyLoading(
 
 // 계정 관리용 Lazy Loading
 export const LazyAccountManagement = withLazyLoading(
-  () => import('@/components/admin/AccountManagement'),
+  () => import('@/components/admin/AccountManagement').then(module => ({ default: module.AccountManagement })),
   {
     fallback: <CardSkeleton />
   }
