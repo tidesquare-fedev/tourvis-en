@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('문의 API 호출 시작')
     const body = await request.json()
-    const { author, password, name, email, phone, category, subject, message, priority = 'medium' } = body
+    console.log('받은 데이터:', body)
+    
+    const { author, password, name, email, phone, category, subject, message } = body
 
     // 필수 필드 검증
     if (!author || !password || !name || !email || !category || !subject || !message) {
+      console.log('필수 필드 누락:', { author, password, name, email, category, subject, message })
       return NextResponse.json(
-        { error: '필수 필드가 누락되었습니다.' },
+        { error: 'Missing required fields' },
         { status: 400 }
       )
     }
@@ -17,52 +21,54 @@ export async function POST(request: NextRequest) {
     // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
+      console.log('이메일 형식 오류:', email)
       return NextResponse.json(
-        { error: '올바른 이메일 형식이 아닙니다.' },
+        { error: 'Invalid email format' },
         { status: 400 }
       )
     }
 
-    // 문의 유형 검증
-    const validCategories = ['reservation', 'cancel', 'change', 'product', 'other']
-    if (!validCategories.includes(category)) {
-      return NextResponse.json(
-        { error: '올바른 문의 유형을 선택해주세요.' },
-        { status: 400 }
-      )
-    }
-
-    // 문의 생성
-    const { data: inquiry, error } = await supabase
+    // 문의 데이터를 데이터베이스에 저장
+    const { data, error } = await supabaseAdmin
       .from('inquiries')
-      .insert({
-        author,
-        password,
-        name,
-        email,
-        phone,
-        category,
-        subject,
-        message,
-        priority,
-        status: 'pending'
-      })
+      .insert([
+        {
+          author,
+          password, // 실제 운영에서는 해시화해야 함
+          name,
+          email,
+          phone: phone || null,
+          category,
+          subject,
+          message,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        },
+      ])
       .select()
-      .single()
 
     if (error) {
-      console.error('문의 생성 오류:', error)
+      console.error('Database error:', error)
       return NextResponse.json(
-        { error: '문의 생성 중 오류가 발생했습니다.' },
+        { error: 'Failed to save inquiry', details: error.message },
         { status: 500 }
       )
     }
 
-    return NextResponse.json(inquiry, { status: 201 })
-  } catch (error) {
-    console.error('문의 생성 오류:', error)
+    console.log('문의 저장 성공:', data)
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다.' },
+      { 
+        success: true, 
+        message: 'Inquiry submitted successfully',
+        data: data[0]
+      },
+      { status: 201 }
+    )
+
+  } catch (error) {
+    console.error('API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MessageCircle, Plus, Lock, Search } from 'lucide-react'
+import { MessageCircle, Plus, Lock, Search, Clock } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface InquiryItem {
@@ -18,23 +18,20 @@ interface InquiryItem {
   subject: string
   category: string
   status: 'pending' | 'answered' | 'closed'
-  createdAt: string
+  created_at: string
   lastReply?: string
 }
 
-const sampleInquiries: InquiryItem[] = [
-  { id: 'INQ-001', author: 'john', password: 'password123', subject: 'Question about Seoul tour package', category: 'Tour Package', status: 'pending', createdAt: '2024-01-15' },
-  { id: 'INQ-002', author: 'john', password: 'password123', subject: 'Cancellation policy inquiry', category: 'Cancellation', status: 'answered', createdAt: '2024-01-10', lastReply: '2024-01-12' },
-  { id: 'INQ-003', author: 'sarah', password: 'mypass456', subject: 'Group discount availability', category: 'Pricing', status: 'closed', createdAt: '2024-01-05', lastReply: '2024-01-08' },
-  { id: 'INQ-004', author: 'mike', password: 'secure789', subject: 'Dietary restrictions for food tour', category: 'Special Requirements', status: 'pending', createdAt: '2024-01-20' },
-  { id: 'INQ-005', author: 'sarah', password: 'mypass456', subject: 'Transportation from airport', category: 'Transportation', status: 'answered', createdAt: '2024-01-18', lastReply: '2024-01-19' },
-]
+// 샘플 데이터 제거 - 이제 실제 데이터베이스에서만 가져옴
 
 export default function InquiryListPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userInquiries, setUserInquiries] = useState<InquiryItem[]>([])
   const [loginData, setLoginData] = useState({ author: '', password: '' })
   const [loading, setLoading] = useState(false)
+  const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null)
+  const [inquiryDetails, setInquiryDetails] = useState<Record<string, any>>({})
+  const [replies, setReplies] = useState<Record<string, any[]>>({})
   const { toast } = useToast()
 
   useEffect(() => {
@@ -42,27 +39,84 @@ export default function InquiryListPage() {
     setIsAuthenticated(false)
   }, [])
 
-  const authenticateAndLoadInquiries = (author: string, password: string) => {
-    const storedInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]')
-    const allInquiries = [...storedInquiries, ...sampleInquiries]
-    const list = allInquiries.filter((i: InquiryItem) => i.author === author && i.password === password)
-    if (list.length > 0) {
-      setIsAuthenticated(true)
-      setUserInquiries(list)
-      return true
+  const authenticateAndLoadInquiries = async (author: string, password: string) => {
+    try {
+      const response = await fetch('/en/api/inquiries/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ author, password }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to search inquiries')
+      }
+
+      const result = await response.json()
+      
+      if (result.success && result.inquiries.length > 0) {
+        setIsAuthenticated(true)
+        setUserInquiries(result.inquiries)
+        return true
+      } else {
+        return false
+      }
+    } catch (error) {
+      console.error('Error searching inquiries:', error)
+      return false
     }
-    return false
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
-      const success = authenticateAndLoadInquiries(loginData.author, loginData.password)
-      if (success) toast({ title: 'Login Successful', description: 'Welcome to your inquiry dashboard' })
-      else toast({ title: 'Login Failed', description: 'Invalid author or password', variant: 'destructive' })
+    
+    try {
+      const success = await authenticateAndLoadInquiries(loginData.author, loginData.password)
+      if (success) {
+        toast({ title: 'Login Successful', description: 'Welcome to your inquiry dashboard' })
+      } else {
+        toast({ title: 'Login Failed', description: 'No inquiries found for this author and password', variant: 'destructive' })
+      }
+    } catch (error) {
+      toast({ title: 'Login Failed', description: 'Failed to search inquiries. Please try again.', variant: 'destructive' })
+    } finally {
       setLoading(false)
-    }, 500)
+    }
+  }
+
+  const loadInquiryDetails = async (inquiryId: string) => {
+    try {
+      // 문의 상세 정보 로드
+      const inquiryResponse = await fetch(`/en/api/inquiries/${inquiryId}`)
+      if (inquiryResponse.ok) {
+        const inquiryData = await inquiryResponse.json()
+        setInquiryDetails(prev => ({ ...prev, [inquiryId]: inquiryData }))
+      }
+
+      // 답변 로드
+      const repliesResponse = await fetch(`/en/api/inquiries/${inquiryId}/replies`)
+      if (repliesResponse.ok) {
+        const repliesData = await repliesResponse.json()
+        setReplies(prev => ({ ...prev, [inquiryId]: repliesData }))
+      }
+    } catch (error) {
+      console.error('Error loading inquiry details:', error)
+    }
+  }
+
+  const toggleInquiryDetails = async (inquiryId: string) => {
+    if (expandedInquiry === inquiryId) {
+      setExpandedInquiry(null)
+    } else {
+      setExpandedInquiry(inquiryId)
+      // 상세 정보가 아직 로드되지 않았다면 로드
+      if (!inquiryDetails[inquiryId]) {
+        await loadInquiryDetails(inquiryId)
+      }
+    }
   }
 
   const getStatusColor = (status: string) => ({ pending: 'bg-yellow-100 text-yellow-800', answered: 'bg-green-100 text-green-800', closed: 'bg-gray-100 text-gray-800' } as any)[status] || 'bg-gray-100 text-gray-800'
@@ -97,10 +151,8 @@ export default function InquiryListPage() {
                 <Link href="/inquiry"><Button variant="outline" className="w-full">Make Your First Inquiry</Button></Link>
               </div>
               <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs text-blue-700 font-medium mb-1">Test Accounts:</p>
-                <p className="text-xs text-blue-600">john / password123</p>
-                <p className="text-xs text-blue-600">sarah / mypass456</p>
-                <p className="text-xs text-blue-600">mike / secure789</p>
+                <p className="text-xs text-blue-700 font-medium mb-1">Note:</p>
+                <p className="text-xs text-blue-600">Use the same Author and Password you used when submitting your inquiry.</p>
               </div>
             </CardContent>
           </Card>
@@ -150,12 +202,88 @@ export default function InquiryListPage() {
                       <div className="text-sm text-gray-600 space-y-1">
                         <p>Inquiry Number: {inquiry.id}</p>
                         <p>Category: {inquiry.category}</p>
-                        <p>Created: {inquiry.createdAt}</p>
+                        <p>Created: {new Date(inquiry.created_at).toLocaleDateString()}</p>
                         {inquiry.lastReply && <p>Last Reply: {inquiry.lastReply}</p>}
                       </div>
                     </div>
-                    <Link href={`/inquiry-detail/${inquiry.id}`} className="w-full sm:w-auto"><Button variant="outline" size="sm" className="w-full sm:w-auto">View Details</Button></Link>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full sm:w-auto"
+                      onClick={() => toggleInquiryDetails(inquiry.id)}
+                    >
+                      {expandedInquiry === inquiry.id ? 'Hide Details' : 'View Details'}
+                    </Button>
                   </div>
+                  
+                  {/* 확장된 문의 상세 내용 */}
+                  {expandedInquiry === inquiry.id && (
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                      {inquiryDetails[inquiry.id] ? (
+                        <div className="space-y-4">
+                          {/* 문의 상세 정보 */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-sm font-medium text-gray-500">Author</Label>
+                              <p className="text-sm">{inquiryDetails[inquiry.id].author}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-gray-500">Name</Label>
+                              <p className="text-sm">{inquiryDetails[inquiry.id].name}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-gray-500">Email</Label>
+                              <p className="text-sm">{inquiryDetails[inquiry.id].email}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-gray-500">Phone</Label>
+                              <p className="text-sm">{inquiryDetails[inquiry.id].phone || 'Not provided'}</p>
+                            </div>
+                          </div>
+                          
+                          {/* 문의 내용 */}
+                          <div>
+                            <Label className="text-sm font-medium text-gray-500">Message</Label>
+                            <div className="mt-1 p-3 bg-gray-50 rounded-md">
+                              <p className="text-sm whitespace-pre-wrap">{inquiryDetails[inquiry.id].message}</p>
+                            </div>
+                          </div>
+
+                          {/* 관리자 답변 */}
+                          {replies[inquiry.id] && replies[inquiry.id].length > 0 && (
+                            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                              <Label className="text-sm font-semibold text-blue-800 mb-3 block">Replies</Label>
+                              <div className="space-y-3">
+                                {replies[inquiry.id].map((reply: any) => (
+                                  <div key={reply.id} className="bg-white rounded-md p-3 border-l-4 border-blue-500 shadow-sm">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <p className="text-sm font-medium text-black">TOURVIS</p>
+                                      <p className="text-xs text-gray-500">
+                                        {new Date(reply.created_at).toLocaleString()}
+                                      </p>
+                                    </div>
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.content}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(!replies[inquiry.id] || replies[inquiry.id].length === 0) && inquiry.status === 'pending' && (
+                            <div className="text-center py-4 bg-yellow-50 rounded-md">
+                              <Clock className="w-8 h-8 mx-auto text-yellow-500 mb-2" />
+                              <p className="text-sm text-yellow-700">Waiting for admin response</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                          <p className="mt-2 text-sm text-gray-600">Loading details...</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))

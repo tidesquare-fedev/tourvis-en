@@ -198,7 +198,9 @@ export function InquiryDetail({ inquiry, onInquiryUpdate }: InquiryDetailProps) 
               {replies.map((reply) => (
                 <div key={reply.id} className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">관리자 답변</span>
+                    <span className="text-sm font-medium">
+                      관리자 답변 {reply.admin_users?.username && `(${reply.admin_users.username})`}
+                    </span>
                     <span className="text-xs text-gray-500">{formatDate(reply.created_at)}</span>
                   </div>
                   <p className="text-sm whitespace-pre-wrap">{reply.content}</p>

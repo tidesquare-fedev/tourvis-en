@@ -18,10 +18,13 @@ export async function GET(
       return NextResponse.json({ error: '유효하지 않은 토큰입니다.' }, { status: 401 })
     }
 
-    // 답변 목록 조회
+    // 답변 목록 조회 (관리자 이름 포함)
     const { data: replies, error } = await supabaseAdmin
       .from('inquiry_replies')
-      .select('*')
+      .select(`
+        *,
+        admin_users!inner(username)
+      `)
       .eq('inquiry_id', params.id)
       .order('created_at', { ascending: true })
 

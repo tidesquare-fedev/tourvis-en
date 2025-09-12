@@ -57,7 +57,7 @@ export default function InquiryPage() {
     return error === ''
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const validations: Array<[keyof typeof errors, string]> = [
       ['author', inquiryData.author],
@@ -74,17 +74,54 @@ export default function InquiryPage() {
       toast({ title: 'Validation failed', description: 'Please check the highlighted fields', variant: 'destructive' })
       return
     }
+    
     setLoading(true)
-    const existingInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]')
-    const newInquiry = { id: `INQ${String(existingInquiries.length + 1).padStart(3, '0')}`, ...inquiryData, status: 'pending', createdAt: new Date().toISOString().split('T')[0] }
-    existingInquiries.push(newInquiry)
-    localStorage.setItem('inquiries', JSON.stringify(existingInquiries))
-    setTimeout(() => {
-      toast({ title: 'Inquiry Submitted', description: 'We will respond within 24 hours.' })
-      setLoading(false)
+    
+    try {
+      // Supabase 데이터베이스에 문의 저장
+      const response = await fetch('/en/api/inquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          author: inquiryData.author,
+          password: inquiryData.password,
+          name: inquiryData.name,
+          email: inquiryData.email,
+          phone: inquiryData.phone,
+          category: inquiryData.category,
+          subject: inquiryData.subject,
+          message: inquiryData.message,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to submit inquiry')
+      }
+
+      const result = await response.json()
+      
+      toast({ 
+        title: 'Inquiry Submitted Successfully', 
+        description: 'We will respond within 24 hours.' 
+      })
+      
+      // 폼 초기화
       setInquiryData({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
       setErrors({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
-    }, 1000)
+      
+    } catch (error) {
+      console.error('Error submitting inquiry:', error)
+      toast({ 
+        title: 'Submission Failed', 
+        description: error instanceof Error ? error.message : 'Please try again later.',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const setField = (field: string, value: string) => setInquiryData((p) => ({ ...p, [field]: value }))

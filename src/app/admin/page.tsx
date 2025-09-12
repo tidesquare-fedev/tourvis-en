@@ -41,6 +41,7 @@ function AdminDashboardContent() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [activeTab, setActiveTab] = useState('inquiries')
+  const [lastPendingCount, setLastPendingCount] = useState(0)
   const router = useRouter()
   
   // 실시간 문의 데이터
@@ -58,15 +59,43 @@ function AdminDashboardContent() {
     }
   }, [admin])
 
-  // 읽지 않은 문의가 있을 때 알림 표시
+  // 읽지 않은 문의가 있을 때 알림 표시 (중복 방지)
   useEffect(() => {
     if (admin && inquiries.length > 0) {
       const pendingCount = inquiries.filter(inquiry => inquiry.status === 'pending').length
-      if (pendingCount > 0) {
-        addNotification(`${pendingCount}개의 읽지 않은 문의가 있습니다`)
+      
+      console.log('알림 체크:', { 
+        totalInquiries: inquiries.length, 
+        pendingCount, 
+        lastPendingCount,
+        inquiryStatuses: inquiries.map(i => ({ id: i.id, status: i.status }))
+      })
+      
+      // pending 문의 수가 변경되었을 때만 알림 처리
+      if (pendingCount !== lastPendingCount) {
+        if (pendingCount > 0) {
+          // 기존 읽지 않은 문의 알림 제거
+          setNotifications(prev => prev.filter(n => 
+            !n.message.includes('읽지 않은 문의가 있습니다')
+          ))
+          // 새 알림 추가
+          addNotification(`${pendingCount}개의 읽지 않은 문의가 있습니다`)
+        } else {
+          // 읽지 않은 문의가 없으면 관련 알림 제거
+          setNotifications(prev => prev.filter(n => 
+            !n.message.includes('읽지 않은 문의가 있습니다')
+          ))
+        }
+        setLastPendingCount(pendingCount)
       }
+    } else if (admin && inquiries.length === 0) {
+      // 문의가 없을 때도 알림 제거
+      setNotifications(prev => prev.filter(n => 
+        !n.message.includes('읽지 않은 문의가 있습니다')
+      ))
+      setLastPendingCount(0)
     }
-  }, [inquiries, admin])
+  }, [inquiries, admin, lastPendingCount])
 
   // 자동 새로고침 기능
   useEffect(() => {
@@ -74,15 +103,11 @@ function AdminDashboardContent() {
 
     const interval = setInterval(() => {
       refetch()
-      // 읽지 않은 문의가 있을 때만 알림 표시
-      const pendingCount = inquiries.filter(inquiry => inquiry.status === 'pending').length
-      if (pendingCount > 0) {
-        addNotification(`${pendingCount}개의 읽지 않은 문의가 있습니다`)
-      }
+      // 자동 새로고침에서는 알림을 추가하지 않음 (중복 방지)
     }, 15000) // 15초마다 새로고침
 
     return () => clearInterval(interval)
-  }, [autoRefresh, admin, refetch, inquiries])
+  }, [autoRefresh, admin, refetch])
 
   // 알림 추가 함수
   const addNotification = (message: string) => {
@@ -92,6 +117,11 @@ function AdminDashboardContent() {
       timestamp: new Date().toISOString()
     }
     setNotifications(prev => [notification, ...prev].slice(0, 5))
+  }
+
+  // 알림 제거 함수
+  const removeNotification = (id: number) => {
+    setNotifications(prev => prev.filter(n => n.id !== id))
   }
 
   const checkAuth = async () => {
