@@ -1,40 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { NextRequest } from 'next/server'
+import { createApiResponse, createApiError } from '@/lib/utils/api'
+import { withErrorHandling } from '@/lib/utils/error-handler'
+import { InquiryApi } from '@/lib/api/inquiries'
 
-export async function GET(
+export const GET = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
   try {
-    const inquiryId = params.id
-
-    // 문의 답변 조회 (관리자 이름 제외)
-    const { data: replies, error } = await supabaseAdmin
-      .from('inquiry_replies')
-      .select(`
-        id,
-        inquiry_id,
-        content,
-        created_at
-      `)
-      .eq('inquiry_id', inquiryId)
-      .order('created_at', { ascending: true })
-
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch replies' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json(replies || [])
-
+    const replies = await InquiryApi.getReplies(params.id)
+    
+    return createApiResponse(replies)
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    const message = error instanceof Error ? error.message : 'Failed to get replies'
+    return createApiError(message, 500, 'INTERNAL_ERROR')
   }
-}
+}, 'inquiry-replies-get')

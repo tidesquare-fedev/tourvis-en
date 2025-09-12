@@ -55,12 +55,20 @@ export default function InquiryListPage() {
       }
 
       const result = await response.json()
+      console.log('API Response:', result)
+      console.log('Response structure:', {
+        success: result.success,
+        hasData: !!result.data,
+        hasInquiries: !!(result.data && result.data.inquiries),
+        inquiriesLength: result.data?.inquiries?.length || 0
+      })
       
-      if (result.success && result.inquiries.length > 0) {
+      if (result.success && result.data && result.data.inquiries && result.data.inquiries.length > 0) {
         setIsAuthenticated(true)
-        setUserInquiries(result.inquiries)
+        setUserInquiries(result.data.inquiries)
         return true
       } else {
+        console.log('No inquiries found or invalid response structure')
         return false
       }
     } catch (error) {
@@ -93,14 +101,19 @@ export default function InquiryListPage() {
       const inquiryResponse = await fetch(`/en/api/inquiries/${inquiryId}`)
       if (inquiryResponse.ok) {
         const inquiryData = await inquiryResponse.json()
-        setInquiryDetails(prev => ({ ...prev, [inquiryId]: inquiryData }))
+        console.log('Inquiry details response:', inquiryData)
+        setInquiryDetails(prev => ({ ...prev, [inquiryId]: inquiryData.data || inquiryData }))
       }
 
       // 답변 로드
       const repliesResponse = await fetch(`/en/api/inquiries/${inquiryId}/replies`)
+      console.log('Replies response status:', repliesResponse.status)
       if (repliesResponse.ok) {
         const repliesData = await repliesResponse.json()
-        setReplies(prev => ({ ...prev, [inquiryId]: repliesData }))
+        console.log('Replies data:', repliesData)
+        setReplies(prev => ({ ...prev, [inquiryId]: repliesData.data || repliesData }))
+      } else {
+        console.error('Failed to load replies:', repliesResponse.status, repliesResponse.statusText)
       }
     } catch (error) {
       console.error('Error loading inquiry details:', error)
@@ -252,20 +265,35 @@ export default function InquiryListPage() {
                           {/* 관리자 답변 */}
                           {replies[inquiry.id] && replies[inquiry.id].length > 0 && (
                             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                              <Label className="text-sm font-semibold text-blue-800 mb-3 block">Replies</Label>
+                              <Label className="text-sm font-semibold text-blue-800 mb-3 block">Replies ({replies[inquiry.id].length})</Label>
                               <div className="space-y-3">
-                                {replies[inquiry.id].map((reply: any) => (
-                                  <div key={reply.id} className="bg-white rounded-md p-3 border-l-4 border-blue-500 shadow-sm">
+                                {replies[inquiry.id].map((reply: any, index: number) => (
+                                  <div key={reply.id || index} className="bg-white rounded-md p-3 border-l-4 border-blue-500 shadow-sm">
                                     <div className="flex items-center justify-between mb-2">
                                       <p className="text-sm font-medium text-black">TOURVIS</p>
                                       <p className="text-xs text-gray-500">
-                                        {new Date(reply.created_at).toLocaleString()}
+                                        {reply.created_at ? new Date(reply.created_at).toLocaleString('en-US', {
+                                          year: 'numeric',
+                                          month: 'numeric',
+                                          day: 'numeric',
+                                          hour: 'numeric',
+                                          minute: '2-digit',
+                                          second: '2-digit',
+                                          hour12: true
+                                        }) : 'Unknown date'}
                                       </p>
                                     </div>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.content}</p>
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{reply.content || reply.message || 'No content'}</p>
                                   </div>
                                 ))}
                               </div>
+                            </div>
+                          )}
+
+                          {(!replies[inquiry.id] || replies[inquiry.id].length === 0) && inquiry.status === 'answered' && (
+                            <div className="text-center py-4 bg-green-50 rounded-md">
+                              <Clock className="w-8 h-8 mx-auto text-green-500 mb-2" />
+                              <p className="text-sm text-green-700">Answered - Loading replies...</p>
                             </div>
                           )}
 
@@ -310,27 +338,8 @@ export default function InquiryListPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="mt-6 sm:mt-8">
-          <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Need Help?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <h4 className="font-semibold mb-2 text-sm sm:text-base">Can't find your reservation?</h4>
-                <p className="text-xs sm:text-sm text-gray-600 mb-2">Please make sure you're using the exact reservation number and email address provided at the time of booking.</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2 text-sm sm:text-base">Customer Support</h4>
-                <p className="text-xs sm:text-sm text-gray-600">Email: support@koreatours.com<br />Phone: +82-2-1234-5678<br />Hours: 9:00 AM - 6:00 PM (KST)</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
         {/* Removed Back to Home button per requirements */}
       </div>
     </LayoutProvider>
   )
 }
-
-

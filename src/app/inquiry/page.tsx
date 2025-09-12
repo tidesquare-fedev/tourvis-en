@@ -74,26 +74,15 @@ export default function InquiryPage() {
       toast({ title: 'Validation failed', description: 'Please check the highlighted fields', variant: 'destructive' })
       return
     }
-    
     setLoading(true)
     
     try {
-      // Supabase 데이터베이스에 문의 저장
       const response = await fetch('/en/api/inquiries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          author: inquiryData.author,
-          password: inquiryData.password,
-          name: inquiryData.name,
-          email: inquiryData.email,
-          phone: inquiryData.phone,
-          category: inquiryData.category,
-          subject: inquiryData.subject,
-          message: inquiryData.message,
-        }),
+        body: JSON.stringify(inquiryData),
       })
 
       if (!response.ok) {
@@ -102,23 +91,12 @@ export default function InquiryPage() {
       }
 
       const result = await response.json()
-      
-      toast({ 
-        title: 'Inquiry Submitted Successfully', 
-        description: 'We will respond within 24 hours.' 
-      })
-      
-      // 폼 초기화
+      toast({ title: 'Inquiry Submitted', description: 'We will respond within 24 hours.' })
       setInquiryData({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
       setErrors({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
-      
     } catch (error) {
       console.error('Error submitting inquiry:', error)
-      toast({ 
-        title: 'Submission Failed', 
-        description: error instanceof Error ? error.message : 'Please try again later.',
-        variant: 'destructive'
-      })
+      toast({ title: 'Submission Failed', description: 'Failed to submit inquiry. Please try again.', variant: 'destructive' })
     } finally {
       setLoading(false)
     }

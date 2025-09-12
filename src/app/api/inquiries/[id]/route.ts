@@ -1,42 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { NextRequest } from 'next/server'
+import { createApiResponse, createApiError } from '@/lib/utils/api'
+import { withErrorHandling } from '@/lib/utils/error-handler'
+import { InquiryApi } from '@/lib/api/inquiries'
 
-export async function GET(
+export const GET = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
   try {
-    const inquiryId = params.id
-
-    // 문의 상세 정보 조회
-    const { data: inquiry, error } = await supabaseAdmin
-      .from('inquiries')
-      .select('*')
-      .eq('id', inquiryId)
-      .single()
-
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Inquiry not found' },
-        { status: 404 }
-      )
-    }
-
-    if (!inquiry) {
-      return NextResponse.json(
-        { error: 'Inquiry not found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json(inquiry)
-
+    const inquiry = await InquiryApi.getInquiry(params.id)
+    
+    return createApiResponse(inquiry)
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    const message = error instanceof Error ? error.message : 'Failed to get inquiry'
+    return createApiError(message, 404, 'NOT_FOUND')
   }
-}
+}, 'inquiry-get')
