@@ -1,4 +1,10 @@
 import { buildApiBase } from '@/features/activity/lib/searchApi'
+import { tnaRateLimiter } from '../rate-limiter'
+import { cache, createCacheKey } from '../cache'
+import { retryWithBackoff } from '../retry'
+import { requestDeduplicator, createRequestKey } from '../request-deduplication'
+import { tnaCircuitBreaker } from '../circuit-breaker'
+import { monitoredApiCall } from '../api-monitor'
 
 type HeadersMap = Record<string, string>
 
@@ -13,9 +19,8 @@ const getHeaders = (): HeadersMap => {
 }
 
 const apiBaseV2 = () => {
-  const base = process.env.TNA_API_BASE || process.env.NEXT_PUBLIC_TNA_API_BASE || buildApiBase(process.env.TNA_API_TOKEN)
-  // ensure /tna-api-v2/rest/v2 prefix
-  return `${base}/tna-api-v2/rest/v2`
+  // 올바른 API 베이스 URL 사용
+  return 'https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2'
 }
 
 export async function getProductDetailV2(productId: string) {
@@ -41,56 +46,203 @@ export async function getProductDatesV2(productId: string, startDate?: string) {
 }
 
 export async function getProductOptionsDateTypeV2(productId: string, date: string) {
-  const url = `${apiBaseV2()}/product/${encodeURIComponent(productId)}/${encodeURIComponent(date)}/options`
-  const res = await fetch(url, { cache: 'no-store', headers: getHeaders() })
-  if (!res.ok) throw new Error(`options-date ${res.status}`)
-  return res.json() as Promise<any>
+  // 캐시 키 생성
+  const cacheKey = createCacheKey('options-date', productId, date)
+  
+  // 캐시에서 먼저 확인
+  const cached = cache.get(cacheKey)
+  if (cached) {
+    console.log('캐시에서 옵션 데이터 반환:', cacheKey)
+    return cached
+  }
+
+  // 중복 요청 방지 키 생성
+  const requestKey = createRequestKey('options-date', productId, date)
+  
+  // 중복 요청 방지 및 서킷 브레이커 적용
+  return requestDeduplicator.deduplicate(requestKey, async () => {
+    return monitoredApiCall('TNA-OPTIONS-DATE', async () => {
+      // Rate Limiting 확인
+      if (!tnaRateLimiter.isAllowed('tna-api')) {
+        const remainingTime = tnaRateLimiter.getRemainingTime('tna-api')
+        throw new Error(`API 요청 한도 초과. ${Math.ceil(remainingTime / 1000)}초 후 다시 시도해주세요.`)
+      }
+
+      // 서킷 브레이커로 실행
+      return tnaCircuitBreaker.execute(async () => {
+        // 날짜형: /product/{productId}/{date}/options
+        const url = `${apiBaseV2()}/product/${encodeURIComponent(productId)}/${encodeURIComponent(date)}/options`
+        console.log('TNA API 호출 URL (날짜형 옵션):', url)
+        
+        try {
+          const result = await retryWithBackoff(async () => {
+            const res = await fetch(url, { cache: 'no-store', headers: getHeaders() })
+            console.log('TNA API 응답 상태 (날짜형 옵션):', res.status)
+            
+            if (!res.ok) {
+              if (res.status === 503) {
+                throw new Error('TNA API 서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.')
+              }
+              throw new Error(`options-date ${res.status}`)
+            }
+            return res.json() as Promise<any>
+          })
+
+          // 성공 시 캐시에 저장 (5분 TTL)
+          cache.set(cacheKey, result, 5 * 60 * 1000)
+          return result
+        } catch (error) {
+          console.error('TNA API 옵션 조회 실패:', error)
+          throw error
+        }
+      })
+    })
+  })
 }
 
 export async function getProductOptionsPeriodTypeV2(productId: string) {
+  // 캐시 키 생성
+  const cacheKey = createCacheKey('options-period', productId)
+  
+  // 캐시에서 먼저 확인
+  const cached = cache.get(cacheKey)
+  if (cached) {
+    console.log('캐시에서 옵션 데이터 반환:', cacheKey)
+    return cached
+  }
+
+  // Rate Limiting 확인
+  if (!tnaRateLimiter.isAllowed('tna-api')) {
+    const remainingTime = tnaRateLimiter.getRemainingTime('tna-api')
+    throw new Error(`API 요청 한도 초과. ${Math.ceil(remainingTime / 1000)}초 후 다시 시도해주세요.`)
+  }
+
+  // 기간형: /product/{productId}/options
   const url = `${apiBaseV2()}/product/${encodeURIComponent(productId)}/options`
-  const res = await fetch(url, { cache: 'no-store', headers: getHeaders() })
-  if (!res.ok) throw new Error(`options-period ${res.status}`)
-  return res.json() as Promise<any>
+  console.log('TNA API 호출 URL (기간형 옵션):', url)
+  
+  try {
+    const result = await retryWithBackoff(async () => {
+      const res = await fetch(url, { cache: 'no-store', headers: getHeaders() })
+      console.log('TNA API 응답 상태 (기간형 옵션):', res.status)
+      
+      if (!res.ok) {
+        if (res.status === 503) {
+          throw new Error('TNA API 서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.')
+        }
+        throw new Error(`options-period ${res.status}`)
+      }
+      return res.json() as Promise<any>
+    })
+
+    // 성공 시 캐시에 저장 (10분 TTL - 기간형은 더 오래 캐시)
+    cache.set(cacheKey, result, 10 * 60 * 1000)
+    return result
+  } catch (error) {
+    console.error('TNA API 옵션 조회 실패:', error)
+    throw error
+  }
 }
 
 export async function getProductPriceDateTypeV2(productId: string, body: unknown) {
-  const base = `${apiBaseV2()}/product/${encodeURIComponent(productId)}/price/data-type`
-  // Try POST first
-  let res = await fetch(base, { method: 'POST', cache: 'no-store', headers: { ...getHeaders(), 'content-type': 'application/json' }, body: JSON.stringify(body) })
-  if (res.ok) return res.json() as Promise<any>
-  // Fallback: GET with query params
+  const anyBody: any = body || {}
+  
+  // 캐시 키 생성 (가격은 더 짧은 TTL)
+  const cacheKey = createCacheKey('price-date', productId, anyBody.product_option_code, anyBody.start_date, anyBody.end_date)
+  
+  // 캐시에서 먼저 확인
+  const cached = cache.get(cacheKey)
+  if (cached) {
+    console.log('캐시에서 가격 데이터 반환:', cacheKey)
+    return cached
+  }
+
+  // Rate Limiting 확인
+  if (!tnaRateLimiter.isAllowed('tna-api')) {
+    const remainingTime = tnaRateLimiter.getRemainingTime('tna-api')
+    throw new Error(`API 요청 한도 초과. ${Math.ceil(remainingTime / 1000)}초 후 다시 시도해주세요.`)
+  }
+
+  // 날짜형 가격: /product/{productId}/price/date-type?product_option_code=xxx&start_date=xxx&end_date=xxx
+  const url = new URL(`${apiBaseV2()}/product/${encodeURIComponent(productId)}/price/date-type`)
+  
+  if (anyBody?.product_option_code) url.searchParams.set('product_option_code', String(anyBody.product_option_code))
+  if (anyBody?.start_date) url.searchParams.set('start_date', String(anyBody.start_date))
+  if (anyBody?.end_date) url.searchParams.set('end_date', String(anyBody.end_date))
+  
+  console.log('TNA API 호출 URL (날짜형):', url.toString())
+  console.log('요청 데이터:', anyBody)
+  
   try {
-    const anyBody: any = body || {}
-    const url = new URL(base)
-    if (anyBody?.product_option_code) url.searchParams.set('product_option_code', String(anyBody.product_option_code))
-    if (anyBody?.start_date) url.searchParams.set('start_date', String(anyBody.start_date))
-    if (anyBody?.end_date) url.searchParams.set('end_date', String(anyBody.end_date))
-    res = await fetch(url.toString(), { cache: 'no-store', headers: getHeaders() })
-    if (!res.ok) throw new Error(`price-date ${res.status}`)
-    return res.json() as Promise<any>
-  } catch (e) {
-    throw new Error(`price-date ${res.status}`)
+    const result = await retryWithBackoff(async () => {
+      const res = await fetch(url.toString(), { cache: 'no-store', headers: getHeaders() })
+      console.log('TNA API 응답 상태:', res.status)
+      
+      if (!res.ok) {
+        if (res.status === 503) {
+          throw new Error('TNA API 서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.')
+        }
+        throw new Error(`price-date ${res.status}`)
+      }
+      return res.json() as Promise<any>
+    })
+
+    // 성공 시 캐시에 저장 (2분 TTL - 가격은 자주 변할 수 있음)
+    cache.set(cacheKey, result, 2 * 60 * 1000)
+    return result
+  } catch (error) {
+    console.error('TNA API 가격 조회 실패:', error)
+    throw error
   }
 }
 
 export async function getProductPricePeriodTypeV2(productId: string, body: unknown) {
-  const base = `${apiBaseV2()}/product/${encodeURIComponent(productId)}/price/period-type`
-  // Try POST first
-  let res = await fetch(base, { method: 'POST', cache: 'no-store', headers: { ...getHeaders(), 'content-type': 'application/json' }, body: JSON.stringify(body) })
-  if (res.ok) return res.json() as Promise<any>
-  // Fallback: GET with query params
+  const anyBody: any = body || {}
+  
+  // 캐시 키 생성
+  const cacheKey = createCacheKey('price-period', productId, anyBody.product_option_code)
+  
+  // 캐시에서 먼저 확인
+  const cached = cache.get(cacheKey)
+  if (cached) {
+    console.log('캐시에서 가격 데이터 반환:', cacheKey)
+    return cached
+  }
+
+  // Rate Limiting 확인
+  if (!tnaRateLimiter.isAllowed('tna-api')) {
+    const remainingTime = tnaRateLimiter.getRemainingTime('tna-api')
+    throw new Error(`API 요청 한도 초과. ${Math.ceil(remainingTime / 1000)}초 후 다시 시도해주세요.`)
+  }
+
+  // 기간형 가격: /product/{productId}/price/period-type?product_option_code=xxx
+  const url = new URL(`${apiBaseV2()}/product/${encodeURIComponent(productId)}/price/period-type`)
+  
+  if (anyBody?.product_option_code) url.searchParams.set('product_option_code', String(anyBody.product_option_code))
+  
+  console.log('TNA API 호출 URL (기간형):', url.toString())
+  console.log('요청 데이터:', anyBody)
+  
   try {
-    const anyBody: any = body || {}
-    const url = new URL(base)
-    if (anyBody?.product_option_code) url.searchParams.set('product_option_code', String(anyBody.product_option_code))
-    if (anyBody?.start_date) url.searchParams.set('start_date', String(anyBody.start_date))
-    if (anyBody?.end_date) url.searchParams.set('end_date', String(anyBody.end_date))
-    res = await fetch(url.toString(), { cache: 'no-store', headers: getHeaders() })
-    if (!res.ok) throw new Error(`price-period ${res.status}`)
-    return res.json() as Promise<any>
-  } catch (e) {
-    throw new Error(`price-period ${res.status}`)
+    const result = await retryWithBackoff(async () => {
+      const res = await fetch(url.toString(), { cache: 'no-store', headers: getHeaders() })
+      console.log('TNA API 응답 상태:', res.status)
+      
+      if (!res.ok) {
+        if (res.status === 503) {
+          throw new Error('TNA API 서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.')
+        }
+        throw new Error(`price-period ${res.status}`)
+      }
+      return res.json() as Promise<any>
+    })
+
+    // 성공 시 캐시에 저장 (3분 TTL)
+    cache.set(cacheKey, result, 3 * 60 * 1000)
+    return result
+  } catch (error) {
+    console.error('TNA API 가격 조회 실패:', error)
+    throw error
   }
 }
 
