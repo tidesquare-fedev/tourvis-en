@@ -18,7 +18,7 @@ import {
   Clock,
   XCircle
 } from 'lucide-react'
-import { Inquiry, InquiryReply } from '@/types/admin'
+import { Inquiry, InquiryReply, InquiryReplyWithAdmin } from '@/types/admin'
 
 interface InquiryDetailProps {
   inquiry: Inquiry
@@ -28,7 +28,7 @@ interface InquiryDetailProps {
 export function InquiryDetail({ inquiry, onInquiryUpdate }: InquiryDetailProps) {
   const [replyContent, setReplyContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [replies, setReplies] = useState<InquiryReply[]>([])
+  const [replies, setReplies] = useState<InquiryReplyWithAdmin[]>([])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -154,7 +154,7 @@ export function InquiryDetail({ inquiry, onInquiryUpdate }: InquiryDetailProps) 
       if (response.ok) {
         const data = await response.json()
         console.log('답변 데이터:', data)
-        setReplies(data)
+        setReplies(data as InquiryReplyWithAdmin[])
       } else {
         const errorData = await response.json()
         console.error('답변 API 오류:', errorData)

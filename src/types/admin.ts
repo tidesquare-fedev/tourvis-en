@@ -41,6 +41,13 @@ export interface InquiryReply {
   updated_at: string
 }
 
+// 관리자 이름이 포함된 문의 답변 타입
+export interface InquiryReplyWithAdmin extends InquiryReply {
+  admin_users: {
+    username: string
+  }
+}
+
 // 관리자 대시보드 통계 타입
 export interface DashboardStats {
   total_inquiries: number
