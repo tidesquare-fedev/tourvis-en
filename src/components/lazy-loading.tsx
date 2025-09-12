@@ -48,7 +48,7 @@ interface LazyWrapperProps {
   errorFallback?: React.ReactNode
 }
 
-export function withLazyLoading<P extends object>(
+export function withLazyLoading<P extends Record<string, any>>(
   importFunc: () => Promise<{ default: ComponentType<P> }>,
   options: LazyWrapperProps = {}
 ) {
@@ -134,7 +134,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
   return function WrappedComponent(props: React.ComponentProps<T>) {
     return (
       <Suspense fallback={fallback || <LoadingSpinner />}>
-        <LazyComponent {...props} />
+        <LazyComponent {...(props as any)} />
       </Suspense>
     )
   }
