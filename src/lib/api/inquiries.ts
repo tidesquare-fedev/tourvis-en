@@ -1,6 +1,7 @@
 import { apiClient, createApiResponse, createApiError, validateRequiredFields, validateEmail } from '../utils/api'
 import { supabaseAdmin } from '../supabase'
 import { Inquiry, InquiryReplyWithAdmin } from '@/types/admin'
+import { inquirySchema, sanitizeInput, rateLimiter, sanitizeApiResponse } from '@/lib/security/validation'
 
 /**
  * 문의 관련 API 클라이언트
@@ -19,24 +20,38 @@ export class InquiryApi {
     subject: string
     message: string
   }) {
-    // 필수 필드 검증
-    const requiredFields = ['author', 'password', 'name', 'email', 'category', 'subject', 'message']
-    const validation = validateRequiredFields(data, requiredFields)
-    
-    if (!validation.isValid) {
-      throw new Error(`Missing required fields: ${validation.missingFields.join(', ')}`)
+    // Rate limiting 체크
+    const clientId = data.email // 이메일을 클라이언트 식별자로 사용
+    if (!rateLimiter.isAllowed(clientId)) {
+      throw new Error('Too many requests. Please try again later.')
     }
 
-    // 이메일 형식 검증
-    if (!validateEmail(data.email)) {
-      throw new Error('Invalid email format')
+    // 입력 데이터 정리
+    const sanitizedData = {
+      author: sanitizeInput(data.author),
+      password: data.password, // 비밀번호는 해시화되므로 정리하지 않음
+      name: sanitizeInput(data.name),
+      email: data.email.toLowerCase().trim(), // 이메일은 소문자로 정규화
+      phone: data.phone ? sanitizeInput(data.phone) : null,
+      category: sanitizeInput(data.category),
+      subject: sanitizeInput(data.subject),
+      message: sanitizeInput(data.message),
     }
+
+    // Zod 스키마로 검증
+    const validationResult = inquirySchema.safeParse(sanitizedData)
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
+      throw new Error(`Validation failed: ${errors.join(', ')}`)
+    }
+
+    const validatedData = validationResult.data
 
     const { data: inquiry, error } = await supabaseAdmin
       .from('inquiries')
       .insert([{
-        ...data,
-        phone: data.phone || null,
+        ...validatedData,
+        phone: validatedData.phone || null,
         status: 'pending',
         created_at: new Date().toISOString(),
       }])
@@ -47,25 +62,36 @@ export class InquiryApi {
       throw new Error(`Failed to create inquiry: ${error.message}`)
     }
 
-    return inquiry
+    // 민감한 정보 제거 후 반환
+    return sanitizeApiResponse(inquiry)
   }
 
   /**
    * 문의 검색 (사용자용)
    */
   static async searchInquiries(author: string, password: string) {
+    // Rate limiting 체크
+    const clientId = author
+    if (!rateLimiter.isAllowed(clientId)) {
+      throw new Error('Too many requests. Please try again later.')
+    }
+
+    // 입력 데이터 정리
+    const sanitizedAuthor = sanitizeInput(author)
+
     const { data: inquiries, error } = await supabaseAdmin
       .from('inquiries')
       .select('*')
-      .eq('author', author)
-      .eq('password', password)
+      .eq('author', sanitizedAuthor)
+      .eq('password', password) // 비밀번호는 해시 비교를 위해 정리하지 않음
       .order('created_at', { ascending: false })
 
     if (error) {
       throw new Error(`Failed to search inquiries: ${error.message}`)
     }
 
-    return inquiries || []
+    // 민감한 정보 제거 후 반환
+    return sanitizeApiResponse(inquiries || [])
   }
 
   /**

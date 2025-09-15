@@ -34,7 +34,6 @@ export function StickyBox({ children, topOffset = 112, enableBelow = 1024, bound
       box.style.width = ''
       box.style.transform = ''
       setIsEnabled(false)
-      if (debug) console.log('[StickyBox] disabled (viewport < enableBelow)', { vw, enableBelow })
       return
     }
     setIsEnabled(true)
@@ -106,36 +105,13 @@ export function StickyBox({ children, topOffset = 112, enableBelow = 1024, bound
     }
 
     if (debug && modeRef.current !== nextMode) {
-      console.log('[StickyBox] mode change:', nextMode, {
-        passedTrigger,
-        active,
-        topOffset,
-        stickyStart,
-        stickyEnd,
-        currentTop,
-        triggerBottom,
-        boundaryRect: { top: boundaryRect.top, height: boundaryRect.height, bottom: boundaryRect.bottom },
-        containerRect: { top: containerRect.top, height: containerRect.height, left: containerRect.left, width: containerRect.width },
-        boxRect: { height: boxRect.height },
-        viewport: { vw }
-      })
+      // 모드 변경 디버그 정보
     } else if (debug) {
       // Throttled metrics for inspection
       const now = performance.now()
       if (now - lastLogRef.current > 250) {
         lastLogRef.current = now
-        console.log('[StickyBox] tick', {
-          mode: modeRef.current,
-          passedTrigger,
-          active,
-          topOffset,
-          stickyStart,
-          stickyEnd,
-          currentTop,
-          triggerBottom,
-          containerLeft: containerRect.left,
-          containerWidth: width
-        })
+        // 디버그 메트릭스
       }
     }
     modeRef.current = nextMode
@@ -145,12 +121,11 @@ export function StickyBox({ children, topOffset = 112, enableBelow = 1024, bound
   useEffect(() => {
     if (!triggerSelector) { setPassedTrigger(true); return }
     const el = document.querySelector(triggerSelector) as HTMLElement | null
-    if (!el) { setPassedTrigger(true); if (debug) console.log('[StickyBox] trigger not found, activating immediately:', triggerSelector); return }
+    if (!el) { setPassedTrigger(true); return }
     const io = new IntersectionObserver(([entry]) => {
       // 트리거 하단이 topOffset 위로 사라지면 고정 시작
       const v = !entry.isIntersecting
       setPassedTrigger(v)
-      if (debug) console.log('[StickyBox] trigger IO:', { isIntersecting: entry.isIntersecting, v })
     }, { root: null, threshold: 0, rootMargin: `-${topOffset}px 0px 0px 0px` })
     io.observe(el)
     return () => io.disconnect()
@@ -168,7 +143,6 @@ export function StickyBox({ children, topOffset = 112, enableBelow = 1024, bound
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize)
-    if (debug) console.log('[StickyBox] init', { topOffset, enableBelow, boundarySelector, triggerSelector })
     compute()
     // RAF loop as a safety net (in case scroll events are swallowed by nested scrollers)
     let rafLoop = 0

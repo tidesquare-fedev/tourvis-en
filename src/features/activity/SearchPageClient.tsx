@@ -5,10 +5,10 @@ import { ProductFilters } from '@/components/products/ProductFilters'
 import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { useDerivedFilters } from '@/features/activity/hooks/useDerivedFilters'
-import { ActivityCard } from '@/features/activity/components/ActivityCard'
 import type { ProductItem } from '@/features/activity/types'
 import { useFiltersState } from '@/features/activity/hooks/useFiltersState'
 import { useProducts } from '@/hooks/useProducts'
+import { SearchResults } from '@/features/activity/components/SearchResults'
 
 export default function SearchPageClient({ items, providerIds, keyword }: { items: ProductItem[]; providerIds?: string; keyword?: string }) {
   const query = useProducts(providerIds || '', keyword)
@@ -45,23 +45,12 @@ export default function SearchPageClient({ items, providerIds, keyword }: { item
           />
         </div>
 
-        {/* 상품 개수 표시 */}
-        <div className="mb-6">
-          <p className="text-gray-600">{filtered.length} tours found</p>
-        </div>
-
-        {/* 상품을 4개씩 배열 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {filtered.map((it) => (
-            <ActivityCard key={it.id} item={it as any} />
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No tours match your current filters.</p>
-          </div>
-        )}
+        {/* 검색 결과 */}
+        <SearchResults
+          items={filtered}
+          isLoading={query.isLoading}
+          totalCount={filtered.length}
+        />
       </div>
     </LayoutProvider>
   )

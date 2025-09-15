@@ -2,6 +2,7 @@
 
 import { memo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { LazyImage } from '@/components/lazy/LazyImage'
 
 type ActivityCardThumbnailProps = {
   image?: string | null
@@ -51,7 +52,7 @@ export const ActivityCardThumbnail = memo(function ActivityCardThumbnail({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <img 
+      <LazyImage 
         src={imageList[currentIndex]} 
         alt={`${title} ${currentIndex + 1}`} 
         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 

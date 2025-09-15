@@ -18,15 +18,17 @@ type TourBookingCardProps = {
   selectedTimeslotTitle?: string
   currencyCode?: string
   totalAmount?: number
+  isPriceLoading?: boolean
   selections?: Array<{
     optionTitle: string
     timeslotTitle?: string
     lines: Array<{ label: string; qty: number; unit: number }>
     subtotal: number
+    isLoading?: boolean
   }>
 }
 
-export function TourBookingCard({ discountRate, originalPrice, price, selectedDate, quantity, onBook, onValidateMsg, canBook, selectedOptionTitle, selectedLabelTitle, selectedTimeslotTitle, currencyCode = 'USD', totalAmount, selections = [] }: TourBookingCardProps) {
+export function TourBookingCard({ discountRate, originalPrice, price, selectedDate, quantity, onBook, onValidateMsg, canBook, selectedOptionTitle, selectedLabelTitle, selectedTimeslotTitle, currencyCode = 'USD', totalAmount, isPriceLoading = false, selections = [] }: TourBookingCardProps) {
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.max(0, Number(value) || 0))
   const unitPrice = Math.max(0, Number(price) || 0)
   const total = typeof totalAmount === 'number' && totalAmount > 0 ? totalAmount : (quantity > 0 ? quantity * unitPrice : 0)
@@ -65,7 +67,14 @@ export function TourBookingCard({ discountRate, originalPrice, price, selectedDa
                   </div>
                   <div className="mt-1 flex items-center justify-between text-sm font-semibold">
                     <span>Subtotal</span>
-                    <span>{formatCurrency(sel.subtotal)}</span>
+                    {sel.isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                        <span className="text-xs text-gray-500">조회 중...</span>
+                      </div>
+                    ) : (
+                      <span>{formatCurrency(sel.subtotal)}</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -74,7 +83,16 @@ export function TourBookingCard({ discountRate, originalPrice, price, selectedDa
           {typeof total === 'number' && (
             <div className="text-center p-3 rounded-lg">
               <div className="text-sm text-gray-600">Participants: {quantity}</div>
-              <div className="text-xl font-bold text-black">Total: {formatCurrency(total)}</div>
+              <div className="text-xl font-bold text-black">
+                {isPriceLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    <span className="text-sm text-gray-500">가격 조회 중...</span>
+                  </div>
+                ) : (
+                  `Total: ${formatCurrency(total)}`
+                )}
+              </div>
             </div>
           )}
           <Button onClick={onBook} className="w-full bg-[#01c5fd] hover:bg-[#01b7ea] text-white" size="lg" disabled={!canBook}>

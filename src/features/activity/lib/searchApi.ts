@@ -1,4 +1,5 @@
 import type { ProductItem, ProductSearchResponse } from '@/features/activity/types'
+import { PRODUCT_FIELDS, API_CONFIG } from '@/lib/constants/api'
 
 const normalizeImage = (p: any): string => {
   const displayImages = Array.isArray(p?.display_images) ? p.display_images : []
@@ -70,13 +71,41 @@ export const buildApiBase = (token: string | undefined): string => {
   }
 }
 
-export async function fetchProducts(providerIds: string): Promise<{ ok: boolean; items: ProductItem[]; status?: number; url?: string; errorBody?: string }> {
+export interface ProductSearchOptions {
+  count?: number
+  offset?: number
+  fields?: string[]
+  keyword?: string
+}
+
+export interface ProductSearchResult {
+  ok: boolean
+  items: ProductItem[]
+  total?: number
+  hasMore?: boolean
+  status?: number
+  url?: string
+  errorBody?: string
+}
+
+export async function fetchProducts(
+  providerIds: string, 
+  options: ProductSearchOptions = {}
+): Promise<ProductSearchResult> {
   const apiBase = process.env.TNA_API_BASE || process.env.NEXT_PUBLIC_TNA_API_BASE || buildApiBase(process.env.TNA_API_TOKEN)
   const url = new URL(`${apiBase}/tna-api-v2/rest/product/_search`)
   url.searchParams.set('provider_ids', providerIds)
-  // 기본 페이지 크기 확장: 필요한 전체 수량 노출(예: 156개) 보장을 위해 여유 있게 요청
-  url.searchParams.set('count', '200')
-  url.searchParams.set('offset', '0')
+  url.searchParams.set('count', String(options.count ?? API_CONFIG.DEFAULT_PAGE_SIZE))
+  url.searchParams.set('offset', String(options.offset ?? 0))
+
+  // 키워드 검색 추가
+  if (options.keyword) {
+    url.searchParams.set('keyword', options.keyword)
+  }
+
+  // 필수 필드만 요청하여 데이터 전송량 최적화
+  const requiredFields = options.fields ?? PRODUCT_FIELDS.ALL
+  url.searchParams.set('fields', requiredFields.join(','))
 
   const headers: Record<string, string> = { accept: 'application/json' }
   if (process.env.TNA_API_TOKEN) {
@@ -84,13 +113,45 @@ export async function fetchProducts(providerIds: string): Promise<{ ok: boolean;
     const normalized = raw.replace(/^Bearer\s+/i, '').replace(/^\s+|\s+$/g, '').replace(/^"+|"+$/g, '').replace(/^'+|'+$/g, '')
     headers.Authorization = `Bearer ${normalized}`
   }
-  const res = await fetch(url.toString(), { cache: 'no-store', headers })
+  
+  const res = await fetch(url.toString(), { 
+    cache: 'no-store', 
+    headers,
+    // HTTP 캐싱 헤더 추가
+    next: { revalidate: 300 } // 5분 캐시
+  })
+  
   if (!res.ok) {
     const body = await res.text().catch(() => '')
     return { ok: false, items: [], status: res.status, url: url.toString(), errorBody: body }
   }
+  
   const json = (await res.json()) as ProductSearchResponse
-  return { ok: true, items: mapToProductItems(json) }
+  const items = mapToProductItems(json)
+  const total = json.total ?? json.list?.length ?? 0
+  const currentOffset = options.offset ?? 0
+  const currentCount = options.count ?? 20
+  
+  return { 
+    ok: true, 
+    items,
+    total,
+    hasMore: currentOffset + currentCount < total
+  }
+}
+
+// 무한 스크롤을 위한 함수
+export async function fetchProductsInfinite(
+  providerIds: string,
+  page: number = 0,
+  pageSize: number = API_CONFIG.DEFAULT_PAGE_SIZE,
+  keyword?: string
+): Promise<ProductSearchResult> {
+  return fetchProducts(providerIds, {
+    count: pageSize,
+    offset: page * pageSize,
+    keyword
+  })
 }
 
 

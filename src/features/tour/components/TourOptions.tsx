@@ -262,6 +262,7 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
                             let unit = getLabelPrice ? getLabelPrice(option.code || '', lCode) : 0
                             if (!unit && typeof (lab as any)?.price === 'number') unit = Number((lab as any).price)
                             if (!unit && typeof (lab as any)?.net_price_currency === 'number') unit = Number((lab as any).net_price_currency)
+                            const isLoading = (lab as any)?.isLoading === true
                             const maxText = typeof lab?.per_max === 'number' && lab.per_max > 100 ? '100+' : String(lab?.per_max ?? 0)
                             const minNum = typeof lab?.per_min === 'number' ? lab.per_min : 0
                             return (
@@ -304,6 +305,21 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
                         <div className="font-semibold text-gray-900 text-[16px]">
                           {(() => {
                             const curMap = labelQuantities[option.code] || {}
+                            const hasLoadingLabel = Object.entries(curMap).some(([lCode, qty]) => {
+                              const code = String(lCode).toUpperCase()
+                              const lab = (Array.isArray((option as any).labels) ? (option as any).labels : []).find((lb: any) => String(lb?.code || lb?.id || '').toUpperCase() === code)
+                              return (lab as any)?.isLoading === true
+                            })
+                            
+                            if (hasLoadingLabel) {
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                                  <span className="text-sm text-gray-500">가격 조회 중...</span>
+                                </div>
+                              )
+                            }
+                            
                             let sum = 0
                             Object.entries(curMap).forEach(([lCode, qty]) => {
                               const code = String(lCode).toUpperCase()
@@ -317,7 +333,8 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
                               }
                               sum += (Number(qty || 0) * (u || 0))
                             })
-                            return `${formatUSD0(sum)}`
+                            
+                            return formatUSD0(sum)
                           })()}
                         </div>
                         {selectedTimeslot[option.code || ''] && (

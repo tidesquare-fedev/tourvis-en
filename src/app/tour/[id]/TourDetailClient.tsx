@@ -347,17 +347,57 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const [timeslotByOption, setTimeslotByOption] = useState<Record<string, { id: string; title: string }>>({})
   // label quantities per option: { [optionCode]: { [labelCode]: qty } }
   const [selectedLabelQtyByOption, setSelectedLabelQtyByOption] = useState<Record<string, Record<string, number>>>({})
+  // 동적 가격 조회 중인 옵션 ID
+  const [loadingDynamicPrice, setLoadingDynamicPrice] = useState<string | null>(null)
+  const previousPrices = useRef<Record<string, number>>({})
   const isDateType = useMemo(() => String(tourData.basic.calendar_type).toUpperCase() === 'DATE', [tourData.basic.calendar_type])
 
   // 옵션/가격 API 접근을 훅으로 일원화
-  const { optionsQuery, priceDateType, pricePeriodType, startStr, endStr, isDateType: _hookDateType } = useTnaOptions(tourId, {
+  const { 
+    optionsQuery, 
+    priceDateType, 
+    pricePeriodType, 
+    dynamicPrice,
+    startStr, 
+    endStr, 
+    isDateType: _hookDateType,
+    createRequestPayload,
+    createDynamicPricePayload,
+    fetchDynamicPrice
+  } = useTnaOptions(tourId, {
     calendarType: isDateType ? 'DATE' : 'PERIOD',
     selectedDate,
     range,
   })
   useEffect(() => {
     setOptionData(optionsQuery.data ?? null)
+    if (optionsQuery.data) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📦 옵션 데이터 로드:', optionsQuery.data)
+      }
+      const options = optionsQuery.data?.options || []
+      if (Array.isArray(options)) {
+        options.forEach((option: any) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔍 옵션 정보:', {
+              id: option.id,
+              code: option.code,
+              title: option.title || option.name,
+              dynamic_price: option.dynamic_price,
+              labels: option.labels?.map((l: any) => ({ id: l.id, title: l.title || l.name }))
+            })
+          }
+        })
+      }
+    }
   }, [optionsQuery.data])
+
+  // optionPriceMap 변경 시 로그 출력
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('💰 optionPriceMap 업데이트:', optionPriceMap)
+    }
+  }, [optionPriceMap])
 
   // 옵션 가격 일괄 조회 (dynamic_price 이거나 라벨에 price가 없을 때만)
   useEffect(() => {
@@ -410,11 +450,95 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
         entries.forEach(([k, v]) => { if (k) map[k] = v })
         setOptionPriceMap(map)
       } catch (e) {
-        console.error('[price bulk error]', e)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[price bulk error]', e)
+        }
       }
     }
     run()
   }, [optionData, isDateType, selectedDate, range, tourId])
+
+  // 동적 가격 조회 함수 (수량 변경 시 호출)
+  const handleDynamicPriceFetch = async (option: any, timeslot: any, count: number) => {
+    if (!option || !timeslot || !selectedDate) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('동적 가격 조회를 위한 필수 데이터가 없습니다.')
+      }
+      setLoadingDynamicPrice(null)
+      return
+    }
+
+    // 로딩 상태는 이미 설정되어 있음 (수량 변경 시 설정됨)
+
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 동적 가격 조회 시작:', { option: option.id, timeslot: timeslot.id, count })
+      }
+      
+      // 요청 payload 생성 (선택된 라벨 ID 전달)
+      const requestPayload = createRequestPayload(option, timeslot, count, selectedLabelId)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📦 요청 payload:', requestPayload)
+      }
+
+      // 동적 가격 조회 (선택된 라벨 ID 전달)
+      const result = await fetchDynamicPrice(option, timeslot, count, selectedLabelId)
+      
+      // API 응답 구조 확인
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 동적 가격 API 응답 구조:', result)
+      }
+
+      if (result?.price) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ 동적 가격 조회 성공:', result)
+        }
+        // 가격 정보 업데이트 - 동적 가격 결과의 price 사용
+        setOptionPriceMap(prev => {
+          const newMap = { ...prev, [option.id]: result.price }
+          if (process.env.NODE_ENV === 'development') {
+            console.log('💰 업데이트된 옵션 가격:', { 
+              optionId: option.id, 
+              optionCode: option.code,
+              oldPrice: prev[option.id],
+              newPrice: result.price,
+              quantity: count,
+              fullOptionPriceMap: newMap
+            })
+          }
+          return newMap
+        })
+        
+        // 라벨별 가격 정보 업데이트
+        if (result.labels) {
+          const labelPrices = result.labels.reduce((acc: Record<string, number>, label: any) => {
+            if (label.id && label.unit_price) {
+              acc[label.id] = label.unit_price
+            }
+            return acc
+          }, {})
+          setLabelPriceMap(prev => ({
+            ...prev,
+            [option.id]: { ...(prev[option.id] || {}), ...labelPrices }
+          }))
+          if (process.env.NODE_ENV === 'development') {
+            console.log('💰 업데이트된 라벨 가격:', { optionId: option.id, labelPrices })
+          }
+        }
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ 동적 가격 조회 실패 - 가격 정보 없음:', result)
+        }
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ 동적 가격 조회 에러:', error)
+      }
+    } finally {
+      // 로딩 상태 종료
+      setLoadingDynamicPrice(null)
+    }
+  }
 
   // 옵션 클릭 시 단건 가격 조회 및 반영
   useEffect(() => {
@@ -504,6 +628,34 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTimeslotId, selectedLabelId, selectedOptionCode])
 
+  // 수량 변경 시 동적 가격 조회
+  useEffect(() => {
+    if (selectedOptionCode && selectedTimeslotId && quantity > 0) {
+      // 선택된 옵션과 타임슬롯 정보 찾기
+      const selectedOption = optionData?.options?.find((o: any) => o.id === selectedOptionCode || o.code === selectedOptionCode)
+      const selectedTimeslot = selectedOption?.timeslots?.find((t: any) => t.id === selectedTimeslotId)
+      
+      if (selectedOption && selectedTimeslot && selectedOption.dynamic_price === true) {
+        // 즉시 로딩 상태 설정
+        setLoadingDynamicPrice(selectedOption.id)
+        
+        console.log('🔄 수량 변경으로 인한 동적 가격 조회:', { 
+          option: selectedOption.id, 
+          timeslot: selectedTimeslot.id, 
+          quantity,
+          selectedLabelId,
+          currentPrice: optionPriceMap[selectedOption.id]
+        })
+        handleDynamicPriceFetch(selectedOption, selectedTimeslot, quantity)
+      } else if (selectedOption && selectedTimeslot) {
+        console.log('ℹ️ 동적 가격이 아닌 옵션:', { 
+          option: selectedOption.id, 
+          dynamic_price: selectedOption.dynamic_price 
+        })
+      }
+    }
+  }, [quantity, selectedOptionCode, selectedTimeslotId, selectedLabelId, optionData])
+
   // 옵션 변경 시 이전 선택(라벨/회차) 초기화
   useEffect(() => {
     setSelectedLabelId(undefined)
@@ -541,7 +693,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   }, [selectedLabelQtyByOption, labelPriceMap])
 
   const bookingSelections = useMemo(() => {
-    const selections: Array<{ optionTitle: string; timeslotTitle?: string; lines: Array<{ label: string; qty: number; unit: number }>; subtotal: number }> = []
+    const selections: Array<{ optionTitle: string; timeslotTitle?: string; lines: Array<{ label: string; qty: number; unit: number }>; subtotal: number; isLoading?: boolean }> = []
     const getLabelUnitPrice = (optCode: string, labelCode: string): number => {
       const upper = String(labelCode).toUpperCase()
       const fromMap = Number(labelPriceMap[optCode]?.[upper] ?? 0)
@@ -559,16 +711,32 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       } catch {}
       return 0
     }
+    
     Object.entries(selectedLabelQtyByOption).forEach(([optCode, qtyMap]) => {
       let subtotal = 0
       const lines: Array<{ label: string; qty: number; unit: number }> = []
+      
+      // 해당 옵션이 로딩 중인지 확인
+      const src: any = optionData
+      const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
+      const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
+      const isOptionLoading = loadingDynamicPrice === opt?.id || loadingDynamicPrice === optCode
+      
       Object.entries(qtyMap || {}).forEach(([lCode, qty]) => {
-        const unit = getLabelUnitPrice(optCode, lCode)
+        let unit = getLabelUnitPrice(optCode, lCode)
+        
+        // 로딩 중이면 이전 가격 사용
+        if (isOptionLoading && unit === 0) {
+          const priceKey = `${optCode}-${lCode}`
+          unit = previousPrices.current[priceKey] || 0
+        } else if (unit > 0) {
+          // 가격이 있으면 이전 가격에 저장
+          const priceKey = `${optCode}-${lCode}`
+          previousPrices.current[priceKey] = unit
+        }
+        
         const qtyNum = Number(qty || 0)
         if (qtyNum > 0) {
-          const src: any = optionData
-          const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
-          const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
           const labels: any[] = Array.isArray(opt?.labels) ? opt.labels : []
           const lab = labels.find((lb: any) => String(lb?.code || lb?.id || '').toUpperCase() === String(lCode).toUpperCase())
           const labelName = String(lab?.title || lab?.name || 'Participant')
@@ -576,10 +744,8 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
           subtotal += qtyNum * unit
         }
       })
+      
       if (lines.length > 0) {
-        const src: any = optionData
-        const list: any[] = Array.isArray(src?.options) ? src.options : (Array.isArray(src) ? src : (Array.isArray(src?.list) ? src.list : []))
-        const opt = list.find((o: any) => String(o.code || o.product_option_code || o.option_code || o.id || '').toUpperCase() === String(optCode).toUpperCase())
         const optionTitle = String(opt?.title || opt?.name || optCode)
         // timeslot title from selectedTimeslot
         let timeslotTitle: string | undefined
@@ -589,11 +755,18 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
             timeslotTitle = sel.title
           }
         } catch {}
-        selections.push({ optionTitle, timeslotTitle, lines, subtotal })
+        
+        selections.push({ 
+          optionTitle, 
+          timeslotTitle, 
+          lines, 
+          subtotal,
+          isLoading: isOptionLoading
+        })
       }
     })
     return selections
-  }, [selectedLabelQtyByOption, labelPriceMap, optionData, timeslotByOption])
+  }, [selectedLabelQtyByOption, labelPriceMap, optionData, timeslotByOption, loadingDynamicPrice])
   // 예약 가능 조건: 날짜 선택 + 수량 1이상 + 옵션 선택(필요 시 라벨/회차 포함)
   const canBook = Boolean(selectedDate) && totalPrice > 0
   // Reset booking state if quantities return to 0
@@ -627,7 +800,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   const hasReviews = (Array.isArray(fetchedReviews) && fetchedReviews.length > 0) || (Array.isArray(tour.reviews) && tour.reviews.length > 0)
   const hasCancellation = Boolean(tourData.basic.cancellation_description)
 
-  const sections = useMemo(() => ([
+  const sections = [
     { id: 'options', label: 'Options' },
     ...(hasDescription ? [{ id: 'description', label: 'Description' }] : []),
     ...(showItineraryTab ? [{ id: 'usage-guide', label: 'Itinerary' }] : []),
@@ -635,7 +808,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     ...((includedList.length > 0 || excludedList.length > 0) ? [{ id: 'included', label: 'Included' }] : []),
     ...(hasReviews ? [{ id: 'reviews', label: 'Reviews' }] : []),
     ...(hasCancellation ? [{ id: 'cancellation', label: 'Cancellation' }] : []),
-  ]), [hasDescription, showItineraryTab, hasImportantInfo, includedList.length, excludedList.length, hasReviews, hasCancellation])
+  ]
 
   return (
     <LayoutProvider
@@ -709,11 +882,13 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                           })
                           return filtered.map((o: any) => {
                             const code = String(o.code || o.product_option_code || o.option_code || o.id || '')
+                            const optionId = String(o.id || o.option_id || '')
+                            const isPriceLoading = loadingDynamicPrice === optionId
                             const labels = Array.isArray(o.labels) && o.labels.length > 0
                               ? o.labels.map((l: any) => ({
                                   code: String(l.code || l.id || ''),
                                   title: String(l.title || l.name || ''),
-                                  net_price_currency: typeof l.price === 'number' ? l.price : (optionPriceMap[code] ?? 0),
+                                  net_price_currency: isPriceLoading ? null : (typeof l.price === 'number' ? l.price : (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0)),
                                   sale_price_currency: null,
                                   normal_price_currency: null,
                                   required: Boolean(l.required),
@@ -721,8 +896,9 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                                   sort_order: Number(l.sort_order ?? 0),
                                   per_min: l.per_min ?? null,
                                   per_max: typeof l.per_max === 'number' ? l.per_max : (l.per_max == null ? 0 : Number(l.per_max)),
+                                  isLoading: isPriceLoading,
                                 }))
-                              : [{ title: 'Adult', code: code ? `${code}-ADULT` : 'ADULT', net_price_currency: optionPriceMap[code] ?? 0, sale_price_currency: null, normal_price_currency: null, required: true, outer_id: '', sort_order: 0, per_min: 1, per_max: 10 }]
+                              : [{ title: 'Adult', code: code ? `${code}-ADULT` : 'ADULT', net_price_currency: isPriceLoading ? null : (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0), sale_price_currency: null, normal_price_currency: null, required: true, outer_id: '', sort_order: 0, per_min: 1, per_max: 10, isLoading: isPriceLoading }]
                             const timeslots = Array.isArray(o.timeslots) ? o.timeslots.map((t: any) => ({ code: String(t.id || t.code || ''), title: String(t.title || t.name || '') })) : []
                             const timeslotTitleMap: Record<string, string> = {}
                             for (const ts of timeslots) {
@@ -786,10 +962,17 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                     {range.from && optionData && (
                       <TourOptions
                         selectedDate={range.from}
-                        options={(optionData?.options ?? []).map((o: any) => ({
-                          ...o,
-                          labels: (o.labels ?? []).map((l: any) => ({ ...l, net_price_currency: optionPriceMap[o.code] ?? 0 }))
-                        }))}
+                        options={(optionData?.options ?? []).map((o: any) => {
+                          const isPriceLoading = loadingDynamicPrice === o.id
+                          return {
+                            ...o,
+                            labels: (o.labels ?? []).map((l: any) => ({ 
+                              ...l, 
+                              net_price_currency: isPriceLoading ? null : (optionPriceMap[o.id] ?? optionPriceMap[o.code] ?? 0),
+                              isLoading: isPriceLoading
+                            }))
+                          }
+                        })}
                         quantity={quantity}
                         onQuantityChange={handleQuantityChange}
                         inventoryScope={tourData.basic.inventory_scope}
@@ -1076,6 +1259,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                 currencyCode={'USD'}
                 selections={bookingSelections}
                 totalAmount={totalPrice}
+                isPriceLoading={loadingDynamicPrice !== null}
                 onBook={handleBooking}
               />
             </StickyBox>
