@@ -372,31 +372,18 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   useEffect(() => {
     setOptionData(optionsQuery.data ?? null)
     if (optionsQuery.data) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📦 옵션 데이터 로드:', optionsQuery.data)
-      }
       const options = optionsQuery.data?.options || []
       if (Array.isArray(options)) {
         options.forEach((option: any) => {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('🔍 옵션 정보:', {
-              id: option.id,
-              code: option.code,
-              title: option.title || option.name,
-              dynamic_price: option.dynamic_price,
-              labels: option.labels?.map((l: any) => ({ id: l.id, title: l.title || l.name }))
-            })
-          }
+          // 옵션 정보 처리 (콘솔 로그 제거)
         })
       }
     }
   }, [optionsQuery.data])
 
-  // optionPriceMap 변경 시 로그 출력
+  // optionPriceMap 변경 시 처리
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('💰 optionPriceMap 업데이트:', optionPriceMap)
-    }
+    // optionPriceMap 업데이트 처리 (콘솔 로그 제거)
   }, [optionPriceMap])
 
   // 옵션 가격 일괄 조회 (dynamic_price 이거나 라벨에 price가 없을 때만)
@@ -461,9 +448,6 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
   // 동적 가격 조회 함수 (수량 변경 시 호출)
   const handleDynamicPriceFetch = async (option: any, timeslot: any, count: number) => {
     if (!option || !timeslot || !selectedDate) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('동적 가격 조회를 위한 필수 데이터가 없습니다.')
-      }
       setLoadingDynamicPrice(null)
       return
     }
@@ -471,41 +455,16 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
     // 로딩 상태는 이미 설정되어 있음 (수량 변경 시 설정됨)
 
     try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 동적 가격 조회 시작:', { option: option.id, timeslot: timeslot.id, count })
-      }
-      
       // 요청 payload 생성 (선택된 라벨 ID 전달)
       const requestPayload = createRequestPayload(option, timeslot, count, selectedLabelId)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📦 요청 payload:', requestPayload)
-      }
 
       // 동적 가격 조회 (선택된 라벨 ID 전달)
       const result = await fetchDynamicPrice(option, timeslot, count, selectedLabelId)
-      
-      // API 응답 구조 확인
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 동적 가격 API 응답 구조:', result)
-      }
 
       if (result?.price) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ 동적 가격 조회 성공:', result)
-        }
         // 가격 정보 업데이트 - 동적 가격 결과의 price 사용
         setOptionPriceMap(prev => {
           const newMap = { ...prev, [option.id]: result.price }
-          if (process.env.NODE_ENV === 'development') {
-            console.log('💰 업데이트된 옵션 가격:', { 
-              optionId: option.id, 
-              optionCode: option.code,
-              oldPrice: prev[option.id],
-              newPrice: result.price,
-              quantity: count,
-              fullOptionPriceMap: newMap
-            })
-          }
           return newMap
         })
         
@@ -521,19 +480,10 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
             ...prev,
             [option.id]: { ...(prev[option.id] || {}), ...labelPrices }
           }))
-          if (process.env.NODE_ENV === 'development') {
-            console.log('💰 업데이트된 라벨 가격:', { optionId: option.id, labelPrices })
-          }
-        }
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('❌ 동적 가격 조회 실패 - 가격 정보 없음:', result)
         }
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ 동적 가격 조회 에러:', error)
-      }
+      // 에러 처리 (콘솔 로그 제거)
     } finally {
       // 로딩 상태 종료
       setLoadingDynamicPrice(null)
@@ -636,22 +586,20 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
       const selectedTimeslot = selectedOption?.timeslots?.find((t: any) => t.id === selectedTimeslotId)
       
       if (selectedOption && selectedTimeslot && selectedOption.dynamic_price === true) {
-        // 즉시 로딩 상태 설정
-        setLoadingDynamicPrice(selectedOption.id)
+        // 이전 가격을 백업하여 로딩 중에도 표시
+        const previousPrice = optionPriceMap[selectedOption.id] || optionPriceMap[selectedOption.code]
+        if (previousPrice) {
+          previousPrices.current[selectedOption.id] = previousPrice
+        }
         
-        console.log('🔄 수량 변경으로 인한 동적 가격 조회:', { 
-          option: selectedOption.id, 
-          timeslot: selectedTimeslot.id, 
-          quantity,
-          selectedLabelId,
-          currentPrice: optionPriceMap[selectedOption.id]
-        })
+        // 약간의 지연 후 로딩 상태 설정 (깜빡임 방지)
+        setTimeout(() => {
+          setLoadingDynamicPrice(selectedOption.id)
+        }, 50)
+        
         handleDynamicPriceFetch(selectedOption, selectedTimeslot, quantity)
       } else if (selectedOption && selectedTimeslot) {
-        console.log('ℹ️ 동적 가격이 아닌 옵션:', { 
-          option: selectedOption.id, 
-          dynamic_price: selectedOption.dynamic_price 
-        })
+        // 동적 가격이 아닌 옵션 처리 (콘솔 로그 제거)
       }
     }
   }, [quantity, selectedOptionCode, selectedTimeslotId, selectedLabelId, optionData])
@@ -888,7 +836,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                               ? o.labels.map((l: any) => ({
                                   code: String(l.code || l.id || ''),
                                   title: String(l.title || l.name || ''),
-                                  net_price_currency: isPriceLoading ? null : (typeof l.price === 'number' ? l.price : (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0)),
+                                  net_price_currency: isPriceLoading ? (previousPrices.current[optionId] || previousPrices.current[code] || (typeof l.price === 'number' ? l.price : (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0))) : (typeof l.price === 'number' ? l.price : (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0)),
                                   sale_price_currency: null,
                                   normal_price_currency: null,
                                   required: Boolean(l.required),
@@ -898,7 +846,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                                   per_max: typeof l.per_max === 'number' ? l.per_max : (l.per_max == null ? 0 : Number(l.per_max)),
                                   isLoading: isPriceLoading,
                                 }))
-                              : [{ title: 'Adult', code: code ? `${code}-ADULT` : 'ADULT', net_price_currency: isPriceLoading ? null : (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0), sale_price_currency: null, normal_price_currency: null, required: true, outer_id: '', sort_order: 0, per_min: 1, per_max: 10, isLoading: isPriceLoading }]
+                              : [{ title: 'Adult', code: code ? `${code}-ADULT` : 'ADULT', net_price_currency: isPriceLoading ? (previousPrices.current[optionId] || previousPrices.current[code] || (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0)) : (optionPriceMap[optionId] ?? optionPriceMap[code] ?? 0), sale_price_currency: null, normal_price_currency: null, required: true, outer_id: '', sort_order: 0, per_min: 1, per_max: 10, isLoading: isPriceLoading }]
                             const timeslots = Array.isArray(o.timeslots) ? o.timeslots.map((t: any) => ({ code: String(t.id || t.code || ''), title: String(t.title || t.name || '') })) : []
                             const timeslotTitleMap: Record<string, string> = {}
                             for (const ts of timeslots) {
@@ -968,7 +916,7 @@ export default function TourDetailClient({ tourData, tourId }: TourDetailClientP
                             ...o,
                             labels: (o.labels ?? []).map((l: any) => ({ 
                               ...l, 
-                              net_price_currency: isPriceLoading ? null : (optionPriceMap[o.id] ?? optionPriceMap[o.code] ?? 0),
+                              net_price_currency: isPriceLoading ? (previousPrices.current[o.id] || previousPrices.current[o.code] || (optionPriceMap[o.id] ?? optionPriceMap[o.code] ?? 0)) : (optionPriceMap[o.id] ?? optionPriceMap[o.code] ?? 0),
                               isLoading: isPriceLoading
                             }))
                           }

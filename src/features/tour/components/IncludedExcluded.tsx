@@ -45,7 +45,9 @@ export function IncludedExcluded({ included, excluded }: IncludedExcludedProps) 
         {/* What's Not Included - 값이 있을 때만 렌더링 */}
         {hasExcluded && (
           <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">What's Not Included</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+              What's <span style={{ color: '#ff00cc' }}>Not</span> Included
+            </h4>
             <div className="space-y-3">
               {excluded.map((item, index) => (
                 <div key={index} className="flex items-start gap-3">

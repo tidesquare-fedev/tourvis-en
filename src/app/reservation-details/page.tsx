@@ -243,7 +243,7 @@ function ReservationDetailsContent() {
                 {/* Excluded - 상품 상세 API에서 가져온 값 */}
                 {productDetails.basic?.excluded && Array.isArray(productDetails.basic.excluded) && productDetails.basic.excluded.length > 0 && (
                   <div className="border-t pt-4">
-                    <span className="font-semibold text-sm flex items-center mb-2"><XCircle className="w-4 h-4 mr-1 text-red-600" /> Not Included:</span>
+                    <span className="font-semibold text-sm flex items-center mb-2"><XCircle className="w-4 h-4 mr-1 text-red-600" /> <span style={{ color: '#ff00cc' }}>Not</span> Included:</span>
                     <ul className="list-disc list-inside ml-5 space-y-1 text-sm text-gray-600">
                       {productDetails.basic.excluded.map((item: string, index: number) => (<li key={index}>{item}</li>))}
                     </ul>

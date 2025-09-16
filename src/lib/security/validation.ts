@@ -26,17 +26,43 @@ export function sanitizeInput(input: string): string {
 // 이메일 검증
 export const emailSchema = z.string().email('Invalid email format').max(255)
 
-// 전화번호 검증 (한국 형식)
-export const phoneSchema = z.string().regex(
-  /^01[0-9]-\d{3,4}-\d{4}$/,
-  'Invalid phone number format (010-1234-5678)'
-)
+// 전화번호 검증 (매우 유연한 형식 허용)
+export const phoneSchema = z.string()
+  .refine((val) => {
+    if (!val || val.trim() === '') return true // 빈 값은 허용
+    // 숫자만 추출해서 7자리 이상이면 통과
+    const digits = val.replace(/[^0-9]/g, '')
+    return digits.length >= 7
+  }, 'Invalid phone number format')
+  .optional()
 
-// 비밀번호 검증 (최소 8자, 영문+숫자+특수문자)
+// 비밀번호 검증 (최소 6자, 영문+숫자+특수문자)
 export const passwordSchema = z.string()
-  .min(8, 'Password must be at least 8 characters')
-  .regex(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]/, 
-    'Password must contain at least one letter, one number, and one special character')
+  .min(6, 'Password must be at least 6 characters')
+  .max(50, 'Password must be less than 50 characters')
+  .refine((val) => {
+    const hasLetter = /[A-Za-z]/.test(val)
+    const hasNumber = /\d/.test(val)
+    const hasSpecialChar = /[@$!%*#?&]/.test(val)
+    
+    if (!hasLetter && !hasNumber && !hasSpecialChar) {
+      return false // 'Password must contain letters, numbers, and special characters'
+    } else if (!hasLetter && !hasNumber) {
+      return false // 'Password must contain letters and numbers'
+    } else if (!hasLetter && !hasSpecialChar) {
+      return false // 'Password must contain letters and special characters'
+    } else if (!hasNumber && !hasSpecialChar) {
+      return false // 'Password must contain numbers and special characters'
+    } else if (!hasLetter) {
+      return false // 'Password must contain at least one letter'
+    } else if (!hasNumber) {
+      return false // 'Password must contain at least one number'
+    } else if (!hasSpecialChar) {
+      return false // 'Password must contain at least one special character'
+    }
+    
+    return true
+  }, 'Password must contain at least one letter, one number, and one special character')
 
 // 이름 검증
 export const nameSchema = z.string()
@@ -60,7 +86,7 @@ export const inquirySchema = z.object({
   password: passwordSchema,
   name: nameSchema,
   email: emailSchema,
-  phone: phoneSchema,
+  phone: phoneSchema.optional(),
   category: z.string().min(1, 'Category is required'),
   subject: inquirySubjectSchema,
   message: inquiryContentSchema,

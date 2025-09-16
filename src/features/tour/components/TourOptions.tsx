@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react'
 import { format } from 'date-fns'
 import { TourOption } from '@/types/tour'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 type TourOptionsProps = {
@@ -34,8 +34,23 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
   const [selectedTimeslot, setSelectedTimeslot] = useState<Record<string, string>>({})
   const [labelQuantities, setLabelQuantities] = useState<Record<string, Record<string, number>>>({})
   const descRefs = useRef<Record<string, HTMLParagraphElement | null>>({})
+  const quantityRef = useRef(quantity)
   const formatUSD = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Math.max(0, Number(v) || 0))
   const formatUSD0 = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.max(0, Number(v) || 0))
+
+  // quantity prop 변경 시 ref 업데이트
+  useEffect(() => {
+    quantityRef.current = quantity
+  }, [quantity])
+
+  // 수량 변경을 직접 처리하는 함수
+  const updateQuantity = useCallback((newQuantities: Record<string, number>) => {
+    const currentQuantity = Object.values(newQuantities).reduce((sum, qty) => sum + qty, 0)
+    if (currentQuantity !== quantityRef.current) {
+      quantityRef.current = currentQuantity
+      onQuantityChange(currentQuantity)
+    }
+  }, [onQuantityChange])
 
   const getStockText = (stock: number | null | undefined): string => {
     const q = typeof stock === 'number' ? stock : 0
@@ -127,13 +142,16 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
                   : 'border-gray-200 hover:border-[#01c5fd] bg-white hover:shadow-sm'
             }`}
             onClick={() => {
+              // 다른 옵션을 선택할 때만 시간 선택 초기화
               if (selectedOption?.code !== option.code) {
                 setSelectedTimeslot({})
               }
               setSelectedOption(option)
               setCardExpanded(prev => ({ ...prev, [option.code]: !prev[option.code] }))
               if (!optionQuantities[option.code]) {
-                setOptionQuantities(prev => ({ ...prev, [option.code]: 0 }))
+                const newQuantities = { ...optionQuantities, [option.code]: 0 }
+                setOptionQuantities(newQuantities)
+                updateQuantity(newQuantities)
               }
               if (onSelectOption) {
                 const code = option.code || ''
@@ -213,20 +231,30 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
                               type="button"
                               onClick={(e) => { 
                                 e.stopPropagation(); 
+                                
+                                // 기존에 선택된 시간과 다른 시간을 선택한 경우 수량 초기화
+                                const currentTimeslot = selectedTimeslot[option.code || '']
+                                const isDifferentTimeslot = currentTimeslot && currentTimeslot !== ts.id
+                                
                                 setSelectedTimeslot(prev => ({ ...prev, [option.code || '']: ts.id })); 
-                                if (!optionQuantities[option.code]) {
-                                  setOptionQuantities(prev => ({ ...prev, [option.code]: 1 }));
-                                  onQuantityChange(1)
+                                
+                                // 다른 시간을 선택했거나 처음 선택하는 경우 수량 초기화
+                                if (isDifferentTimeslot || !optionQuantities[option.code]) {
+                                  const newQuantities = { ...optionQuantities, [option.code]: 1 }
+                                  setOptionQuantities(newQuantities)
+                                  updateQuantity(newQuantities)
                                 }
-                                // initialize label quantities: default first label to 1 if not set
+                                
+                                // 라벨 수량 초기화 (다른 시간 선택 시)
                                 const labels: any[] = Array.isArray((option as any).labels) ? (option as any).labels : []
-                                if (labels.length > 0 && !labelQuantities[option.code]) {
+                                if (labels.length > 0 && (isDifferentTimeslot || !labelQuantities[option.code])) {
                                   const init: Record<string, number> = {}
                                   // default 0 for all labels
                                   labels.forEach((lb: any, i: number) => { init[String(lb?.code || lb?.id || `L${i}`)] = 0 })
                                   setLabelQuantities(prev => ({ ...prev, [option.code]: init }))
                                   if (onChangeLabelQuantities) onChangeLabelQuantities(option.code || '', init)
                                 }
+                                
                                 if (onSelectTimeslot) { onSelectTimeslot(option.code || '', ts.id, ts.labelId) }
                               }}
                               className={`px-5 py-3 rounded-xl border text-base ${active ? 'border-[#01c5fd] bg-[#e6faff] text-[#01a6db] shadow-sm' : 'border-gray-300 hover:border-[#01c5fd]'}`}
@@ -253,8 +281,9 @@ export function TourOptions({ selectedDate, options, quantity, onQuantityChange,
                                 const merged = { ...prev, [option.code]: cur }
                                 // propagate total to parent
                                 const total = Object.values(cur).reduce((s, n) => s + (n as number), 0)
-                                setOptionQuantities(p => ({ ...p, [option.code]: total }))
-                                onQuantityChange(total)
+                                const newQuantities = { ...optionQuantities, [option.code]: total }
+                                setOptionQuantities(newQuantities)
+                                updateQuantity(newQuantities)
                                 if (onChangeLabelQuantities) onChangeLabelQuantities(option.code || '', cur)
                                 return merged
                               })

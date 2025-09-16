@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 
 type ImportantInfoItem = {
   id: string
-  title: string
+  title: string | ReactNode
   icon: ReactNode
   content: string[]
   color: string
@@ -54,14 +54,14 @@ export function ImportantInformation({
     },
     {
       id: 'not-allowed',
-      title: 'Not Allowed',
+      title: <span><span style={{ color: '#ff00cc' }}>Not</span> Allowed</span>,
       icon: <X className="w-5 h-5" />,
       content: notAllowedClean,
       color: 'text-purple-600'
     },
     {
       id: 'not-suitable',
-      title: 'Not Suitable For',
+      title: <span><span style={{ color: '#ff00cc' }}>Not</span> Suitable For</span>,
       icon: <AlertTriangle className="w-5 h-5" />,
       content: notSuitableClean,
       color: 'text-blue-600'

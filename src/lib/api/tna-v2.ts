@@ -158,7 +158,6 @@ export async function getProductPriceDateTypeV2(productId: string, body: unknown
   // 캐시에서 먼저 확인
   const cached = cache.get(cacheKey)
   if (cached) {
-    if (process.env.NODE_ENV === 'development') console.log('캐시에서 가격 데이터 반환:', cacheKey)
     return cached
   }
 
@@ -181,7 +180,6 @@ export async function getProductPriceDateTypeV2(productId: string, body: unknown
   try {
     const result = await retryWithBackoff(async () => {
       const res = await fetch(url.toString(), { cache: 'no-store', headers: getHeaders() })
-      if (process.env.NODE_ENV === 'development') console.log('TNA API 응답 상태:', res.status)
       
       if (!res.ok) {
         if (res.status === 503) {
@@ -210,7 +208,6 @@ export async function getProductPricePeriodTypeV2(productId: string, body: unkno
   // 캐시에서 먼저 확인
   const cached = cache.get(cacheKey)
   if (cached) {
-    if (process.env.NODE_ENV === 'development') console.log('캐시에서 가격 데이터 반환:', cacheKey)
     return cached
   }
 
@@ -225,13 +222,10 @@ export async function getProductPricePeriodTypeV2(productId: string, body: unkno
   
   if (anyBody?.product_option_code) url.searchParams.set('product_option_code', String(anyBody.product_option_code))
   
-  if (process.env.NODE_ENV === 'development') console.log('TNA API 호출 URL (기간형):', url.toString())
-  if (process.env.NODE_ENV === 'development') console.log('요청 데이터:', anyBody)
   
   try {
     const result = await retryWithBackoff(async () => {
       const res = await fetch(url.toString(), { cache: 'no-store', headers: getHeaders() })
-      if (process.env.NODE_ENV === 'development') console.log('TNA API 응답 상태:', res.status)
       
       if (!res.ok) {
         if (res.status === 503) {

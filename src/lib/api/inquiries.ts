@@ -32,7 +32,7 @@ export class InquiryApi {
       password: data.password, // 비밀번호는 해시화되므로 정리하지 않음
       name: sanitizeInput(data.name),
       email: data.email.toLowerCase().trim(), // 이메일은 소문자로 정규화
-      phone: data.phone ? sanitizeInput(data.phone) : null,
+      phone: data.phone && data.phone.trim() ? sanitizeInput(data.phone) : null,
       category: sanitizeInput(data.category),
       subject: sanitizeInput(data.subject),
       message: sanitizeInput(data.message),
@@ -41,11 +41,17 @@ export class InquiryApi {
     // Zod 스키마로 검증
     const validationResult = inquirySchema.safeParse(sanitizedData)
     if (!validationResult.success) {
+      console.error('Validation errors:', validationResult.error.errors)
       const errors = validationResult.error.errors.map(err => `${err.path.join('.')}: ${err.message}`)
       throw new Error(`Validation failed: ${errors.join(', ')}`)
     }
 
     const validatedData = validationResult.data
+
+    // Supabase 연결 확인
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Supabase service role key is not configured')
+    }
 
     const { data: inquiry, error } = await supabaseAdmin
       .from('inquiries')
@@ -59,6 +65,7 @@ export class InquiryApi {
       .single()
 
     if (error) {
+      console.error('Supabase error:', error)
       throw new Error(`Failed to create inquiry: ${error.message}`)
     }
 

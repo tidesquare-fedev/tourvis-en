@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { LayoutProvider } from '@/components/layout/LayoutProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,12 +10,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { ArrowLeft, MessageCircle, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Eye, EyeOff, CheckCircle } from 'lucide-react'
 
 export default function InquiryPage() {
+  const router = useRouter()
   const [inquiryData, setInquiryData] = useState({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
   const [loading, setLoading] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
@@ -27,8 +31,32 @@ export default function InquiryPage() {
         else if (value.trim().length < 2) error = 'At least 2 characters'
         break
       case 'password':
-        if (!value) error = 'Password is required'
-        else if (value.length < 6) error = 'At least 6 characters'
+        if (!value) {
+          error = 'Password is required'
+        } else if (value.length < 6) {
+          error = 'Password must be at least 6 characters'
+        } else {
+          // 각 조건을 개별적으로 체크
+          const hasLetter = /[A-Za-z]/.test(value)
+          const hasNumber = /\d/.test(value)
+          const hasSpecialChar = /[@$!%*#?&]/.test(value)
+          
+          if (!hasLetter && !hasNumber && !hasSpecialChar) {
+            error = 'Password must contain letters, numbers, and special characters'
+          } else if (!hasLetter && !hasNumber) {
+            error = 'Password must contain letters and numbers'
+          } else if (!hasLetter && !hasSpecialChar) {
+            error = 'Password must contain letters and special characters'
+          } else if (!hasNumber && !hasSpecialChar) {
+            error = 'Password must contain numbers and special characters'
+          } else if (!hasLetter) {
+            error = 'Password must contain at least one letter'
+          } else if (!hasNumber) {
+            error = 'Password must contain at least one number'
+          } else if (!hasSpecialChar) {
+            error = 'Password must contain at least one special character (@$!%*#?&)'
+          }
+        }
         break
       case 'name':
         if (!value.trim()) error = 'Name is required'
@@ -39,7 +67,7 @@ export default function InquiryPage() {
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Invalid email format'
         break
       case 'phone':
-        if (value && value.replace(/[^0-9]/g, '').length < 7) error = 'Invalid phone number'
+        if (value && value.replace(/[^0-9]/g, '').length < 7) error = 'Phone number must have at least 7 digits'
         break
       case 'category':
         if (!value) error = 'Please select inquiry type'
@@ -91,7 +119,8 @@ export default function InquiryPage() {
       }
 
       const result = await response.json()
-      toast({ title: 'Inquiry Submitted', description: 'We will respond within 24 hours.' })
+      // 성공 모달 표시
+      setShowSuccessModal(true)
       setInquiryData({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
       setErrors({ author: '', password: '', name: '', email: '', phone: '', category: '', subject: '', message: '' })
     } catch (error) {
@@ -103,6 +132,12 @@ export default function InquiryPage() {
   }
 
   const setField = (field: string, value: string) => setInquiryData((p) => ({ ...p, [field]: value }))
+
+  // 성공 모달이 닫힐 때 inquiry-list로 리다이렉트
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false)
+    router.push('/inquiry-list')
+  }
 
   return (
     <LayoutProvider>
@@ -135,6 +170,7 @@ export default function InquiryPage() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">Must contain at least 6 characters with letters, numbers, and special characters (@$!%*#?&)</p>
                   {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
                 </div>
               </div>
@@ -196,6 +232,32 @@ export default function InquiryPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 성공 모달 */}
+      <Dialog open={showSuccessModal} onOpenChange={handleSuccessModalClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+            <DialogTitle className="text-xl font-semibold text-gray-900">
+              Inquiry Submitted Successfully!
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 mt-2">
+              We will respond to your inquiry within 24 hours. You will be redirected to the inquiry list page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6">
+            <Button 
+              onClick={handleSuccessModalClose}
+              className="w-full"
+              style={{ backgroundColor: '#01c5fd' }}
+            >
+              Go to Inquiry List
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </LayoutProvider>
   )
 }

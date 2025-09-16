@@ -9,6 +9,9 @@
 3. **상태 관리 분리**: 페이지별, 컴포넌트별 상태 관리 개선
 4. **레이아웃 컴포넌트 분리**: 재사용 가능한 레이아웃 시스템 구축
 5. **테스트 및 문서화**: 유지보수성 향상
+6. **코드 가독성 향상**: 의미 있는 변수명과 함수명 사용
+7. **중복 코드 제거**: 공통 로직을 유틸리티 함수로 분리
+8. **예외 처리 체계화**: 일관된 에러 처리 및 검증 시스템 구축
 
 ## 주요 변경사항
 
@@ -75,6 +78,67 @@ const {
 :root {
   --header-height: 4rem;
   --header-height-mobile: 3rem;
+  --sticky-nav-height: 3rem;
+  --content-padding: 1rem;
+  --content-padding-mobile: 0.75rem;
+  --max-content-width: 80rem;
+}
+```
+
+### 5. 공통 유틸리티 함수
+
+#### 새로 생성된 유틸리티
+- `src/lib/utils/product.ts`: 제품 데이터 변환 및 검증
+- `src/lib/utils/carousel.ts`: 캐러셀 관련 공통 로직
+- `src/lib/utils/string.ts`: 문자열 처리 유틸리티
+- `src/lib/error-handling.ts`: 에러 처리 시스템
+- `src/lib/validation.ts`: 데이터 검증 시스템
+
+#### 장점
+- 중복 코드 제거
+- 일관된 데이터 처리
+- 타입 안전성 향상
+- 재사용성 증대
+
+### 6. 공통 컴포넌트
+
+#### 새로 생성된 컴포넌트
+- `ProductCarousel`: 재사용 가능한 제품 캐러셀
+- `SectionHeader`: 섹션 헤더 컴포넌트
+- `ResponsiveContainer`: 반응형 컨테이너
+- `RegionCarousel`: 지역 캐러셀
+- `BannerCarousel`: 배너 캐러셀
+- `ProductTabs`: 제품 탭 컴포넌트
+
+### 7. 스타일 시스템
+
+#### 컴포넌트 스타일
+```css
+/* src/styles/components.css */
+.carousel-container { @apply w-full; }
+.product-card { @apply overflow-hidden hover:shadow-lg transition-shadow duration-300; }
+.section-header { @apply flex items-baseline justify-between mb-4 sm:mb-6; }
+```
+
+#### 유틸리티 클래스
+```css
+/* src/styles/utilities.css */
+.hover-lift { @apply transition-transform duration-300 hover:-translate-y-1; }
+.focus-ring { @apply focus:outline-none focus:ring-2 focus:ring-blue-500; }
+.responsive-container { @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
+```
+
+### 8. 테스트 시스템
+
+#### 테스트 설정
+- Jest + React Testing Library
+- 커버리지 임계값 설정 (70%)
+- Next.js 환경 최적화
+- Mock 설정 완료
+
+#### 테스트 파일
+- `src/__tests__/components/common/`: 공통 컴포넌트 테스트
+- `src/__tests__/lib/utils/`: 유틸리티 함수 테스트
   --sticky-nav-height: 3rem;
   --content-padding: 1rem;
   --content-padding-mobile: 0.75rem;
