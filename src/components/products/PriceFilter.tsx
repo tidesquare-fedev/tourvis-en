@@ -1,9 +1,14 @@
-
-import { useState } from "react";
-import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
+import { useState } from 'react';
+import { Slider } from '@/components/ui/slider';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Filter } from 'lucide-react';
 
 interface PriceFilterProps {
   value: [number, number];
@@ -13,15 +18,27 @@ interface PriceFilterProps {
   step?: number;
 }
 
-export const PriceFilter = ({ value, onChange, min: minProp, max: maxProp, step: stepProp }: PriceFilterProps) => {
+export const PriceFilter = ({
+  value,
+  onChange,
+  min: minProp,
+  max: maxProp,
+  step: stepProp,
+}: PriceFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tempValue, setTempValue] = useState<[number, number]>(value);
-  
-  const min = Number.isFinite(minProp as number) ? (minProp as number) : 0
-  const max = Number.isFinite(maxProp as number) && (maxProp as number) > min ? (maxProp as number) : Math.max(min + 1, 200)
-  const step = typeof stepProp === 'number' && stepProp > 0 ? stepProp : Math.max(1, Math.round((max - min) / 40))
-  const clamp = (n: number) => Math.min(max, Math.max(min, n))
-  const display = (n: number) => `$${clamp(n).toLocaleString()}`
+
+  const min = Number.isFinite(minProp as number) ? (minProp as number) : 0;
+  const max =
+    Number.isFinite(maxProp as number) && (maxProp as number) > min
+      ? (maxProp as number)
+      : Math.max(min + 1, 200);
+  const step =
+    typeof stepProp === 'number' && stepProp > 0
+      ? stepProp
+      : Math.max(1, Math.round((max - min) / 40));
+  const clamp = (n: number) => Math.min(max, Math.max(min, n));
+  const display = (n: number) => `$${clamp(n).toLocaleString()}`;
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -44,8 +61,8 @@ export const PriceFilter = ({ value, onChange, min: minProp, max: maxProp, step:
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full justify-between text-xs h-8 px-3"
         >
           <span className="flex items-center gap-1">
@@ -65,7 +82,9 @@ export const PriceFilter = ({ value, onChange, min: minProp, max: maxProp, step:
           <div className="px-4">
             <Slider
               value={[clamp(tempValue[0]), clamp(tempValue[1])]}
-              onValueChange={(v) => setTempValue([clamp(v[0] ?? min), clamp(v[1] ?? max)])}
+              onValueChange={v =>
+                setTempValue([clamp(v[0] ?? min), clamp(v[1] ?? max)])
+              }
               max={max}
               min={min}
               step={step}
@@ -78,10 +97,10 @@ export const PriceFilter = ({ value, onChange, min: minProp, max: maxProp, step:
           </div>
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={handleReset}>
-            Reset 
+              Reset
             </Button>
             <Button size="sm" onClick={handleApply}>
-            Apply
+              Apply
             </Button>
           </div>
         </div>

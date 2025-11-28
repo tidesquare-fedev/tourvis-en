@@ -1,55 +1,61 @@
-'use client'
+'use client';
 
-import { usePathname } from 'next/navigation'
-import { ReactNode } from 'react'
-import { PageLayout } from './PageLayout'
-import { TourDetailLayout } from './TourDetailLayout'
-import { AppHeader } from '@/components/shared/AppHeader'
+import { AppHeader } from '@/components/shared/AppHeader';
+import { usePathname } from 'next/navigation';
+import { ReactNode } from 'react';
+import { TourDetailLayout } from './TourDetailLayout';
 
 interface LayoutProviderProps {
-  children: ReactNode
+  children: ReactNode;
   // Tour detail specific props
-  tourTitle?: string
-  sections?: Array<{ id: string; label: string }>
-  activeSection?: string
-  onSectionClick?: (sectionId: string) => void
+  tourTitle?: string;
+  sections?: Array<{ id: string; label: string }>;
+  activeSection?: string;
+  onSectionClick?: (sectionId: string) => void;
 }
 
-export function LayoutProvider({ 
-  children, 
-  tourTitle, 
-  sections, 
-  activeSection, 
-  onSectionClick 
+export function LayoutProvider({
+  children,
+  tourTitle,
+  sections,
+  activeSection,
+  onSectionClick,
 }: LayoutProviderProps) {
-  const pathname = usePathname()
-  
+  const pathname = usePathname();
+
   // Tour detail page detection
-  const isTourDetailPage = /\/tour\/\[id\]/.test(pathname) || /\/tour\/[^\/]+$/.test(pathname)
-  
+  const isTourDetailPage =
+    /\/tour\/\[id\]/.test(pathname) || /\/tour\/[^/]+$/.test(pathname);
+
   // Determine active navigation based on pathname
   const getActiveNav = () => {
-    if (pathname.startsWith('/activity/search') || pathname.startsWith('/products')) {
-      return 'tours'
+    if (
+      pathname.startsWith('/activity/search') ||
+      pathname.startsWith('/products')
+    ) {
+      return 'tours';
     }
     if (pathname.startsWith('/inquiry')) {
-      return 'inquiry'
+      return 'inquiry';
     }
     if (pathname.startsWith('/reservation')) {
-      return 'reservation'
+      return 'reservation';
     }
     // 메인 페이지와 상품 상세 페이지에서는 비활성화
-    return undefined
-  }
-  
+    return undefined;
+  };
+
   // Determine background class based on pathname
   const getBackgroundClass = () => {
-    if (pathname.startsWith('/activity/search') || pathname.startsWith('/products')) {
-      return 'min-h-screen bg-gradient-to-b from-blue-50 to-white'
+    if (
+      pathname.startsWith('/activity/search') ||
+      pathname.startsWith('/products')
+    ) {
+      return 'min-h-screen bg-gradient-to-b from-blue-50 to-white';
     }
-    return 'min-h-screen bg-white'
-  }
-  
+    return 'min-h-screen bg-white';
+  };
+
   if (isTourDetailPage && tourTitle && sections && activeSection) {
     return (
       <TourDetailLayout
@@ -61,18 +67,18 @@ export function LayoutProvider({
       >
         {children}
       </TourDetailLayout>
-    )
+    );
   }
-  
+
   return (
     <div className={getBackgroundClass()}>
       {/* GNB - fixed로 설정 */}
       <AppHeader active={getActiveNav()} />
-      
+
       {/* GNB 아래 여백 */}
       <div className="h-16"></div>
-      
+
       {children}
     </div>
-  )
+  );
 }

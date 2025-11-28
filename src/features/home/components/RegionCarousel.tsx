@@ -1,24 +1,31 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import { ResponsiveContainer } from '@/components/common/ResponsiveContainer'
-import { getCarouselIndicatorsContainerClassName, getCarouselIndicatorClassName } from '@/lib/utils/carousel'
-import type { Region } from '../types'
-import { useState, useEffect } from 'react'
-import type { CarouselApi } from '@/components/ui/carousel'
+import Link from 'next/link';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from '@/components/ui/carousel';
+import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
+import {
+  getCarouselIndicatorsContainerClassName,
+  getCarouselIndicatorClassName,
+} from '@/lib/utils/carousel';
+import type { Region } from '../types';
+import { useState, useEffect } from 'react';
+import type { CarouselApi } from '@/components/ui/carousel';
 
 interface RegionCarouselProps {
   /** 지역 데이터 배열 */
-  regions: Region[]
+  regions: Region[];
   /** 선택된 지역 ID */
-  selectedRegionId: string
+  selectedRegionId: string;
   /** 지역 선택 핸들러 */
-  onRegionSelect: (regionId: string) => void
+  onRegionSelect: (regionId: string) => void;
   /** 지역 호버 핸들러 */
-  onRegionHover: (regionId: string | null) => void
+  onRegionHover: (regionId: string | null) => void;
   /** 캐러셀 API 설정 */
-  setCarouselApi: (api: CarouselApi | undefined) => void
+  setCarouselApi: (api: CarouselApi | undefined) => void;
 }
 
 /**
@@ -30,40 +37,41 @@ export function RegionCarousel({
   selectedRegionId,
   onRegionSelect,
   onRegionHover,
-  setCarouselApi
+  setCarouselApi,
 }: RegionCarouselProps) {
-  const [carouselIndex, setCarouselIndex] = useState(0)
-  const [carouselCount, setCarouselCount] = useState(0)
-  const [api, setApi] = useState<CarouselApi>()
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [carouselCount, setCarouselCount] = useState(0);
+  const [api, setApi] = useState<CarouselApi>();
 
   useEffect(() => {
-    if (!api) return
-    
+    if (!api) return;
+
     const onSelect = () => {
-      const idx = api.selectedScrollSnap()
-      setCarouselIndex(idx)
-      const region = regions[idx % Math.max(1, regions.length)]
-      if (region) onRegionSelect(region.id)
-    }
-    
-    setCarouselCount(api.scrollSnapList().length)
-    onSelect()
-    api.on('select', onSelect)
-    
+      const idx = api.selectedScrollSnap();
+      setCarouselIndex(idx);
+      const region = regions[idx % Math.max(1, regions.length)];
+      if (region) onRegionSelect(region.id);
+    };
+
+    setCarouselCount(api.scrollSnapList().length);
+    onSelect();
+    api.on('select', onSelect);
+
     return () => {
-      api.off('select', onSelect)
-    }
-  }, [api, regions, onRegionSelect])
+      api.off('select', onSelect);
+    };
+  }, [api, regions, onRegionSelect]);
 
   useEffect(() => {
-    setCarouselApi(api)
-  }, [api, setCarouselApi])
+    setCarouselApi(api);
+  }, [api, setCarouselApi]);
 
-  const selectedRegion = regions.find(r => r.id === selectedRegionId) || regions[0]
+  const selectedRegion =
+    regions.find(r => r.id === selectedRegionId) || regions[0];
 
   return (
     <section className="relative w-full isolate bg-sky-50">
-      <ResponsiveContainer 
+      <ResponsiveContainer
         verticalPadding="py-10 sm:py-14"
         backgroundColor="bg-sky-50"
       >
@@ -79,15 +87,15 @@ export function RegionCarousel({
           </div>
 
           {/* 지역 캐러셀 */}
-          <Carousel 
-            className="w-full" 
-            opts={{ align: 'start', slidesToScroll: 1, loop: true }} 
+          <Carousel
+            className="w-full"
+            opts={{ align: 'start', slidesToScroll: 1, loop: true }}
             setApi={setApi}
           >
             <CarouselContent className="-ml-2 md:-ml-4 py-6 sm:py-8">
-              {regions.map((region) => (
-                <CarouselItem 
-                  key={region.id} 
+              {regions.map(region => (
+                <CarouselItem
+                  key={region.id}
                   className="pl-2 md:pl-4 basis-2/3 sm:basis-1/2 md:basis-1/3 lg:basis-1/5"
                 >
                   <Link
@@ -103,10 +111,10 @@ export function RegionCarousel({
                       ${selectedRegionId === region.id ? '-translate-y-4 sm:-translate-y-6 md:-translate-y-8 shadow-2xl' : ''}
                     `}
                   >
-                    <img 
-                      src={region.image} 
-                      alt={region.name} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 active:scale-105" 
+                    <img
+                      src={region.image}
+                      alt={region.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 active:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent group-hover:from-black/60" />
                     <div className="absolute bottom-3 left-3 text-white font-semibold text-sm sm:text-base drop-shadow">
@@ -125,7 +133,9 @@ export function RegionCarousel({
                 <button
                   key={index}
                   type="button"
-                  className={getCarouselIndicatorClassName(index === carouselIndex)}
+                  className={getCarouselIndicatorClassName(
+                    index === carouselIndex,
+                  )}
                   onClick={() => api?.scrollTo(index)}
                   aria-label={`슬라이드 ${index + 1}로 이동`}
                 />
@@ -134,9 +144,9 @@ export function RegionCarousel({
           )}
         </div>
       </ResponsiveContainer>
-      
+
       {/* 하단 여백 */}
       <div className="h-6 sm:h-8 bg-sky-50" />
     </section>
-  )
+  );
 }

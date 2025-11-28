@@ -25,5 +25,12 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-unused-vars": "off",
     },
+  },
+  // Next.js 특수 파일들에 대한 예외 처리
+  {
+    files: ["**/app/**/layout.tsx", "**/app/**/page.tsx", "**/app/**/loading.tsx", "**/app/**/error.tsx", "**/app/**/not-found.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
   }
 );

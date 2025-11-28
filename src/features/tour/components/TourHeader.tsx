@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import { MapPin } from 'lucide-react'
+import { MapPin } from 'lucide-react';
 
 type TourHeaderProps = {
-  location: string
-  title: string
-  subtitle: string
-}
+  location: string;
+  title: string;
+  subtitle: string;
+};
 
 export function TourHeader({ location, title, subtitle }: TourHeaderProps) {
   return (
@@ -20,7 +20,5 @@ export function TourHeader({ location, title, subtitle }: TourHeaderProps) {
         <p className="text-[14px] text-gray-600">{subtitle}</p>
       </div>
     </>
-  )
+  );
 }
-
-

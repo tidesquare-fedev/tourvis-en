@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import { cn } from '@/lib/utils'
-import { IMAGE_CONFIG } from '@/lib/constants/api'
+import { useState, useRef, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { IMAGE_CONFIG } from '@/lib/constants/api';
 
 interface LazyImageProps {
-  src: string
-  alt: string
-  className?: string
-  placeholder?: string
-  fallback?: string
-  onLoad?: () => void
-  onError?: () => void
+  src: string;
+  alt: string;
+  className?: string;
+  placeholder?: string;
+  fallback?: string;
+  onLoad?: () => void;
+  onError?: () => void;
 }
 
 export function LazyImage({
@@ -21,43 +21,46 @@ export function LazyImage({
   placeholder = IMAGE_CONFIG.PLACEHOLDER,
   fallback = IMAGE_CONFIG.FALLBACK,
   onLoad,
-  onError
+  onError,
 }: LazyImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [isError, setIsError] = useState(false)
-  const [isInView, setIsInView] = useState(false)
-  const imgRef = useRef<HTMLImageElement>(null)
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    const img = imgRef.current
-    if (!img) return
+    const img = imgRef.current;
+    if (!img) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsInView(true)
-          observer.disconnect()
+          setIsInView(true);
+          observer.disconnect();
         }
       },
-      { threshold: IMAGE_CONFIG.LAZY_LOAD_THRESHOLD, rootMargin: IMAGE_CONFIG.LAZY_LOAD_ROOT_MARGIN }
-    )
+      {
+        threshold: IMAGE_CONFIG.LAZY_LOAD_THRESHOLD,
+        rootMargin: IMAGE_CONFIG.LAZY_LOAD_ROOT_MARGIN,
+      },
+    );
 
-    observer.observe(img)
+    observer.observe(img);
 
-    return () => observer.disconnect()
-  }, [])
+    return () => observer.disconnect();
+  }, []);
 
   const handleLoad = () => {
-    setIsLoaded(true)
-    onLoad?.()
-  }
+    setIsLoaded(true);
+    onLoad?.();
+  };
 
   const handleError = () => {
-    setIsError(true)
-    onError?.()
-  }
+    setIsError(true);
+    onError?.();
+  };
 
-  const imageSrc = isInView ? (isError ? fallback : src) : placeholder
+  const imageSrc = isInView ? (isError ? fallback : src) : placeholder;
 
   return (
     <img
@@ -67,11 +70,11 @@ export function LazyImage({
       className={cn(
         'transition-opacity duration-300',
         isLoaded && !isError ? 'opacity-100' : 'opacity-70',
-        className
+        className,
       )}
       onLoad={handleLoad}
       onError={handleError}
       loading="lazy"
     />
-  )
+  );
 }

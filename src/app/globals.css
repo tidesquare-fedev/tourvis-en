@@ -118,6 +118,7 @@
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -147,7 +148,8 @@
 }
 
 /* Prevent any ancestor from accidentally creating a new containing block */
-.booking-container *, .booking-container {
+.booking-container *,
+.booking-container {
   transform: none !important;
 }
 
@@ -159,13 +161,16 @@
 }
 
 /* Media defaults for images/iframes/videos */
-img, video, iframe {
+img,
+video,
+iframe {
   max-width: 100%;
   height: auto;
 }
 
 /* Long HTML content wrapping (API HTML) */
-.prose, .content-wrap {
+.prose,
+.content-wrap {
   overflow-wrap: anywhere;
   word-break: break-word;
 }

@@ -1,9 +1,13 @@
-import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation';
 
-export default function ActivityProductRedirectPage({ params }: { params: { id?: string } }) {
-  const id = params?.id
+export default function ActivityProductRedirectPage({
+  params,
+}: {
+  params: { id?: string };
+}) {
+  const id = params?.id;
   if (!id) {
-    redirect('/products')
+    redirect('/products');
   }
-  redirect(`/tour/${encodeURIComponent(id)}`)
+  redirect(`/tour/${encodeURIComponent(id)}`);
 }

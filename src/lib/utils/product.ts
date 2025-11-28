@@ -3,7 +3,7 @@
  * 중복된 ProductItem 변환 로직을 통합하여 관리
  */
 
-import type { ProductItem } from '@/features/activity/types'
+import type { ProductItem } from '@/features/activity/types';
 
 /**
  * 제품 데이터를 ProductItem 형태로 변환하는 공통 함수
@@ -16,14 +16,21 @@ export function transformToProductItem(product: any): ProductItem {
     title: String(product.title || product.productName || product.name || ''),
     image: String(product.image || product.imageUrl || ''),
     images: product.images || (product.image ? [product.image] : []),
-    price: typeof product.price === 'string' ? Number(product.price) : product.price,
-    originalPrice: typeof product.originalPrice === 'string' ? Number(product.originalPrice) : product.originalPrice,
-    discountRate: typeof product.discountRate === 'string' ? Number(product.discountRate) : product.discountRate,
+    price:
+      typeof product.price === 'string' ? Number(product.price) : product.price,
+    originalPrice:
+      typeof product.originalPrice === 'string'
+        ? Number(product.originalPrice)
+        : product.originalPrice,
+    discountRate:
+      typeof product.discountRate === 'string'
+        ? Number(product.discountRate)
+        : product.discountRate,
     rating: product.rating,
     reviewCount: product.reviewCount,
     location: product.location,
     category: product.category,
-  }
+  };
 }
 
 /**
@@ -32,7 +39,7 @@ export function transformToProductItem(product: any): ProductItem {
  * @returns ProductItem 배열
  */
 export function transformProductsToItems(products: any[]): ProductItem[] {
-  return (Array.isArray(products) ? products : []).map(transformToProductItem)
+  return (Array.isArray(products) ? products : []).map(transformToProductItem);
 }
 
 /**
@@ -41,9 +48,11 @@ export function transformProductsToItems(products: any[]): ProductItem[] {
  * @returns 유효한 제품인지 여부
  */
 export function isValidProduct(product: any): boolean {
-  return product && 
-         (product.id || product.productId) && 
-         (product.title || product.productName || product.name)
+  return (
+    product &&
+    (product.id || product.productId) &&
+    (product.title || product.productName || product.name)
+  );
 }
 
 /**
@@ -52,5 +61,5 @@ export function isValidProduct(product: any): boolean {
  * @returns 유효한 제품만 포함된 배열
  */
 export function filterValidProducts(products: any[]): any[] {
-  return (Array.isArray(products) ? products : []).filter(isValidProduct)
+  return (Array.isArray(products) ? products : []).filter(isValidProduct);
 }

@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useQuery } from '@tanstack/react-query'
-import { activityApi } from '@/lib/api/activity'
-import type { ProductItem } from '@/features/activity/types'
+import { useQuery } from '@tanstack/react-query';
+import { activityApi } from '@/lib/api/activity';
+import type { ProductItem } from '@/features/activity/types';
 
 export function useProducts(providerIds: string, keyword?: string) {
   return useQuery({
@@ -13,11 +13,9 @@ export function useProducts(providerIds: string, keyword?: string) {
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     select: (res): { items: ProductItem[] } => {
-      if ((res as any)?.success === false) return { items: [] }
-      const items = (res as any)?.data?.items as ProductItem[] | undefined
-      return { items: Array.isArray(items) ? items : [] }
-    }
-  })
+      if ((res as any)?.success === false) return { items: [] };
+      const items = (res as any)?.data?.items as ProductItem[] | undefined;
+      return { items: Array.isArray(items) ? items : [] };
+    },
+  });
 }
-
-

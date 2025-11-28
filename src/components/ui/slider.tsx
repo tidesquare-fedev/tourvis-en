@@ -1,22 +1,22 @@
-import * as React from "react"
-import * as SliderPrimitive from "@radix-ui/react-slider"
+import * as React from 'react';
+import * as SliderPrimitive from '@radix-ui/react-slider';
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
 
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
 >(({ className, ...props }, ref) => {
-  const values = (props.value ?? props.defaultValue) as number[] | undefined
-  const numThumbs = Array.isArray(values) ? values.length : 1
-  const thumbs = Array.from({ length: numThumbs })
+  const values = (props.value ?? props.defaultValue) as number[] | undefined;
+  const numThumbs = Array.isArray(values) ? values.length : 1;
+  const thumbs = Array.from({ length: numThumbs });
 
   return (
     <SliderPrimitive.Root
       ref={ref}
       className={cn(
-        "relative flex w-full touch-none select-none items-center",
-        className
+        'relative flex w-full touch-none select-none items-center',
+        className,
       )}
       {...props}
     >
@@ -30,8 +30,8 @@ const Slider = React.forwardRef<
         />
       ))}
     </SliderPrimitive.Root>
-  )
-})
-Slider.displayName = SliderPrimitive.Root.displayName
+  );
+});
+Slider.displayName = SliderPrimitive.Root.displayName;
 
-export { Slider }
+export { Slider };

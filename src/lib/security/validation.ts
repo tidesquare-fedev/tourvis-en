@@ -2,7 +2,7 @@
  * 보안 및 입력 검증 유틸리티
  */
 
-import { z } from 'zod'
+import { z } from 'zod';
 
 // XSS 방지를 위한 HTML 이스케이프
 export function escapeHtml(unsafe: string): string {
@@ -11,7 +11,7 @@ export function escapeHtml(unsafe: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+    .replace(/'/g, '&#039;');
 }
 
 // SQL 인젝션 방지를 위한 입력 정리
@@ -20,65 +20,70 @@ export function sanitizeInput(input: string): string {
     .trim()
     .replace(/[<>]/g, '') // HTML 태그 제거
     .replace(/['";\\]/g, '') // SQL 특수 문자 제거
-    .slice(0, 1000) // 길이 제한
+    .slice(0, 1000); // 길이 제한
 }
 
 // 이메일 검증
-export const emailSchema = z.string().email('Invalid email format').max(255)
+export const emailSchema = z.string().email('Invalid email format').max(255);
 
 // 전화번호 검증 (매우 유연한 형식 허용)
-export const phoneSchema = z.string()
-  .refine((val) => {
-    if (!val || val.trim() === '') return true // 빈 값은 허용
+export const phoneSchema = z
+  .string()
+  .refine(val => {
+    if (!val || val.trim() === '') return true; // 빈 값은 허용
     // 숫자만 추출해서 7자리 이상이면 통과
-    const digits = val.replace(/[^0-9]/g, '')
-    return digits.length >= 7
+    const digits = val.replace(/[^0-9]/g, '');
+    return digits.length >= 7;
   }, 'Invalid phone number format')
-  .optional()
+  .optional();
 
 // 비밀번호 검증 (최소 6자, 영문+숫자+특수문자)
-export const passwordSchema = z.string()
+export const passwordSchema = z
+  .string()
   .min(6, 'Password must be at least 6 characters')
   .max(50, 'Password must be less than 50 characters')
-  .refine((val) => {
-    const hasLetter = /[A-Za-z]/.test(val)
-    const hasNumber = /\d/.test(val)
-    const hasSpecialChar = /[@$!%*#?&]/.test(val)
-    
+  .refine(val => {
+    const hasLetter = /[A-Za-z]/.test(val);
+    const hasNumber = /\d/.test(val);
+    const hasSpecialChar = /[@$!%*#?&]/.test(val);
+
     if (!hasLetter && !hasNumber && !hasSpecialChar) {
-      return false // 'Password must contain letters, numbers, and special characters'
+      return false; // 'Password must contain letters, numbers, and special characters'
     } else if (!hasLetter && !hasNumber) {
-      return false // 'Password must contain letters and numbers'
+      return false; // 'Password must contain letters and numbers'
     } else if (!hasLetter && !hasSpecialChar) {
-      return false // 'Password must contain letters and special characters'
+      return false; // 'Password must contain letters and special characters'
     } else if (!hasNumber && !hasSpecialChar) {
-      return false // 'Password must contain numbers and special characters'
+      return false; // 'Password must contain numbers and special characters'
     } else if (!hasLetter) {
-      return false // 'Password must contain at least one letter'
+      return false; // 'Password must contain at least one letter'
     } else if (!hasNumber) {
-      return false // 'Password must contain at least one number'
+      return false; // 'Password must contain at least one number'
     } else if (!hasSpecialChar) {
-      return false // 'Password must contain at least one special character'
+      return false; // 'Password must contain at least one special character'
     }
-    
-    return true
-  }, 'Password must contain at least one letter, one number, and one special character')
+
+    return true;
+  }, 'Password must contain at least one letter, one number, and one special character');
 
 // 이름 검증
-export const nameSchema = z.string()
+export const nameSchema = z
+  .string()
   .min(2, 'Name must be at least 2 characters')
   .max(50, 'Name must be less than 50 characters')
-  .regex(/^[a-zA-Z가-힣\s]+$/, 'Name can only contain letters and spaces')
+  .regex(/^[a-zA-Z가-힣\s]+$/, 'Name can only contain letters and spaces');
 
 // 문의 내용 검증
-export const inquiryContentSchema = z.string()
+export const inquiryContentSchema = z
+  .string()
   .min(10, 'Message must be at least 10 characters')
-  .max(2000, 'Message must be less than 2000 characters')
+  .max(2000, 'Message must be less than 2000 characters');
 
 // 문의 제목 검증
-export const inquirySubjectSchema = z.string()
+export const inquirySubjectSchema = z
+  .string()
   .min(5, 'Subject must be at least 5 characters')
-  .max(200, 'Subject must be less than 200 characters')
+  .max(200, 'Subject must be less than 200 characters');
 
 // 문의 데이터 전체 검증 스키마
 export const inquirySchema = z.object({
@@ -90,88 +95,96 @@ export const inquirySchema = z.object({
   category: z.string().min(1, 'Category is required'),
   subject: inquirySubjectSchema,
   message: inquiryContentSchema,
-})
+});
 
 // API 응답에서 민감한 정보 제거
 export function sanitizeApiResponse(data: any): any {
   if (typeof data !== 'object' || data === null) {
-    return data
+    return data;
   }
 
   if (Array.isArray(data)) {
-    return data.map(sanitizeApiResponse)
+    return data.map(sanitizeApiResponse);
   }
 
-  const sanitized = { ...data }
-  
+  const sanitized = { ...data };
+
   // 민감한 필드 제거 또는 마스킹
-  const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth']
-  
+  const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
+
   for (const field of sensitiveFields) {
     if (field in sanitized) {
-      sanitized[field] = '[REDACTED]'
+      sanitized[field] = '[REDACTED]';
     }
   }
 
   // 중첩된 객체도 재귀적으로 처리
   for (const key in sanitized) {
     if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
-      sanitized[key] = sanitizeApiResponse(sanitized[key])
+      sanitized[key] = sanitizeApiResponse(sanitized[key]);
     }
   }
 
-  return sanitized
+  return sanitized;
 }
 
 // Rate limiting을 위한 간단한 구현
 class RateLimiter {
-  private attempts = new Map<string, { count: number; resetTime: number }>()
-  private readonly maxAttempts: number
-  private readonly windowMs: number
+  private attempts = new Map<string, { count: number; resetTime: number }>();
+  private readonly maxAttempts: number;
+  private readonly windowMs: number;
 
   constructor(maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000) {
-    this.maxAttempts = maxAttempts
-    this.windowMs = windowMs
+    this.maxAttempts = maxAttempts;
+    this.windowMs = windowMs;
   }
 
   isAllowed(identifier: string): boolean {
-    const now = Date.now()
-    const attempt = this.attempts.get(identifier)
+    const now = Date.now();
+    const attempt = this.attempts.get(identifier);
 
     if (!attempt || now > attempt.resetTime) {
-      this.attempts.set(identifier, { count: 1, resetTime: now + this.windowMs })
-      return true
+      this.attempts.set(identifier, {
+        count: 1,
+        resetTime: now + this.windowMs,
+      });
+      return true;
     }
 
     if (attempt.count >= this.maxAttempts) {
-      return false
+      return false;
     }
 
-    attempt.count++
-    return true
+    attempt.count++;
+    return true;
   }
 
   getRemainingAttempts(identifier: string): number {
-    const attempt = this.attempts.get(identifier)
-    if (!attempt) return this.maxAttempts
-    return Math.max(0, this.maxAttempts - attempt.count)
+    const attempt = this.attempts.get(identifier);
+    if (!attempt) return this.maxAttempts;
+    return Math.max(0, this.maxAttempts - attempt.count);
   }
 
   getResetTime(identifier: string): number {
-    const attempt = this.attempts.get(identifier)
-    return attempt?.resetTime || 0
+    const attempt = this.attempts.get(identifier);
+    return attempt?.resetTime || 0;
   }
 }
 
-export const rateLimiter = new RateLimiter()
+export const rateLimiter = new RateLimiter();
 
 // CSRF 토큰 생성 (간단한 구현)
 export function generateCSRFToken(): string {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15)
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
 }
 
 // CSRF 토큰 검증
-export function validateCSRFToken(token: string, sessionToken: string): boolean {
-  return token === sessionToken && token.length > 0
+export function validateCSRFToken(
+  token: string,
+  sessionToken: string,
+): boolean {
+  return token === sessionToken && token.length > 0;
 }

@@ -1,17 +1,23 @@
-"use client"
+'use client';
 
-import { Check } from 'lucide-react'
+import { Check } from 'lucide-react';
 
 type TourHighlightsProps = {
-  highlights: string[]
-  title?: string
-  detail?: string
-}
+  highlights: string[];
+  title?: string;
+  detail?: string;
+};
 
-export function TourHighlights({ highlights, title, detail }: TourHighlightsProps) {
+export function TourHighlights({
+  highlights,
+  title,
+  detail,
+}: TourHighlightsProps) {
   return (
     <div className="mb-6 md:mb-8 p-3 md:p-4 bg-blue-50 rounded-lg min-w-0">
-      <h3 className="text-base md:text-lg font-semibold mb-3 text-blue-950">Highlights</h3>
+      <h3 className="text-base md:text-lg font-semibold mb-3 text-blue-950">
+        Highlights
+      </h3>
       {title && (
         <div className="text-blue-950 font-semibold text-sm md:text-base mb-3 break-words">
           {title}
@@ -27,13 +33,13 @@ export function TourHighlights({ highlights, title, detail }: TourHighlightsProp
           {highlights.map((highlight, index) => (
             <li key={index} className="flex items-start">
               <Check className="w-4 h-4 text-blue-950 mr-2 mt-0.5 flex-shrink-0" />
-              <span className="text-blue-950 text-sm md:text-base leading-relaxed">{highlight}</span>
+              <span className="text-blue-950 text-sm md:text-base leading-relaxed">
+                {highlight}
+              </span>
             </li>
           ))}
         </ul>
       )}
     </div>
-  )
+  );
 }
-
-

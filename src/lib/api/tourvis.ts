@@ -1,22 +1,22 @@
 export type TourvisHomePayload = {
-  brand: string
-  platform: string
-  productDetailYn: string
-  showType: string
-  svcDivn: string
-}
+  brand: string;
+  platform: string;
+  productDetailYn: string;
+  showType: string;
+  svcDivn: string;
+};
 
 export type TourDetailPayload = {
-  brand: string
-  platform: string
-  productCode: string
-  language?: string
-}
+  brand: string;
+  platform: string;
+  productCode: string;
+  language?: string;
+};
 
 export interface FetchResult<T> {
-  ok: boolean
-  data: T | null
-  error?: string
+  ok: boolean;
+  data: T | null;
+  error?: string;
 }
 
 // Server-only fetch for Tourvis page info
@@ -32,17 +32,17 @@ export async function fetchTourvisHome<T = unknown>(
       // Dynamic content → no-store per team policy
       cache: 'no-store',
       body: JSON.stringify(payload),
-    })
+    });
 
     if (!res.ok) {
-      return { ok: false, data: null, error: `HTTP ${res.status}` }
+      return { ok: false, data: null, error: `HTTP ${res.status}` };
     }
 
-    const json = (await res.json()) as T
-    return { ok: true, data: json }
+    const json = (await res.json()) as T;
+    return { ok: true, data: json };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'unknown error'
-    return { ok: false, data: null, error: message }
+    const message = err instanceof Error ? err.message : 'unknown error';
+    return { ok: false, data: null, error: message };
   }
 }
 
@@ -51,26 +51,27 @@ export async function fetchTourDetail<T = unknown>(
   payload: TourDetailPayload,
 ): Promise<FetchResult<T>> {
   try {
-    const res = await fetch('https://dapi.tourvis.com/api/product/getProductDetail', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const res = await fetch(
+      'https://dapi.tourvis.com/api/product/getProductDetail',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Dynamic content → no-store per team policy
+        cache: 'no-store',
+        body: JSON.stringify(payload),
       },
-      // Dynamic content → no-store per team policy
-      cache: 'no-store',
-      body: JSON.stringify(payload),
-    })
+    );
 
     if (!res.ok) {
-      return { ok: false, data: null, error: `HTTP ${res.status}` }
+      return { ok: false, data: null, error: `HTTP ${res.status}` };
     }
 
-    const json = (await res.json()) as T
-    return { ok: true, data: json }
+    const json = (await res.json()) as T;
+    return { ok: true, data: json };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'unknown error'
-    return { ok: false, data: null, error: message }
+    const message = err instanceof Error ? err.message : 'unknown error';
+    return { ok: false, data: null, error: message };
   }
 }
-
-

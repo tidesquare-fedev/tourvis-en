@@ -1,5 +1,4 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Reservation {
   reservationNumber: string;
@@ -32,7 +31,9 @@ export const ContactInfo = ({ reservation }: ContactInfoProps) => {
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-gray-600">Primary Contact:</span>
-            <span>{reservation.firstName} {reservation.lastName}</span>
+            <span>
+              {reservation.firstName} {reservation.lastName}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Email:</span>
