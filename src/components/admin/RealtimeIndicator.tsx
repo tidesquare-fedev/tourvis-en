@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import { Badge } from '@/components/ui/badge'
-import { Wifi, WifiOff } from 'lucide-react'
+import { Badge } from '@/components/ui/badge';
+import { Wifi, WifiOff } from 'lucide-react';
 
 interface RealtimeIndicatorProps {
-  isConnected: boolean
+  isConnected: boolean;
 }
 
 export function RealtimeIndicator({ isConnected }: RealtimeIndicatorProps) {
@@ -26,5 +26,5 @@ export function RealtimeIndicator({ isConnected }: RealtimeIndicatorProps) {
         </>
       )}
     </div>
-  )
+  );
 }

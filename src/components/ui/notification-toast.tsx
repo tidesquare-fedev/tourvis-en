@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react'
-import { useNotificationStore, Notification } from '@/store/notification-store'
-import { Button } from './button'
-import { cn } from '@/lib/utils'
+import { useEffect } from 'react';
+import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { useNotificationStore, Notification } from '@/store/notification-store';
+import { Button } from './button';
+import { cn } from '@/lib/utils';
 
 interface NotificationToastProps {
-  notification: Notification
-  onRemove: (id: string) => void
+  notification: Notification;
+  onRemove: (id: string) => void;
 }
 
 const iconMap = {
@@ -16,33 +16,36 @@ const iconMap = {
   error: AlertCircle,
   warning: AlertTriangle,
   info: Info,
-}
+};
 
 const colorMap = {
   success: 'bg-green-50 border-green-200 text-green-800',
   error: 'bg-red-50 border-red-200 text-red-800',
   warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
   info: 'bg-blue-50 border-blue-200 text-blue-800',
-}
+};
 
-export function NotificationToast({ notification, onRemove }: NotificationToastProps) {
-  const Icon = iconMap[notification.type]
+export function NotificationToast({
+  notification,
+  onRemove,
+}: NotificationToastProps) {
+  const Icon = iconMap[notification.type];
 
   useEffect(() => {
     if (notification.duration !== 0) {
       const timer = setTimeout(() => {
-        onRemove(notification.id)
-      }, notification.duration || 5000)
+        onRemove(notification.id);
+      }, notification.duration || 5000);
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);
     }
-  }, [notification.id, notification.duration, onRemove])
+  }, [notification.id, notification.duration, onRemove]);
 
   return (
     <div
       className={cn(
         'fixed bottom-4 right-4 max-w-sm w-full bg-white rounded-lg shadow-lg border p-4 z-50 animate-slide-in-right',
-        colorMap[notification.type]
+        colorMap[notification.type],
       )}
     >
       <div className="flex items-start space-x-3">
@@ -76,15 +79,15 @@ export function NotificationToast({ notification, onRemove }: NotificationToastP
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
 export function NotificationContainer() {
-  const { notifications, removeNotification } = useNotificationStore()
+  const { notifications, removeNotification } = useNotificationStore();
 
   return (
     <div className="fixed bottom-4 right-4 space-y-2 z-50">
-      {notifications.map((notification) => (
+      {notifications.map(notification => (
         <NotificationToast
           key={notification.id}
           notification={notification}
@@ -92,5 +95,5 @@ export function NotificationContainer() {
         />
       ))}
     </div>
-  )
+  );
 }

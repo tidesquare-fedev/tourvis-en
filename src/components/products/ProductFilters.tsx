@@ -1,7 +1,6 @@
-
-import { LocationFilter } from "./LocationFilter";
-import { CategoryFilter } from "./CategoryFilter";
-import { PriceFilter } from "./PriceFilter";
+import { CategoryFilter } from './CategoryFilter';
+import { LocationFilter } from './LocationFilter';
+import { PriceFilter } from './PriceFilter';
 
 interface FiltersState {
   locations: string[];
@@ -18,8 +17,18 @@ interface ProductFiltersProps {
   priceMax?: number;
 }
 
-export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dynamicLocations, priceMin, priceMax }: ProductFiltersProps) => {
-  const updateFilter = (key: keyof FiltersState, value: any) => {
+export const ProductFilters = ({
+  filters,
+  onFiltersChange,
+  dynamicCategories,
+  dynamicLocations,
+  priceMin,
+  priceMax,
+}: ProductFiltersProps) => {
+  const updateFilter = (
+    key: keyof FiltersState,
+    value: string[] | string | [number, number],
+  ) => {
     onFiltersChange({
       ...filters,
       [key]: value,
@@ -33,17 +42,17 @@ export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dy
         {/* 카테고리 필터 - 전체 너비 */}
         <CategoryFilter
           value={filters.category}
-          onChange={(value) => updateFilter('category', value)}
+          onChange={value => updateFilter('category', value)}
           options={dynamicCategories}
           variant="pills"
         />
-        
+
         {/* 가격과 위치 필터 - 한 줄로 배치 */}
         <div className="flex gap-3">
           <div className="flex-1">
             <PriceFilter
               value={filters.priceRange}
-              onChange={(value) => updateFilter('priceRange', value)}
+              onChange={value => updateFilter('priceRange', value)}
               min={priceMin}
               max={priceMax}
             />
@@ -51,7 +60,7 @@ export const ProductFilters = ({ filters, onFiltersChange, dynamicCategories, dy
           <div className="flex-1">
             <LocationFilter
               value={filters.locations}
-              onChange={(value) => updateFilter('locations', value)}
+              onChange={value => updateFilter('locations', value)}
               options={dynamicLocations}
             />
           </div>

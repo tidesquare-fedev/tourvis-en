@@ -1,7 +1,6 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle } from 'lucide-react';
 
 interface Reservation {
   reservationNumber: string;
@@ -43,7 +42,9 @@ export const ReservationHeader = ({ reservation }: ReservationHeaderProps) => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Reservation Number:</span>
-                <span className="font-medium">{reservation.reservationNumber}</span>
+                <span className="font-medium">
+                  {reservation.reservationNumber}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Booking Date:</span>
@@ -59,13 +60,15 @@ export const ReservationHeader = ({ reservation }: ReservationHeaderProps) => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <h4 className="font-semibold mb-3">Customer Information</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Name:</span>
-                <span>{reservation.firstName} {reservation.lastName}</span>
+                <span>
+                  {reservation.firstName} {reservation.lastName}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Email:</span>
@@ -82,11 +85,13 @@ export const ReservationHeader = ({ reservation }: ReservationHeaderProps) => {
             </div>
           </div>
         </div>
-        
+
         {reservation.specialRequests && (
           <div className="mt-6 pt-6 border-t">
             <h4 className="font-semibold mb-2">Special Requests</h4>
-            <p className="text-sm text-gray-600">{reservation.specialRequests}</p>
+            <p className="text-sm text-gray-600">
+              {reservation.specialRequests}
+            </p>
           </div>
         )}
       </CardContent>

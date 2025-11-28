@@ -25,7 +25,7 @@ class RateLimiter {
       // 새로운 윈도우 시작
       this.requests.set(key, {
         count: 1,
-        resetTime: now + this.config.windowMs
+        resetTime: now + this.config.windowMs,
       });
       return true;
     }
@@ -41,7 +41,7 @@ class RateLimiter {
   getRemainingTime(key: string): number {
     const record = this.requests.get(key);
     if (!record) return 0;
-    
+
     const now = Date.now();
     return Math.max(0, record.resetTime - now);
   }
@@ -50,11 +50,11 @@ class RateLimiter {
 // TNA API용 Rate Limiter (분당 30회 제한)
 export const tnaRateLimiter = new RateLimiter({
   maxRequests: 30,
-  windowMs: 60 * 1000 // 1분
+  windowMs: 60 * 1000, // 1분
 });
 
 // 일반 API용 Rate Limiter (분당 100회 제한)
 export const generalRateLimiter = new RateLimiter({
   maxRequests: 100,
-  windowMs: 60 * 1000 // 1분
+  windowMs: 60 * 1000, // 1분
 });

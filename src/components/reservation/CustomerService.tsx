@@ -1,8 +1,7 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
-import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export const CustomerService = () => {
   return (
@@ -16,7 +15,10 @@ export const CustomerService = () => {
             Business Hours: Weekdays 10:00 AM - 06:00 PM (Korea Standard Time)
           </p>
           <Link href="/inquiry">
-            <Button variant="outline" className="flex items-center justify-center space-x-2 w-full">
+            <Button
+              variant="outline"
+              className="flex items-center justify-center space-x-2 w-full"
+            >
               <MessageCircle className="w-4 h-4" />
               <span>Make Inquiry</span>
             </Button>

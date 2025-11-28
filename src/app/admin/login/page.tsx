@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { User, Loader2 } from 'lucide-react'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { User, Loader2 } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const router = useRouter()
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
     try {
       const response = await fetch('/en/api/admin/auth/login', {
@@ -23,21 +23,21 @@ export default function AdminLoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.success) {
-        router.push('/admin')
+        router.push('/admin');
       } else {
-        setError(data.error || '로그인에 실패했습니다.')
+        setError(data.error || '로그인에 실패했습니다.');
       }
     } catch (error) {
-      setError('로그인 중 오류가 발생했습니다.')
+      setError('로그인 중 오류가 발생했습니다.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -58,10 +58,10 @@ export default function AdminLoginPage() {
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={e => setUsername(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               placeholder="Enter username"
-              onKeyPress={(e) => e.key === 'Enter' && handleSubmit(e)}
+              onKeyPress={e => e.key === 'Enter' && handleSubmit(e)}
             />
           </div>
 
@@ -72,10 +72,10 @@ export default function AdminLoginPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               placeholder="Enter password"
-              onKeyPress={(e) => e.key === 'Enter' && handleSubmit(e)}
+              onKeyPress={e => e.key === 'Enter' && handleSubmit(e)}
             />
           </div>
 
@@ -106,5 +106,5 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

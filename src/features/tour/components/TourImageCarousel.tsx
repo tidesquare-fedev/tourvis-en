@@ -1,16 +1,22 @@
-"use client"
+'use client';
 
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 type TourImageCarouselProps = {
-  images: string[]
-  title: string
-}
+  images: string[];
+  title: string;
+};
 
 export function TourImageCarousel({ images, title }: TourImageCarouselProps) {
-  const imageGroups: string[][] = []
+  const imageGroups: string[][] = [];
   for (let i = 0; i < images.length; i += 2) {
-    imageGroups.push(images.slice(i, i + 2))
+    imageGroups.push(images.slice(i, i + 2));
   }
 
   return (
@@ -36,7 +42,5 @@ export function TourImageCarousel({ images, title }: TourImageCarouselProps) {
         <CarouselNext />
       </Carousel>
     </div>
-  )
+  );
 }
-
-

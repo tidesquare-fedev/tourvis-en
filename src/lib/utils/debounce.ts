@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef } from 'react';
 
 /**
  * 디바운스된 함수를 생성하는 훅
@@ -8,22 +8,22 @@ import { useCallback, useRef } from 'react'
  */
 export function useDebounce<T extends (...args: any[]) => any>(
   callback: T,
-  delay: number
+  delay: number,
 ): T {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   return useCallback(
     ((...args: Parameters<T>) => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+        clearTimeout(timeoutRef.current);
       }
-      
+
       timeoutRef.current = setTimeout(() => {
-        callback(...args)
-      }, delay)
+        callback(...args);
+      }, delay);
     }) as T,
-    [callback, delay]
-  )
+    [callback, delay],
+  );
 }
 
 /**
@@ -34,19 +34,19 @@ export function useDebounce<T extends (...args: any[]) => any>(
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout | null = null
+  let timeoutId: NodeJS.Timeout | null = null;
 
   return (...args: Parameters<T>) => {
     if (timeoutId) {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
     }
-    
+
     timeoutId = setTimeout(() => {
-      func(...args)
-    }, delay)
-  }
+      func(...args);
+    }, delay);
+  };
 }
 
 /**
@@ -57,23 +57,26 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
-  let lastCall = 0
-  let timeoutId: NodeJS.Timeout | null = null
+  let lastCall = 0;
+  let timeoutId: NodeJS.Timeout | null = null;
 
   return (...args: Parameters<T>) => {
-    const now = Date.now()
-    
+    const now = Date.now();
+
     if (now - lastCall >= delay) {
-      lastCall = now
-      func(...args)
+      lastCall = now;
+      func(...args);
     } else if (!timeoutId) {
-      timeoutId = setTimeout(() => {
-        lastCall = Date.now()
-        func(...args)
-        timeoutId = null
-      }, delay - (now - lastCall))
+      timeoutId = setTimeout(
+        () => {
+          lastCall = Date.now();
+          func(...args);
+          timeoutId = null;
+        },
+        delay - (now - lastCall),
+      );
     }
-  }
+  };
 }

@@ -12,13 +12,13 @@ class Cache {
     const ttl = ttlMs || this.defaultTTL;
     this.cache.set(key, {
       data,
-      expiresAt: Date.now() + ttl
+      expiresAt: Date.now() + ttl,
     });
   }
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
@@ -34,12 +34,12 @@ class Cache {
   has(key: string): boolean {
     const entry = this.cache.get(key);
     if (!entry) return false;
-    
+
     if (Date.now() > entry.expiresAt) {
       this.cache.delete(key);
       return false;
     }
-    
+
     return true;
   }
 
@@ -66,11 +66,17 @@ class Cache {
 export const cache = new Cache();
 
 // 캐시 키 생성 헬퍼
-export const createCacheKey = (prefix: string, ...parts: (string | number)[]): string => {
+export const createCacheKey = (
+  prefix: string,
+  ...parts: (string | number)[]
+): string => {
   return `${prefix}:${parts.join(':')}`;
 };
 
 // 정기적으로 캐시 정리 (5분마다)
-setInterval(() => {
-  cache.cleanup();
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    cache.cleanup();
+  },
+  5 * 60 * 1000,
+);

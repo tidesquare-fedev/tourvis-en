@@ -9,9 +9,9 @@
  * @returns 이모지가 제거된 텍스트
  */
 export function stripEmoji(text: string): string {
-  const surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g
-  const variationSel = /\uFE0F/g
-  return text.replace(surrogatePair, '').replace(variationSel, '').trim()
+  const surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
+  const variationSel = /\uFE0F/g;
+  return text.replace(surrogatePair, '').replace(variationSel, '').trim();
 }
 
 /**
@@ -20,9 +20,9 @@ export function stripEmoji(text: string): string {
  * @returns 추출된 이모지 또는 빈 문자열
  */
 export function extractFirstEmoji(text: string): string {
-  const surrogatePairOne = /[\uD800-\uDBFF][\uDC00-\uDFFF]/
-  const match = text.match(surrogatePairOne)
-  return match ? match[0] : ''
+  const surrogatePairOne = /[\uD800-\uDBFF][\uDC00-\uDFFF]/;
+  const match = text.match(surrogatePairOne);
+  return match ? match[0] : '';
 }
 
 /**
@@ -32,12 +32,12 @@ export function extractFirstEmoji(text: string): string {
  * @returns 변환된 숫자 또는 기본값
  */
 export function safeParseNumber(value: any, defaultValue: number = 0): number {
-  if (typeof value === 'number') return value
+  if (typeof value === 'number') return value;
   if (typeof value === 'string') {
-    const parsed = Number(value)
-    return isNaN(parsed) ? defaultValue : parsed
+    const parsed = Number(value);
+    return isNaN(parsed) ? defaultValue : parsed;
   }
-  return defaultValue
+  return defaultValue;
 }
 
 /**
@@ -47,12 +47,12 @@ export function safeParseNumber(value: any, defaultValue: number = 0): number {
  * @returns 변환된 정수 또는 기본값
  */
 export function safeParseInt(value: any, defaultValue: number = 0): number {
-  if (typeof value === 'number') return Math.floor(value)
+  if (typeof value === 'number') return Math.floor(value);
   if (typeof value === 'string') {
-    const parsed = parseInt(value, 10)
-    return isNaN(parsed) ? defaultValue : parsed
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? defaultValue : parsed;
   }
-  return defaultValue
+  return defaultValue;
 }
 
 /**
@@ -61,14 +61,17 @@ export function safeParseInt(value: any, defaultValue: number = 0): number {
  * @param defaultValue - 변환 실패 시 기본값
  * @returns 변환된 불린 또는 기본값
  */
-export function safeParseBoolean(value: any, defaultValue: boolean = false): boolean {
-  if (typeof value === 'boolean') return value
+export function safeParseBoolean(
+  value: any,
+  defaultValue: boolean = false,
+): boolean {
+  if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
-    const lower = value.toLowerCase()
-    return lower === 'true' || lower === '1' || lower === 'yes'
+    const lower = value.toLowerCase();
+    return lower === 'true' || lower === '1' || lower === 'yes';
   }
-  if (typeof value === 'number') return value !== 0
-  return defaultValue
+  if (typeof value === 'number') return value !== 0;
+  return defaultValue;
 }
 
 /**
@@ -77,7 +80,7 @@ export function safeParseBoolean(value: any, defaultValue: boolean = false): boo
  * @returns 유효한 문자열인지 여부
  */
 export function isValidString(value: any): value is string {
-  return typeof value === 'string' && value.trim().length > 0
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
@@ -87,6 +90,6 @@ export function isValidString(value: any): value is string {
  * @returns 변환된 문자열
  */
 export function safeString(value: any, defaultValue: string = ''): string {
-  if (isValidString(value)) return value
-  return defaultValue
+  if (isValidString(value)) return value;
+  return defaultValue;
 }

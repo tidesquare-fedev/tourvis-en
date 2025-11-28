@@ -3,30 +3,30 @@
  * 로딩 상태를 표시하는 스켈레톤 컴포넌트들
  */
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   /** 애니메이션 활성화 여부 */
-  animate?: boolean
+  animate?: boolean;
   /** 반올림 정도 */
-  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   /** 높이 */
-  height?: string | number
+  height?: string | number;
   /** 너비 */
-  width?: string | number
+  width?: string | number;
 }
 
 /**
  * 기본 스켈레톤 컴포넌트
  */
-export function Skeleton({ 
-  className, 
-  animate = true, 
+export function Skeleton({
+  className,
+  animate = true,
   rounded = 'md',
   height,
   width,
   style,
-  ...props 
+  ...props
 }: SkeletonProps) {
   const roundedClass = {
     none: 'rounded-none',
@@ -35,7 +35,7 @@ export function Skeleton({
     lg: 'rounded-lg',
     xl: 'rounded-xl',
     full: 'rounded-full',
-  }[rounded]
+  }[rounded];
 
   return (
     <div
@@ -43,7 +43,7 @@ export function Skeleton({
         'bg-gray-200 dark:bg-gray-700',
         roundedClass,
         animate && 'animate-pulse',
-        className
+        className,
       )}
       style={{
         height: height,
@@ -52,7 +52,7 @@ export function Skeleton({
       }}
       {...props}
     />
-  )
+  );
 }
 
 /**
@@ -72,7 +72,7 @@ export function ProductCardSkeleton() {
         <Skeleton height={24} width="50%" />
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -85,18 +85,18 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
         <ProductCardSkeleton key={i} />
       ))}
     </div>
-  )
+  );
 }
 
 /**
  * 캐러셀 스켈레톤
  */
-export function CarouselSkeleton({ 
-  itemCount = 4, 
-  showArrows = true 
-}: { 
-  itemCount?: number
-  showArrows?: boolean 
+export function CarouselSkeleton({
+  itemCount = 4,
+  showArrows = true,
+}: {
+  itemCount?: number;
+  showArrows?: boolean;
 }) {
   return (
     <div className="w-full">
@@ -114,7 +114,7 @@ export function CarouselSkeleton({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 /**
@@ -140,7 +140,7 @@ export function ReviewSkeleton() {
         <Skeleton height={16} width="60%" />
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -153,18 +153,18 @@ export function ReviewListSkeleton({ count = 5 }: { count?: number }) {
         <ReviewSkeleton key={i} />
       ))}
     </div>
-  )
+  );
 }
 
 /**
  * 테이블 스켈레톤
  */
-export function TableSkeleton({ 
-  rows = 5, 
-  columns = 4 
-}: { 
-  rows?: number
-  columns?: number 
+export function TableSkeleton({
+  rows = 5,
+  columns = 4,
+}: {
+  rows?: number;
+  columns?: number;
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -187,7 +187,7 @@ export function TableSkeleton({
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -207,7 +207,7 @@ export function FormSkeleton({ fieldCount = 4 }: { fieldCount?: number }) {
         <Skeleton height={40} width={100} />
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -220,7 +220,7 @@ export function NavigationSkeleton() {
         <Skeleton key={i} height={20} width={80} />
       ))}
     </div>
-  )
+  );
 }
 
 /**
@@ -236,7 +236,7 @@ export function SidebarSkeleton() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 /**
@@ -247,7 +247,10 @@ export function DashboardSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div
+            key={i}
+            className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
+          >
             <Skeleton height={20} width={100} className="mb-2" />
             <Skeleton height={32} width={60} />
           </div>
@@ -264,5 +267,5 @@ export function DashboardSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }

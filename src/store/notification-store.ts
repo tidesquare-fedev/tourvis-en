@@ -1,32 +1,50 @@
-import { create } from 'zustand'
-import { devtools } from 'zustand/middleware'
+import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 
 export interface Notification {
-  id: string
-  type: 'success' | 'error' | 'warning' | 'info'
-  title: string
-  message: string
-  timestamp: Date
-  duration?: number // 자동 제거 시간 (ms), 0이면 수동으로만 제거
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  title: string;
+  message: string;
+  timestamp: Date;
+  duration?: number; // 자동 제거 시간 (ms), 0이면 수동으로만 제거
   actions?: Array<{
-    label: string
-    action: () => void
-  }>
+    label: string;
+    action: () => void;
+  }>;
 }
 
 interface NotificationState {
-  notifications: Notification[]
-  
+  notifications: Notification[];
+
   // 액션
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => string
-  removeNotification: (id: string) => void
-  clearAll: () => void
-  
+  addNotification: (
+    notification: Omit<Notification, 'id' | 'timestamp'>,
+  ) => string;
+  removeNotification: (id: string) => void;
+  clearAll: () => void;
+
   // 헬퍼 메서드
-  success: (title: string, message: string, options?: Partial<Notification>) => string
-  error: (title: string, message: string, options?: Partial<Notification>) => string
-  warning: (title: string, message: string, options?: Partial<Notification>) => string
-  info: (title: string, message: string, options?: Partial<Notification>) => string
+  success: (
+    title: string,
+    message: string,
+    options?: Partial<Notification>,
+  ) => string;
+  error: (
+    title: string,
+    message: string,
+    options?: Partial<Notification>,
+  ) => string;
+  warning: (
+    title: string,
+    message: string,
+    options?: Partial<Notification>,
+  ) => string;
+  info: (
+    title: string,
+    message: string,
+    options?: Partial<Notification>,
+  ) => string;
 }
 
 export const useNotificationStore = create<NotificationState>()(
@@ -34,32 +52,33 @@ export const useNotificationStore = create<NotificationState>()(
     (set, get) => ({
       notifications: [],
 
-      addNotification: (notification) => {
-        const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      addNotification: notification => {
+        const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const newNotification: Notification = {
           ...notification,
           id,
           timestamp: new Date(),
-        }
+        };
 
-        set((state) => ({
+        set(state => ({
           notifications: [...state.notifications, newNotification],
-        }))
+        }));
 
         // 자동 제거 설정
         if (newNotification.duration !== 0) {
-          const duration = newNotification.duration || 5000
+          const duration = newNotification.duration || 5000;
           setTimeout(() => {
-            get().removeNotification(id)
-          }, duration)
+            get().removeNotification(id);
+          }, duration);
         }
 
-        return id
+        return id;
       },
 
-      removeNotification: (id) => set((state) => ({
-        notifications: state.notifications.filter(n => n.id !== id),
-      })),
+      removeNotification: id =>
+        set(state => ({
+          notifications: state.notifications.filter(n => n.id !== id),
+        })),
 
       clearAll: () => set({ notifications: [] }),
 
@@ -70,7 +89,7 @@ export const useNotificationStore = create<NotificationState>()(
           title,
           message,
           ...options,
-        })
+        });
       },
 
       error: (title, message, options = {}) => {
@@ -80,7 +99,7 @@ export const useNotificationStore = create<NotificationState>()(
           message,
           duration: 0, // 에러는 수동으로 제거
           ...options,
-        })
+        });
       },
 
       warning: (title, message, options = {}) => {
@@ -89,7 +108,7 @@ export const useNotificationStore = create<NotificationState>()(
           title,
           message,
           ...options,
-        })
+        });
       },
 
       info: (title, message, options = {}) => {
@@ -98,11 +117,11 @@ export const useNotificationStore = create<NotificationState>()(
           title,
           message,
           ...options,
-        })
+        });
       },
     }),
     {
       name: 'notification-store',
-    }
-  )
-)
+    },
+  ),
+);

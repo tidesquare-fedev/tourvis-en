@@ -1,26 +1,29 @@
-import type { TourOptionData } from '@/types/tour'
+import type { TourOptionData } from '@/types/tour';
 
 export type FetchDateOptionsParams = {
-  productId: string
-  date: string // YYYY-MM-DD
-}
+  productId: string;
+  date: string; // YYYY-MM-DD
+};
 
 export type FetchPeriodOptionsParams = {
-  productId: string
-}
+  productId: string;
+};
 
 export type FetchOptionPriceParams = {
-  productId: string
-  optionCode: string
-  startDate: string // YYYY-MM-DD
-  endDate: string // YYYY-MM-DD
-}
+  productId: string;
+  optionCode: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+};
 
 // NOTE: Mock API layer – replace with real API calls later
 
-export async function fetchDateOptions({ productId, date }: FetchDateOptionsParams): Promise<TourOptionData> {
+export async function fetchDateOptions({
+  productId,
+  date,
+}: FetchDateOptionsParams): Promise<TourOptionData> {
   // Simulate network delay
-  await new Promise((r) => setTimeout(r, 150))
+  await new Promise(r => setTimeout(r, 150));
   // Return deterministic mock options based on productId/date
   return {
     per_min: 1,
@@ -96,11 +99,13 @@ export async function fetchDateOptions({ productId, date }: FetchDateOptionsPara
         resell_is: false,
       },
     ],
-  }
+  };
 }
 
-export async function fetchPeriodOptions({ productId }: FetchPeriodOptionsParams): Promise<TourOptionData> {
-  await new Promise((r) => setTimeout(r, 120))
+export async function fetchPeriodOptions({
+  productId,
+}: FetchPeriodOptionsParams): Promise<TourOptionData> {
+  await new Promise(r => setTimeout(r, 120));
   return {
     per_min: 1,
     per_max: 10,
@@ -175,15 +180,24 @@ export async function fetchPeriodOptions({ productId }: FetchPeriodOptionsParams
         resell_is: false,
       },
     ],
-  }
+  };
 }
 
-export async function fetchOptionPrice({ productId, optionCode, startDate, endDate }: FetchOptionPriceParams): Promise<{ price: number }> {
-  await new Promise((r) => setTimeout(r, 80))
+export async function fetchOptionPrice({
+  productId,
+  optionCode,
+  startDate,
+  endDate,
+}: FetchOptionPriceParams): Promise<{ price: number }> {
+  await new Promise(r => setTimeout(r, 80));
   // Simple deterministic mock: hash-like by option code/date length
-  const base = optionCode.length * 1000
-  const days = Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)))
-  return { price: base * days + 1234 }
+  const base = optionCode.length * 1000;
+  const days = Math.max(
+    1,
+    Math.ceil(
+      (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+        (1000 * 60 * 60 * 24),
+    ),
+  );
+  return { price: base * days + 1234 };
 }
-
-

@@ -1,6 +1,5 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface Reservation {
   reservationNumber: string;
@@ -43,7 +42,9 @@ export const PaymentInfo = ({ reservation }: PaymentInfoProps) => {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Transaction ID:</span>
-            <span className="font-mono text-sm">TXN-{reservation.reservationNumber}</span>
+            <span className="font-mono text-sm">
+              TXN-{reservation.reservationNumber}
+            </span>
           </div>
           <div className="flex justify-between font-semibold text-lg pt-4 border-t">
             <span>Total Paid:</span>

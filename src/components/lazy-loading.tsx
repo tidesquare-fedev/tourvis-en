@@ -1,8 +1,9 @@
-'use client'
+'use client';
 
-import { Suspense, lazy, ComponentType } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card';
+import type { AdminSession, Inquiry } from '@/types/admin';
+import { Loader2 } from 'lucide-react';
+import { ComponentType, Suspense, lazy } from 'react';
 
 // 로딩 스피너 컴포넌트
 function LoadingSpinner({ message = '로딩 중...' }: { message?: string }) {
@@ -13,7 +14,7 @@ function LoadingSpinner({ message = '로딩 중...' }: { message?: string }) {
         <p className="text-sm text-gray-500">{message}</p>
       </div>
     </div>
-  )
+  );
 }
 
 // 카드 형태의 로딩 스켈레톤
@@ -28,7 +29,7 @@ function CardSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // 리스트 형태의 로딩 스켈레톤
@@ -39,105 +40,142 @@ function ListSkeleton({ count = 3 }: { count?: number }) {
         <CardSkeleton key={i} />
       ))}
     </div>
-  )
+  );
 }
 
 // Lazy Loading 래퍼 컴포넌트
 interface LazyWrapperProps {
-  fallback?: React.ReactNode
-  errorFallback?: React.ReactNode
+  fallback?: React.ReactNode;
+  errorFallback?: React.ReactNode;
 }
 
-export function withLazyLoading<P = {}>(
+// eslint-disable-next-line react-refresh/only-export-components
+export function withLazyLoading<P extends object = object>(
   importFunc: () => Promise<{ default: ComponentType<P> }>,
-  options: LazyWrapperProps = {}
+  options: LazyWrapperProps = {},
 ) {
-  const LazyComponent = lazy(importFunc)
-  
+  const LazyComponent = lazy(importFunc);
+
   return function LazyWrapper(props: P) {
     return (
       <Suspense fallback={options.fallback || <LoadingSpinner />}>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <LazyComponent {...(props as any)} />
       </Suspense>
-    )
-  }
+    );
+  };
 }
 
 // 관리자 페이지용 Lazy Loading
 export const LazyAdminDashboard = withLazyLoading(
   () => import('@/app/admin/page'),
   {
-    fallback: <LoadingSpinner message="관리자 대시보드를 불러오는 중..." />
-  }
-)
+    fallback: <LoadingSpinner message="관리자 대시보드를 불러오는 중..." />,
+  },
+);
 
 // 문의 상세 페이지용 Lazy Loading
-export const LazyInquiryDetail = withLazyLoading(
-  () => import('@/components/admin/InquiryDetail').then(module => ({ default: module.InquiryDetail })),
+interface InquiryDetailProps {
+  inquiry: Inquiry;
+  onInquiryUpdate: (inquiry: Inquiry) => void;
+}
+
+export const LazyInquiryDetail = withLazyLoading<InquiryDetailProps>(
+  () =>
+    import('@/components/admin/InquiryDetail').then(module => ({
+      default: module.InquiryDetail,
+    })),
   {
-    fallback: <CardSkeleton />
-  }
-)
+    fallback: <CardSkeleton />,
+  },
+);
 
 // 문의 목록용 Lazy Loading
-export const LazyInquiryList = withLazyLoading(
-  () => import('@/components/admin/InquiryList').then(module => ({ default: module.InquiryList })),
+interface InquiryListProps {
+  inquiries: Inquiry[];
+  onInquirySelect: (inquiry: Inquiry) => void;
+  selectedInquiryId?: string;
+}
+
+export const LazyInquiryList = withLazyLoading<InquiryListProps>(
+  () =>
+    import('@/components/admin/InquiryList').then(module => ({
+      default: module.InquiryList,
+    })),
   {
-    fallback: <ListSkeleton count={5} />
-  }
-)
+    fallback: <ListSkeleton count={5} />,
+  },
+);
 
 // 계정 관리용 Lazy Loading
-export const LazyAccountManagement = withLazyLoading(
-  () => import('@/components/admin/AccountManagement').then(module => ({ default: module.AccountManagement })),
+interface AccountManagementProps {
+  currentAdmin: AdminSession;
+}
+
+export const LazyAccountManagement = withLazyLoading<AccountManagementProps>(
+  () =>
+    import('@/components/admin/AccountManagement').then(module => ({
+      default: module.AccountManagement,
+    })),
   {
-    fallback: <CardSkeleton />
-  }
-)
+    fallback: <CardSkeleton />,
+  },
+);
 
 // 이미지 Lazy Loading 컴포넌트
 interface LazyImageProps {
-  src: string
-  alt: string
-  className?: string
-  placeholder?: string
+  src: string;
+  alt: string;
+  className?: string;
+  placeholder?: string;
 }
 
-export function LazyImage({ src, alt, className, placeholder }: LazyImageProps) {
+export function LazyImage({
+  src,
+  alt,
+  className,
+  placeholder,
+}: LazyImageProps) {
   return (
-    <Suspense fallback={
-      <div className={`bg-gray-200 animate-pulse ${className}`}>
-        {placeholder && <span className="text-gray-400 text-sm">{placeholder}</span>}
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className={`bg-gray-200 animate-pulse ${className}`}>
+          {placeholder && (
+            <span className="text-gray-400 text-sm">{placeholder}</span>
+          )}
+        </div>
+      }
+    >
       <img
         src={src}
         alt={alt}
         className={className}
         loading="lazy"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement
-          target.src = '/placeholder.svg'
+        onError={e => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/placeholder.svg';
         }}
       />
     </Suspense>
-  )
+  );
 }
 
 // 코드 스플리팅을 위한 동적 import 헬퍼
-export function createLazyComponent<T extends ComponentType<any>>(
+// eslint-disable-next-line react-refresh/only-export-components
+export function createLazyComponent<T extends ComponentType<object>>(
   importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ReactNode
+  fallback?: React.ReactNode,
 ) {
-  const LazyComponent = lazy(importFunc)
-  
+  const LazyComponent = lazy(importFunc);
+
   return function WrappedComponent(props: React.ComponentProps<T>) {
     return (
       <Suspense fallback={fallback || <LoadingSpinner />}>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <LazyComponent {...(props as any)} />
       </Suspense>
-    )
-  }
+    );
+  };
 }
 
-export { LoadingSpinner, CardSkeleton, ListSkeleton }
+export { CardSkeleton, ListSkeleton, LoadingSpinner };

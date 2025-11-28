@@ -1,50 +1,59 @@
-"use client"
+'use client';
 
-import { useState } from 'react'
-import { addMonths, format, startOfMonth, isBefore } from 'date-fns'
-import { enUS } from 'date-fns/locale'
-import { Calendar } from '@/components/ui/calendar'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState } from 'react';
+import { addMonths, format, startOfMonth, isBefore } from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 type TourDatePickerProps = {
-  selectedDate?: Date
-  onSelect: (date?: Date) => void
-  mode?: 'single' | 'range'
-  selectedRange?: { from?: Date; to?: Date }
-  onRangeSelect?: (range?: { from?: Date; to?: Date }) => void
-  availableDates?: string[]
-  dateStates?: Record<string, string>
-}
+  selectedDate?: Date;
+  onSelect: (date?: Date) => void;
+  mode?: 'single' | 'range';
+  selectedRange?: { from?: Date; to?: Date };
+  onRangeSelect?: (range?: { from?: Date; to?: Date }) => void;
+  availableDates?: string[];
+  dateStates?: Record<string, string>;
+};
 
-export function TourDatePicker({ selectedDate, onSelect, mode = 'single', selectedRange, onRangeSelect, availableDates, dateStates }: TourDatePickerProps) {
-  const [baseMonth, setBaseMonth] = useState<Date>(new Date())
-  const currentMonth = baseMonth
-  const nextMonth = addMonths(baseMonth, 1)
-  const weekdayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+export function TourDatePicker({
+  selectedDate,
+  onSelect,
+  mode = 'single',
+  selectedRange,
+  onRangeSelect,
+  availableDates,
+  dateStates,
+}: TourDatePickerProps) {
+  const [baseMonth, setBaseMonth] = useState<Date>(new Date());
+  const currentMonth = baseMonth;
+  const nextMonth = addMonths(baseMonth, 1);
+  const weekdayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
   const formatters = {
     formatWeekdayName: (date: Date) => weekdayLabels[date.getDay()],
-  }
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const minMonth = startOfMonth(today)
-  const canGoPrev = !isBefore(startOfMonth(baseMonth), minMonth)
-  const availableSet = new Set((availableDates || []).map((s) => s.trim()))
+  };
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const minMonth = startOfMonth(today);
+  const canGoPrev = !isBefore(startOfMonth(baseMonth), minMonth);
+  const availableSet = new Set((availableDates || []).map(s => s.trim()));
   const isAllowedDate = (date: Date) => {
     // Past dates disabled
-    if (date < today) return false
+    if (date < today) return false;
     // If availableDates provided (DATE type), only allow those
     if (availableSet.size > 0) {
-      const key = format(date, 'yyyy-MM-dd')
-      if (!availableSet.has(key)) return false
-      const state = dateStates?.[key]
+      const key = format(date, 'yyyy-MM-dd');
+      if (!availableSet.has(key)) return false;
+      const state = dateStates?.[key];
       // 상태가 CLOSED/UNAVAILABLE 등일 때 비활성화
-      if (state && /close|sold|full|unavail/i.test(state)) return false
-      return true
+      if (state && /close|sold|full|unavail/i.test(state)) return false;
+      return true;
     }
-    return true
-  }
+    return true;
+  };
 
-  const clampMonth = (m: Date) => (isBefore(startOfMonth(m), minMonth) ? minMonth : m)
+  const clampMonth = (m: Date) =>
+    isBefore(startOfMonth(m), minMonth) ? minMonth : m;
 
   return (
     <div className="overflow-visible">
@@ -72,12 +81,18 @@ export function TourDatePicker({ selectedDate, onSelect, mode = 'single', select
         <div className="flex flex-col md:flex-row md:items-start md:justify-center gap-8 md:gap-12">
           {/* Current month */}
           <div className="w-full max-w-[420px]">
-            <h5 className="text-base md:text-[22px] font-semibold text-center mb-2">{format(currentMonth, 'MMMM yyyy')}</h5>
+            <h5 className="text-base md:text-[22px] font-semibold text-center mb-2">
+              {format(currentMonth, 'MMMM yyyy')}
+            </h5>
             <div className="flex justify-center">
               <Calendar
                 mode={mode}
-                selected={mode === 'single' ? selectedDate : (selectedRange as any)}
-                onSelect={mode === 'single' ? (onSelect as any) : (onRangeSelect as any)}
+                selected={
+                  mode === 'single' ? selectedDate : (selectedRange as any)
+                }
+                onSelect={
+                  mode === 'single' ? (onSelect as any) : (onRangeSelect as any)
+                }
                 month={currentMonth}
                 onMonthChange={setBaseMonth}
                 locale={enUS}
@@ -100,14 +115,20 @@ export function TourDatePicker({ selectedDate, onSelect, mode = 'single', select
 
           {/* Next month (mobile 숨김) */}
           <div className="w-full max-w-[420px] hidden md:block">
-            <h5 className="text-[22px] font-semibold text-center mb-2">{format(nextMonth, 'MMMM yyyy')}</h5>
+            <h5 className="text-[22px] font-semibold text-center mb-2">
+              {format(nextMonth, 'MMMM yyyy')}
+            </h5>
             <div className="flex justify-center">
               <Calendar
                 mode={mode}
-                selected={mode === 'single' ? selectedDate : (selectedRange as any)}
-                onSelect={mode === 'single' ? (onSelect as any) : (onRangeSelect as any)}
+                selected={
+                  mode === 'single' ? selectedDate : (selectedRange as any)
+                }
+                onSelect={
+                  mode === 'single' ? (onSelect as any) : (onRangeSelect as any)
+                }
                 month={nextMonth}
-                onMonthChange={(m) => setBaseMonth(addMonths(m, -1))}
+                onMonthChange={m => setBaseMonth(addMonths(m, -1))}
                 locale={enUS}
                 showOutsideDays={false}
                 className="border-0 shadow-none"
@@ -128,7 +149,5 @@ export function TourDatePicker({ selectedDate, onSelect, mode = 'single', select
         </div>
       </div>
     </div>
-  )
+  );
 }
-
-

@@ -1,8 +1,13 @@
-
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { MapPin, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { MapPin, X } from 'lucide-react';
 
 interface LocationFilterProps {
   value: string[];
@@ -10,14 +15,30 @@ interface LocationFilterProps {
   options?: string[];
 }
 
-export const LocationFilter = ({ value, onChange, options }: LocationFilterProps) => {
+export const LocationFilter = ({
+  value,
+  onChange,
+  options,
+}: LocationFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tempValue, setTempValue] = useState<string[]>(value);
-  
-  const base = (Array.isArray(options) && options.length > 0) ? options : [
-    "Seoul","Busan","Jeju","Gyeongju","Incheon","Sokcho","Gangneung","Jeonju","Andong","Gapyeong",
-  ]
-  const locations = base.map((l) => ({ value: l, label: l }));
+
+  const base =
+    Array.isArray(options) && options.length > 0
+      ? options
+      : [
+          'Seoul',
+          'Busan',
+          'Jeju',
+          'Gyeongju',
+          'Incheon',
+          'Sokcho',
+          'Gangneung',
+          'Jeonju',
+          'Andong',
+          'Gapyeong',
+        ];
+  const locations = base.map(l => ({ value: l, label: l }));
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -53,17 +74,15 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full justify-between text-xs h-8 px-3"
         >
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
             Location
           </span>
-          <span className="text-gray-500">
-            {getDisplayText()}
-          </span>
+          <span className="text-gray-500">{getDisplayText()}</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -74,9 +93,11 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
           {/* 선택된 위치들 */}
           {tempValue.length > 0 && (
             <div className="space-y-2">
-              <div className="text-sm font-medium text-gray-700">Selected Location</div>
+              <div className="text-sm font-medium text-gray-700">
+                Selected Location
+              </div>
               <div className="flex flex-wrap gap-2">
-                {tempValue.map((location) => (
+                {tempValue.map(location => (
                   <div
                     key={location}
                     className="flex items-center gap-1 px-2 py-1 bg-[#01b7ea] text-white rounded-full text-xs"
@@ -96,7 +117,7 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
 
           {/* 위치 목록 */}
           <div className="max-h-60 overflow-y-auto space-y-1">
-            {locations.map((location) => (
+            {locations.map(location => (
               <button
                 key={location.value}
                 onClick={() => toggleLocation(location.value)}
@@ -113,10 +134,10 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
 
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={handleReset}>
-            Reset
+              Reset
             </Button>
             <Button size="sm" onClick={handleApply}>
-            Apply
+              Apply
             </Button>
           </div>
         </div>
@@ -124,4 +145,3 @@ export const LocationFilter = ({ value, onChange, options }: LocationFilterProps
     </Dialog>
   );
 };
-
