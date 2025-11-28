@@ -1,13 +1,12 @@
-import { buildApiBase } from '@/features/activity/lib/searchApi';
-import { tnaRateLimiter } from '../rate-limiter';
-import { cache, createCacheKey } from '../cache';
-import { retryWithBackoff } from '../retry';
-import {
-  requestDeduplicator,
-  createRequestKey,
-} from '../request-deduplication';
-import { tnaCircuitBreaker } from '../circuit-breaker';
 import { monitoredApiCall } from '../api-monitor';
+import { cache, createCacheKey } from '../cache';
+import { tnaCircuitBreaker } from '../circuit-breaker';
+import { tnaRateLimiter } from '../rate-limiter';
+import {
+  createRequestKey,
+  requestDeduplicator,
+} from '../request-deduplication';
+import { retryWithBackoff } from '../retry';
 
 type HeadersMap = Record<string, string>;
 
@@ -34,7 +33,7 @@ export async function getProductDetailV2(productId: string) {
   const url = `${apiBaseV2()}/product/${encodeURIComponent(productId)}`;
   const res = await fetch(url, { cache: 'no-store', headers: getHeaders() });
   if (!res.ok) throw new Error(`detail ${res.status}`);
-  return res.json() as Promise<any>;
+  return res.json() as Promise<unknown>;
 }
 
 export async function getProductDetailV2Cached(
@@ -47,7 +46,7 @@ export async function getProductDetailV2Cached(
     headers: getHeaders(),
   });
   if (!res.ok) throw new Error(`detail ${res.status}`);
-  return res.json() as Promise<any>;
+  return res.json() as Promise<unknown>;
 }
 
 export async function getProductDatesV2(productId: string, startDate?: string) {
@@ -60,7 +59,7 @@ export async function getProductDatesV2(productId: string, startDate?: string) {
     headers: getHeaders(),
   });
   if (!res.ok) throw new Error(`dates ${res.status}`);
-  return res.json() as Promise<string[] | any>;
+  return res.json() as Promise<string[] | unknown>;
 }
 
 export async function getProductOptionsDateTypeV2(
@@ -185,7 +184,7 @@ export async function getProductOptionsPeriodTypeV2(productId: string) {
         }
         throw new Error(`options-period ${res.status}`);
       }
-      return res.json() as Promise<any>;
+      return res.json() as Promise<unknown>;
     });
 
     // 성공 시 캐시에 저장 (10분 TTL - 기간형은 더 오래 캐시)
@@ -202,15 +201,15 @@ export async function getProductPriceDateTypeV2(
   productId: string,
   body: unknown,
 ) {
-  const anyBody: any = body || {};
+  const anyBody = (body as Record<string, unknown>) || {};
 
   // 캐시 키 생성 (가격은 더 짧은 TTL)
   const cacheKey = createCacheKey(
     'price-date',
     productId,
-    anyBody.product_option_code,
-    anyBody.start_date,
-    anyBody.end_date,
+    String(anyBody.product_option_code ?? ''),
+    String(anyBody.start_date ?? ''),
+    String(anyBody.end_date ?? ''),
   );
 
   // 캐시에서 먼저 확인
@@ -262,7 +261,7 @@ export async function getProductPriceDateTypeV2(
         }
         throw new Error(`price-date ${res.status}`);
       }
-      return res.json() as Promise<any>;
+      return res.json() as Promise<unknown>;
     });
 
     // 성공 시 캐시에 저장 (2분 TTL - 가격은 자주 변할 수 있음)
@@ -279,13 +278,13 @@ export async function getProductPricePeriodTypeV2(
   productId: string,
   body: unknown,
 ) {
-  const anyBody: any = body || {};
+  const anyBody = (body as Record<string, unknown>) || {};
 
   // 캐시 키 생성
   const cacheKey = createCacheKey(
     'price-period',
     productId,
-    anyBody.product_option_code,
+    String(anyBody.product_option_code ?? ''),
   );
 
   // 캐시에서 먼저 확인
@@ -328,7 +327,7 @@ export async function getProductPricePeriodTypeV2(
         }
         throw new Error(`price-period ${res.status}`);
       }
-      return res.json() as Promise<any>;
+      return res.json() as Promise<unknown>;
     });
 
     // 성공 시 캐시에 저장 (3분 TTL)

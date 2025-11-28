@@ -52,7 +52,7 @@ export const nextTnaApi = {
           error: 'HTTP_ERROR',
           code: 'HTTP_ERROR',
           details: { status: res.status, body: json },
-        } as ApiResponse<any>;
+        } as ApiResponse<unknown>;
       return json as ApiResponse<unknown>;
     });
   },
@@ -66,17 +66,17 @@ export const nextTnaApi = {
           error: 'HTTP_ERROR',
           code: 'HTTP_ERROR',
           details: { status: res.status, body: json },
-        } as ApiResponse<any>;
+        } as ApiResponse<unknown>;
       return json as ApiResponse<unknown>;
     });
   },
   priceDateType(productId: string, body: unknown) {
     const url = `${BASE_PATH}/api/tna/product/${encodeURIComponent(productId)}/price/data-type`;
-    return postJson<any>(url, { body });
+    return postJson<unknown>(url, { body });
   },
   pricePeriodType(productId: string, body: unknown) {
     const url = `${BASE_PATH}/api/tna/product/${encodeURIComponent(productId)}/price/period-type`;
-    return postJson<any>(url, { body });
+    return postJson<unknown>(url, { body });
   },
   dynamicPrice(
     productId: string,
@@ -101,9 +101,9 @@ export const nextTnaApi = {
           error: 'HTTP_ERROR',
           code: 'HTTP_ERROR',
           details: { status: res.status, body: json },
-        } as ApiResponse<any>;
+        } as ApiResponse<unknown>;
       }
-      return json as any; // 직접 데이터 반환
+      return json as unknown; // 직접 데이터 반환
     });
   },
 };

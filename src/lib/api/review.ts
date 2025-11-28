@@ -63,7 +63,7 @@ export const reviewApi = {
 
 export const normalizeReviewItems = (items: unknown[]): ReviewItem[] => {
   return (Array.isArray(items) ? items : []).map(r => {
-    const x = r as any;
+    const x = r as Record<string, unknown>;
     return {
       name: String(x?.writer ?? x?.name ?? 'Guest'),
       rating: Number(x?.score ?? x?.rating ?? 0) || 0,
@@ -71,7 +71,7 @@ export const normalizeReviewItems = (items: unknown[]): ReviewItem[] => {
       comment: String(x?.reviewCont ?? x?.content ?? x?.comment ?? ''),
       helpful: typeof x?.likeCnt === 'number' ? Number(x.likeCnt) : undefined,
       tags: Array.isArray(x?.tags)
-        ? x.tags.map((t: unknown) => String(t))
+        ? (x.tags as unknown[]).map((t: unknown) => String(t))
         : undefined,
     };
   });

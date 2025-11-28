@@ -123,12 +123,12 @@ export function DynamicPriceExample({
 
         // 첫 번째 라벨 ID 사용
         const firstLabelId = selectedOption.labels?.[0]?.id;
-        const result = await fetchDynamicPrice(
+        const result = (await fetchDynamicPrice(
           selectedOption,
           selectedTimeslot,
           newCount,
           firstLabelId,
-        );
+        )) as DynamicPriceResult | null;
         setPriceResult(result);
 
         if (result?.success) {

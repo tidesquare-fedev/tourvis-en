@@ -1,5 +1,5 @@
-import type { ApiResponse } from '@/types/review';
 import type { Section } from '@/features/home/types';
+import type { ApiResponse } from '@/types/review';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '/en';
 
@@ -44,6 +44,6 @@ export const homeApi = {
     limit?: number;
   }) {
     const url = `${BASE_PATH}/api/home/section-products`;
-    return postJson<{ items: any[] }>(url, { body });
+    return postJson<{ items: unknown[] }>(url, { body });
   },
 };

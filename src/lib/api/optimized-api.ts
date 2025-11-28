@@ -3,10 +3,8 @@
  * 캐싱, 중복 제거, 에러 처리 등을 통합한 API 클라이언트
  */
 
-import { queryClient, queryKeys, queryOptions } from '../query-client';
-import { createError, ERROR_CODES, logError } from '../error-handling';
-import { safeExecute } from '../error-handling';
 import type { ApiResponse } from '@/types/review';
+import { createError, ERROR_CODES, safeExecute } from '../error-handling';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '/en';
 
@@ -59,7 +57,7 @@ interface ApiRequestParams {
 /**
  * 중복 요청 관리 맵
  */
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 
 /**
  * API 요청 실행 함수
@@ -75,7 +73,7 @@ async function executeRequest<T>(
 
   // 중복 요청 제거
   if (finalOptions.deduplicate && pendingRequests.has(requestKey)) {
-    return pendingRequests.get(requestKey)!;
+    return pendingRequests.get(requestKey) as Promise<ApiResponse<T>>;
   }
 
   const requestPromise = safeExecute(
@@ -220,7 +218,7 @@ export const homeApiClient = {
     limit?: number;
   }) {
     const url = `${BASE_PATH}/api/home/section-products`;
-    return apiClient.post<{ items: any[] }>(url, params, {
+    return apiClient.post<{ items: unknown[] }>(url, params, {
       useCache: true,
       cacheTTL: 10 * 60 * 1000, // 10분
       deduplicate: true,
@@ -232,7 +230,7 @@ export const homeApiClient = {
    */
   async getHomeData() {
     const url = `${BASE_PATH}/api/home`;
-    return apiClient.get<any>(url, {
+    return apiClient.get<unknown>(url, {
       useCache: true,
       cacheTTL: 15 * 60 * 1000, // 15분
       deduplicate: true,
@@ -254,7 +252,7 @@ export const activityApiClient = {
     offset?: number;
   }) {
     const url = `${BASE_PATH}/api/activity/products`;
-    return apiClient.post<{ items: any[] }>(url, params, {
+    return apiClient.post<{ items: unknown[] }>(url, params, {
       useCache: true,
       cacheTTL: 5 * 60 * 1000, // 5분
       deduplicate: true,
@@ -266,7 +264,7 @@ export const activityApiClient = {
    */
   async getProductDetail(productId: string) {
     const url = `${BASE_PATH}/api/activity/products/${productId}`;
-    return apiClient.get<any>(url, {
+    return apiClient.get<unknown>(url, {
       useCache: true,
       cacheTTL: 30 * 60 * 1000, // 30분
       deduplicate: true,
@@ -304,7 +302,7 @@ export const reviewApiClient = {
     limit?: number;
   }) {
     const url = `${BASE_PATH}/api/review/reviewList`;
-    return apiClient.post<{ items: any[] }>(url, params, {
+    return apiClient.post<{ items: unknown[] }>(url, params, {
       useCache: true,
       cacheTTL: 5 * 60 * 1000, // 5분
       deduplicate: true,
@@ -321,7 +319,7 @@ export const tnaApiClient = {
    */
   async getProductOptionsDateType(productId: string, date: string) {
     const url = `https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2/product/${encodeURIComponent(productId)}/${encodeURIComponent(date)}/options`;
-    return apiClient.get<any>(url, {
+    return apiClient.get<unknown>(url, {
       useCache: true,
       cacheTTL: 5 * 60 * 1000, // 5분
       deduplicate: true,
@@ -334,7 +332,7 @@ export const tnaApiClient = {
    */
   async getProductOptionsPeriodType(productId: string) {
     const url = `https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2/product/${encodeURIComponent(productId)}/options`;
-    return apiClient.get<any>(url, {
+    return apiClient.get<unknown>(url, {
       useCache: true,
       cacheTTL: 10 * 60 * 1000, // 10분
       deduplicate: true,
@@ -355,7 +353,7 @@ export const tnaApiClient = {
     },
   ) {
     const url = `https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2/product/${encodeURIComponent(productId)}/options/${encodeURIComponent(optionId)}/dynamic-price`;
-    return apiClient.post<any>(url, params, {
+    return apiClient.post<unknown>(url, params, {
       useCache: false, // 가격은 실시간이므로 캐시하지 않음
       deduplicate: true,
       timeout: 20000, // 20초
@@ -368,7 +366,7 @@ export const tnaApiClient = {
  * 여러 API 요청을 한 번에 처리
  */
 export class BatchApiClient {
-  private requests: Array<() => Promise<any>> = [];
+  private requests: Array<() => Promise<unknown>> = [];
 
   /**
    * 요청 추가
@@ -381,7 +379,7 @@ export class BatchApiClient {
   /**
    * 모든 요청 실행
    */
-  async execute(): Promise<any[]> {
+  async execute(): Promise<unknown[]> {
     const results = await Promise.allSettled(
       this.requests.map(request => request()),
     );
