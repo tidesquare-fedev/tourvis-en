@@ -98,7 +98,7 @@ export const inquirySchema = z.object({
 });
 
 // API 응답에서 민감한 정보 제거
-export function sanitizeApiResponse(data: any): any {
+export function sanitizeApiResponse(data: unknown): unknown {
   if (typeof data !== 'object' || data === null) {
     return data;
   }

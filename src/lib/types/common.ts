@@ -1,11 +1,11 @@
 // 공통 타입 정의
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
   message?: string;
   code?: string;
-  details?: any;
+  details?: unknown;
 }
 
 export interface PaginationMeta {
@@ -19,14 +19,14 @@ export interface ApiError {
   message: string;
   code: string;
   status: number;
-  details?: any;
+  details?: unknown;
 }
 
 // API 요청 기본 설정
 export interface ApiRequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
   timeout?: number;
 }
 
@@ -51,5 +51,5 @@ export interface AppError extends Error {
   type: ErrorType;
   code: string;
   status: number;
-  details?: any;
+  details?: unknown;
 }
