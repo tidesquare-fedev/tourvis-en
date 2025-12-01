@@ -1,6 +1,7 @@
 import { monitoredApiCall } from '../api-monitor';
 import { cache, createCacheKey } from '../cache';
 import { tnaCircuitBreaker } from '../circuit-breaker';
+import { universalEnv } from '../constants/api';
 import { tnaRateLimiter } from '../rate-limiter';
 import {
   createRequestKey,
@@ -25,8 +26,8 @@ const getHeaders = (): HeadersMap => {
 };
 
 const apiBaseV2 = () => {
-  // 올바른 API 베이스 URL 사용
-  return 'https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2';
+  // 환경별 API 베이스 URL 사용
+  return `${universalEnv.apiBaseUrls.tnt}/v2`;
 };
 
 export async function getProductDetailV2(productId: string) {

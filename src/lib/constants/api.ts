@@ -101,3 +101,44 @@ export const IMAGE_CONFIG = {
   LAZY_LOAD_THRESHOLD: 0.1,
   LAZY_LOAD_ROOT_MARGIN: '50px',
 } as const;
+
+export type ENV = 'development' | 'stage' | 'production';
+export const isDev = process.env.NEXT_PUBLIC_APP_ENV === 'development';
+export const isStg = process.env.NEXT_PUBLIC_APP_ENV === 'stage';
+export const isProd = process.env.NEXT_PUBLIC_APP_ENV === 'production';
+
+export interface UniversalEnv {
+  name: ENV;
+  apiBaseUrls: {
+    tnt: string;
+    common: string;
+    common_fe: string;
+  };
+}
+
+export const universalEnv: UniversalEnv = isProd
+  ? {
+      name: 'production',
+      apiBaseUrls: {
+        tnt: 'https://apollo-api.tidesquare.com/tna-api-v2/rest',
+        common: 'https://edge.tourvis.com/tvcomm',
+        common_fe: 'https://edge.tourvis.com/tvcomm/fe',
+      },
+    }
+  : isStg
+    ? {
+        name: 'stage',
+        apiBaseUrls: {
+          tnt: 'https://stg-apollo-api.tidesquare.com/tna-api-v2/rest',
+          common: 'https://stg-edge.tourvis.com/tvcomm',
+          common_fe: 'https://stg-edge.tourvis.com/tvcomm/fe',
+        },
+      }
+    : {
+        name: 'development',
+        apiBaseUrls: {
+          tnt: 'https://dev-apollo-api.tidesquare.com/tna-api-v2/rest',
+          common: 'https://dedge.tourvis.com/tvcomm',
+          common_fe: 'https://dedge.tourvis.com/tvcomm/fe',
+        },
+      };

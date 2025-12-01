@@ -1,16 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { AccountManagement } from '@/components/admin/AccountManagement';
+import { InquiryDetail } from '@/components/admin/InquiryDetail';
+import { ProtectedRoute } from '@/components/admin/ProtectedRoute';
+import { RealtimeIndicator } from '@/components/admin/RealtimeIndicator';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -19,35 +15,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  MessageSquare,
-  Users,
-  Clock,
-  CheckCircle,
-  XCircle,
-  LogOut,
-  RefreshCw,
-  Bell,
-  Search,
-  Filter,
-  X,
-  User,
-} from 'lucide-react';
-import { Inquiry, DashboardStats, AdminSession } from '@/types/admin';
-import { InquiryList } from '@/components/admin/InquiryList';
-import { InquiryDetail } from '@/components/admin/InquiryDetail';
-import { RealtimeIndicator } from '@/components/admin/RealtimeIndicator';
-import { ProtectedRoute } from '@/components/admin/ProtectedRoute';
-import { AccountManagement } from '@/components/admin/AccountManagement';
 import { useRealtimeInquiries } from '@/hooks/useRealtimeInquiries';
+import { AdminSession, DashboardStats, Inquiry } from '@/types/admin';
+import {
+  Bell,
+  CheckCircle,
+  Clock,
+  LogOut,
+  MessageSquare,
+  RefreshCw,
+  Search,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+interface Notification {
+  id: number;
+  message: string;
+  timestamp: string;
+}
 
 function AdminDashboardContent() {
   const [admin, setAdmin] = useState<AdminSession | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');

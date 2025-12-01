@@ -1,15 +1,15 @@
+import { fetchProducts } from '@/features/activity/lib/searchApi';
 import { NextResponse } from 'next/server';
-import {
-  fetchProducts,
-  mapToProductItems,
-} from '@/features/activity/lib/searchApi';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json().catch(() => ({}))) as any;
+    const body = (await req.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
     const providerIds = String(body?.providerIds ?? body?.provider_ids ?? '');
     const keyword =
       typeof body?.keyword === 'string'

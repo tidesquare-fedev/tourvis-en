@@ -6,7 +6,7 @@ import { useCallback, useRef } from 'react';
  * @param delay 지연 시간 (ms)
  * @returns 디바운스된 함수
  */
-export function useDebounce<T extends (...args: any[]) => any>(
+export function useDebounce<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number,
 ): T {
@@ -14,7 +14,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
 
   return useCallback(
     ((...args: Parameters<T>) => {
-      if (timeoutRef.current) {
+      if (timeoutRef.current !== null) {
         clearTimeout(timeoutRef.current);
       }
 
@@ -32,14 +32,14 @@ export function useDebounce<T extends (...args: any[]) => any>(
  * @param delay 지연 시간 (ms)
  * @returns 디바운스된 함수
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout | null = null;
 
   return (...args: Parameters<T>) => {
-    if (timeoutId) {
+    if (timeoutId !== null) {
       clearTimeout(timeoutId);
     }
 
@@ -55,7 +55,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * @param delay 지연 시간 (ms)
  * @returns 쓰로틀된 함수
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   delay: number,
 ): (...args: Parameters<T>) => void {
@@ -68,7 +68,7 @@ export function throttle<T extends (...args: any[]) => any>(
     if (now - lastCall >= delay) {
       lastCall = now;
       func(...args);
-    } else if (!timeoutId) {
+    } else if (timeoutId === null) {
       timeoutId = setTimeout(
         () => {
           lastCall = Date.now();

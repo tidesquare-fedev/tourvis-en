@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
 import { verifyToken } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/supabase';
 import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from 'next/server';
 
 // 특정 계정 조회
 export async function GET(
@@ -107,7 +107,7 @@ export async function PATCH(
     }
 
     // 업데이트할 데이터 준비
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 

@@ -4,6 +4,7 @@
  */
 
 import type { ApiResponse } from '@/types/review';
+import { universalEnv } from '../constants/api';
 import { createError, ERROR_CODES, safeExecute } from '../error-handling';
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '/en';
@@ -318,7 +319,8 @@ export const tnaApiClient = {
    * 상품 옵션 조회 (날짜형)
    */
   async getProductOptionsDateType(productId: string, date: string) {
-    const url = `https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2/product/${encodeURIComponent(productId)}/${encodeURIComponent(date)}/options`;
+    const baseUrl = `${universalEnv.apiBaseUrls.tnt}/v2`;
+    const url = `${baseUrl}/product/${encodeURIComponent(productId)}/${encodeURIComponent(date)}/options`;
     return apiClient.get<unknown>(url, {
       useCache: true,
       cacheTTL: 5 * 60 * 1000, // 5분
@@ -331,7 +333,8 @@ export const tnaApiClient = {
    * 상품 옵션 조회 (기간형)
    */
   async getProductOptionsPeriodType(productId: string) {
-    const url = `https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2/product/${encodeURIComponent(productId)}/options`;
+    const baseUrl = `${universalEnv.apiBaseUrls.tnt}/v2`;
+    const url = `${baseUrl}/product/${encodeURIComponent(productId)}/options`;
     return apiClient.get<unknown>(url, {
       useCache: true,
       cacheTTL: 10 * 60 * 1000, // 10분
@@ -352,7 +355,8 @@ export const tnaApiClient = {
       timeslot: { id: string };
     },
   ) {
-    const url = `https://dev-apollo-api.tidesquare.com/tna-api-v2/rest/v2/product/${encodeURIComponent(productId)}/options/${encodeURIComponent(optionId)}/dynamic-price`;
+    const baseUrl = `${universalEnv.apiBaseUrls.tnt}/v2`;
+    const url = `${baseUrl}/product/${encodeURIComponent(productId)}/options/${encodeURIComponent(optionId)}/dynamic-price`;
     return apiClient.post<unknown>(url, params, {
       useCache: false, // 가격은 실시간이므로 캐시하지 않음
       deduplicate: true,

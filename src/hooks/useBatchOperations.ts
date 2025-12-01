@@ -3,14 +3,14 @@
  * 여러 API 요청을 효율적으로 처리하는 훅들
  */
 
-import { useCallback, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/query-client';
 import {
-  homeApiClient,
   activityApiClient,
+  homeApiClient,
   reviewApiClient,
 } from '@/lib/api/optimized-api';
+import { queryKeys } from '@/lib/query-client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
 /**
  * 배치 프리페치 훅
@@ -367,7 +367,10 @@ export function useSmartPrefetch() {
    * 페이지 진입 시 백그라운드 프리페치
    */
   const onPageEnter = useCallback(
-    async (pageType: 'home' | 'product' | 'search', params?: any) => {
+    async (
+      pageType: 'home' | 'product' | 'search',
+      params?: { productId?: string; providerIds?: string },
+    ) => {
       switch (pageType) {
         case 'home':
           // 홈 페이지 관련 데이터 프리페치

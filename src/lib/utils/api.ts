@@ -1,6 +1,6 @@
 import {
-  ApiResponse,
   ApiRequestConfig,
+  ApiResponse,
   AppError,
   ErrorType,
 } from '../types/common';
@@ -23,7 +23,7 @@ export class ApiClient {
   /**
    * HTTP 요청 실행
    */
-  async request<T = any>(
+  async request<T = unknown>(
     endpoint: string,
     config: ApiRequestConfig = {},
   ): Promise<ApiResponse<T>> {
@@ -73,7 +73,7 @@ export class ApiClient {
   /**
    * GET 요청
    */
-  async get<T = any>(
+  async get<T = unknown>(
     endpoint: string,
     config?: Omit<ApiRequestConfig, 'method' | 'body'>,
   ) {
@@ -83,9 +83,9 @@ export class ApiClient {
   /**
    * POST 요청
    */
-  async post<T = any>(
+  async post<T = unknown>(
     endpoint: string,
-    body?: any,
+    body?: unknown,
     config?: Omit<ApiRequestConfig, 'method'>,
   ) {
     return this.request<T>(endpoint, { ...config, method: 'POST', body });
@@ -94,9 +94,9 @@ export class ApiClient {
   /**
    * PUT 요청
    */
-  async put<T = any>(
+  async put<T = unknown>(
     endpoint: string,
-    body?: any,
+    body?: unknown,
     config?: Omit<ApiRequestConfig, 'method'>,
   ) {
     return this.request<T>(endpoint, { ...config, method: 'PUT', body });
@@ -105,9 +105,9 @@ export class ApiClient {
   /**
    * PATCH 요청
    */
-  async patch<T = any>(
+  async patch<T = unknown>(
     endpoint: string,
-    body?: any,
+    body?: unknown,
     config?: Omit<ApiRequestConfig, 'method'>,
   ) {
     return this.request<T>(endpoint, { ...config, method: 'PATCH', body });
@@ -116,7 +116,7 @@ export class ApiClient {
   /**
    * DELETE 요청
    */
-  async delete<T = any>(
+  async delete<T = unknown>(
     endpoint: string,
     config?: Omit<ApiRequestConfig, 'method' | 'body'>,
   ) {
@@ -129,7 +129,7 @@ export class ApiClient {
   private createError(
     status: number,
     message: string,
-    details?: any,
+    details?: unknown,
   ): AppError {
     const error = new Error(message) as AppError;
     error.type = this.getErrorType(status);
@@ -178,7 +178,7 @@ export class ApiClient {
 export const apiClient = new ApiClient();
 
 // Next.js API 라우트용 헬퍼 함수들
-export function createApiResponse<T = any>(
+export function createApiResponse<T = unknown>(
   data: T,
   status: number = 200,
   message?: string,
@@ -200,7 +200,7 @@ export function createApiError(
   error: string,
   status: number = 500,
   code?: string,
-  details?: any,
+  details?: unknown,
 ): Response {
   return new Response(
     JSON.stringify({
@@ -218,7 +218,7 @@ export function createApiError(
 
 // 요청 검증 헬퍼
 export function validateRequiredFields(
-  body: Record<string, any>,
+  body: Record<string, unknown>,
   requiredFields: string[],
 ): { isValid: boolean; missingFields: string[] } {
   const missingFields = requiredFields.filter(field => !body[field]);

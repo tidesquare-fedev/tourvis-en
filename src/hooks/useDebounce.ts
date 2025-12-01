@@ -3,7 +3,7 @@
  * 사용자 입력 기반 API 호출 최적화를 위한 훅들
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Debounce 훅
@@ -29,7 +29,7 @@ export function useDebounce<T>(value: T, delay: number): T {
  * Debounced 콜백 훅
  * 함수 호출을 debounce하여 성능 최적화
  */
-export function useDebouncedCallback<T extends (...args: any[]) => any>(
+export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number,
   deps: React.DependencyList = [],
@@ -52,6 +52,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
         callbackRef.current(...args);
       }, delay);
     }) as T,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [delay, ...deps],
   );
 
@@ -71,7 +72,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
  * Throttle 훅
  * 일정 시간 간격으로만 함수 실행을 허용
  */
-export function useThrottle<T extends (...args: any[]) => any>(
+export function useThrottle<T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number,
   deps: React.DependencyList = [],
@@ -93,6 +94,7 @@ export function useThrottle<T extends (...args: any[]) => any>(
         callbackRef.current(...args);
       }
     }) as T,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [delay, ...deps],
   );
 
@@ -144,13 +146,14 @@ export function useSearchDebounce(
  * 가격 조회를 위한 특화된 debounce 훅
  * 가격 API는 자주 호출되므로 더 짧은 지연시간 사용
  */
-export function usePriceDebounce(
-  initialValue: any = null,
+export function usePriceDebounce<T = unknown>(
+  initialValue: T | null = null,
   delay: number = 500,
 ) {
-  const [priceParams, setPriceParams] = useState(initialValue);
-  const [debouncedPriceParams, setDebouncedPriceParams] =
-    useState(initialValue);
+  const [priceParams, setPriceParams] = useState<T | null>(initialValue);
+  const [debouncedPriceParams, setDebouncedPriceParams] = useState<T | null>(
+    initialValue,
+  );
   const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
@@ -186,7 +189,7 @@ export function usePriceDebounce(
 /**
  * 필터링을 위한 debounce 훅
  */
-export function useFilterDebounce<T extends Record<string, any>>(
+export function useFilterDebounce<T extends Record<string, unknown>>(
   initialFilters: T = {} as T,
   delay: number = 400,
 ) {
@@ -209,7 +212,7 @@ export function useFilterDebounce<T extends Record<string, any>>(
     };
   }, [filters, delay, debouncedFilters]);
 
-  const updateFilter = useCallback((key: keyof T, value: any) => {
+  const updateFilter = useCallback((key: keyof T, value: T[keyof T]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   }, []);
 

@@ -31,7 +31,10 @@ export function extractFirstEmoji(text: string): string {
  * @param defaultValue - 변환 실패 시 기본값
  * @returns 변환된 숫자 또는 기본값
  */
-export function safeParseNumber(value: any, defaultValue: number = 0): number {
+export function safeParseNumber(
+  value: unknown,
+  defaultValue: number = 0,
+): number {
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
     const parsed = Number(value);
@@ -46,7 +49,7 @@ export function safeParseNumber(value: any, defaultValue: number = 0): number {
  * @param defaultValue - 변환 실패 시 기본값
  * @returns 변환된 정수 또는 기본값
  */
-export function safeParseInt(value: any, defaultValue: number = 0): number {
+export function safeParseInt(value: unknown, defaultValue: number = 0): number {
   if (typeof value === 'number') return Math.floor(value);
   if (typeof value === 'string') {
     const parsed = parseInt(value, 10);
@@ -62,7 +65,7 @@ export function safeParseInt(value: any, defaultValue: number = 0): number {
  * @returns 변환된 불린 또는 기본값
  */
 export function safeParseBoolean(
-  value: any,
+  value: unknown,
   defaultValue: boolean = false,
 ): boolean {
   if (typeof value === 'boolean') return value;
@@ -79,7 +82,7 @@ export function safeParseBoolean(
  * @param value - 확인할 값
  * @returns 유효한 문자열인지 여부
  */
-export function isValidString(value: any): value is string {
+export function isValidString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
@@ -89,7 +92,7 @@ export function isValidString(value: any): value is string {
  * @param defaultValue - 기본값
  * @returns 변환된 문자열
  */
-export function safeString(value: any, defaultValue: string = ''): string {
+export function safeString(value: unknown, defaultValue: string = ''): string {
   if (isValidString(value)) return value;
   return defaultValue;
 }

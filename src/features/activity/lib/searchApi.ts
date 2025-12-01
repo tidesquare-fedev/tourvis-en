@@ -2,7 +2,7 @@ import type {
   ProductItem,
   ProductSearchResponse,
 } from '@/features/activity/types';
-import { PRODUCT_FIELDS, API_CONFIG } from '@/lib/constants/api';
+import { PRODUCT_FIELDS, API_CONFIG, universalEnv } from '@/lib/constants/api';
 
 const normalizeImage = (p: any): string => {
   const displayImages = Array.isArray(p?.display_images)
@@ -72,12 +72,16 @@ export const mapToProductItems = (data: unknown): ProductItem[] => {
 };
 
 export const buildApiBase = (token: string | undefined): string => {
-  const devBase = 'https://dev-apollo-api.tidesquare.com';
-  const prodBase = 'https://apollo-api.tidesquare.com';
-  if (!token) return devBase;
+  // universalEnv를 사용하여 환경별 API 주소 사용
+  // 토큰이 없거나 파싱 실패 시 현재 환경의 API 주소 사용
+  if (!token) {
+    return universalEnv.apiBaseUrls.tnt.replace('/tna-api-v2/rest', '');
+  }
   try {
     const parts = token.split('.');
-    if (parts.length < 2) return devBase;
+    if (parts.length < 2) {
+      return universalEnv.apiBaseUrls.tnt.replace('/tna-api-v2/rest', '');
+    }
     const base64url = parts[1];
     const base64 =
       base64url.replace(/-/g, '+').replace(/_/g, '/') +
@@ -85,10 +89,17 @@ export const buildApiBase = (token: string | undefined): string => {
     const json = Buffer.from(base64, 'base64').toString('utf8');
     const payload = JSON.parse(json) as { stage?: string };
     const stage = String(payload?.stage || '').toLowerCase();
-    if (stage === 'prod' || stage === 'production') return prodBase;
-    return devBase;
+
+    // 토큰의 stage 정보에 따라 환경별 URL 반환
+    if (stage === 'prod' || stage === 'production') {
+      return 'https://apollo-api.tidesquare.com';
+    } else if (stage === 'stg' || stage === 'stage') {
+      return 'https://stg-apollo-api.tidesquare.com';
+    }
+    // 기본값은 현재 환경의 API 주소
+    return universalEnv.apiBaseUrls.tnt.replace('/tna-api-v2/rest', '');
   } catch {
-    return devBase;
+    return universalEnv.apiBaseUrls.tnt.replace('/tna-api-v2/rest', '');
   }
 };
 

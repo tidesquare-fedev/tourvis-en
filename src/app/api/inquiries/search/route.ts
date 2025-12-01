@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
-import { createApiResponse, createApiError } from '@/lib/utils/api';
-import { withErrorHandling } from '@/lib/utils/error-handler';
 import { InquiryApi } from '@/lib/api/inquiries';
+import { createApiError, createApiResponse } from '@/lib/utils/api';
+import { withErrorHandling } from '@/lib/utils/error-handler';
+import { NextRequest } from 'next/server';
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
   const body = await request.json();
@@ -17,11 +17,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
 
   try {
     const inquiries = await InquiryApi.searchInquiries(author, password);
+    const inquiriesArray = Array.isArray(inquiries) ? inquiries : [];
 
     return createApiResponse(
-      { inquiries },
+      { inquiries: inquiriesArray },
       200,
-      `Found ${inquiries.length} inquiry(ies)`,
+      `Found ${inquiriesArray.length} inquiry(ies)`,
     );
   } catch (error) {
     const message =

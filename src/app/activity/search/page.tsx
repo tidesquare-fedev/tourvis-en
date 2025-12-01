@@ -1,5 +1,6 @@
 import SearchPageClient from '@/features/activity/SearchPageClient';
 import { fetchProducts } from '@/features/activity/lib/searchApi';
+import type { ProductItem } from '@/features/activity/types';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,7 +22,7 @@ export default async function ActivitySearchPage({
 
   const providerIds = 'PRV2000000394';
 
-  let items: any[] = [];
+  let items: ProductItem[] = [];
   let error: string | null = null;
 
   try {
@@ -46,11 +47,11 @@ export default async function ActivitySearchPage({
         </div>
       );
     }
-    items = res.items as any[];
+    items = res.items;
     // 검색어(q)가 있으면 서버 사이드에서 1차 필터링
     if (keyword.trim()) {
       const q = keyword.trim().toLowerCase();
-      items = items.filter((it: any) => {
+      items = items.filter((it: ProductItem) => {
         const title = String(it?.title ?? '').toLowerCase();
         const category = String(it?.category ?? '').toLowerCase();
         const location = String(it?.location ?? '').toLowerCase();
@@ -59,8 +60,11 @@ export default async function ActivitySearchPage({
         );
       });
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     error = '상품 목록을 불러오지 못했습니다.';
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[activity/search] error', e);
+    }
   }
 
   if (error) {
@@ -76,7 +80,7 @@ export default async function ActivitySearchPage({
 
   return (
     <SearchPageClient
-      items={items as any}
+      items={items}
       providerIds={providerIds}
       keyword={keyword}
     />
